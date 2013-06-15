@@ -16,6 +16,15 @@
  */
 package me.cmastudios.mcparkour;
 
+import java.io.File;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import me.cmastudios.mcparkour.commands.*;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -25,11 +34,43 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class Parkour extends JavaPlugin {
 
+    private static ResourceBundle messages = ResourceBundle.getBundle("messages");
+    private Connection courseDatabase;
+
     @Override
     public void onEnable() {
+        this.getCommand("parkour").setExecutor(new ParkourCommand(this));
+        this.getCommand("setcourse").setExecutor(new SetCourseCommand(this));
+        this.getDataFolder().mkdirs();
+        File courseDatabaseFile = new File(this.getDataFolder(), "courses.sl3");
+        try {
+            Class.forName("org.sqlite.JDBC").newInstance();
+            this.courseDatabase = DriverManager.getConnection("jdbc:sqlite:" + courseDatabaseFile.getPath());
+            try (Statement initStatement = this.courseDatabase.createStatement()) {
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT)");
+            }
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
+            this.getLogger().log(Level.SEVERE, "Failed to load SQLite database driver", ex);
+        } catch (SQLException ex) {
+            this.getLogger().log(Level.SEVERE, "Failed to load course database", ex);
+        }
     }
 
     @Override
     public void onDisable() {
+        if (this.courseDatabase != null) {
+            try {
+                this.courseDatabase.close();
+            } catch (SQLException ex) {
+            }
+        }
+    }
+
+    public static String getString(String key, Object[] args) {
+        return MessageFormat.format(messages.getString(key), args);
+    }
+
+    public Connection getCourseDatabase() {
+        return courseDatabase;
     }
 }

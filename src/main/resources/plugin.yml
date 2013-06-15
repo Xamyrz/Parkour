@@ -6,10 +6,8 @@ website: ${project.url}
 main: ${main.class}
 commands:
   parkour:
-    description: Teleport to a parkour course or manage the plugin
-    usage: |
-      /<command> <course-number> - Teleport to a parkour course
-      /<command> lang <en/pl> - Change plugin language for yourself
+    description: Teleport to a parkour course
+    usage: /<command> <course-number>
     aliases: [pk]
     permission: parkour.play
   setcourse:

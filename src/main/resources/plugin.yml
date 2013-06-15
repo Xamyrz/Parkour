@@ -1,0 +1,25 @@
+name: ${project.name}
+version: ${project.version}
+description: ${project.description}
+author: cmastudios
+website: ${project.url}
+main: ${main.class}
+commands:
+  parkour:
+    description: Teleport to a parkour course or manage the plugin
+    usage: |
+      /<command> <course-number> - Teleport to a parkour course
+      /<command> lang <en/pl> - Change plugin language for yourself
+    aliases: [pk]
+    permission: parkour.play
+  setcourse:
+    description: Set the teleport for a parkour course
+    usage: /<command> <course-number>
+    aliases: [pkset]
+    permission: parkour.set
+permissions:
+  parkour.play:
+    description: Required in order to play parkour
+  parkour.set:
+    description: Required in order to set teleports for courses or to create control signs
+

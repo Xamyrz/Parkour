@@ -27,6 +27,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerKickEvent;
@@ -97,6 +99,7 @@ public class ParkourListener implements Listener {
                 }
             } else if (below.getType() == Material.BEDROCK) {
                 if (playerCourseTracker.containsKey(player)) {
+                    player.setFallDistance(0.0F);
                     event.setTo(playerCourseTracker.get(player).course.getTeleport());
                 }
             }
@@ -148,6 +151,16 @@ public class ParkourListener implements Listener {
                 }
             }
             this.handlePlayerLeave(event.getPlayer());
+        }
+    }
+
+    @EventHandler
+    public void onPlayerDamage(final EntityDamageEvent event) {
+        if (event.getEntity() instanceof Player) {
+            Player player = (Player) event.getEntity();
+            if (playerCourseTracker.containsKey(player)) {
+                event.setCancelled(true);
+            }
         }
     }
 

@@ -52,7 +52,7 @@ public class ParkourListener implements Listener {
     public ParkourListener(Parkour instance) {
         this.plugin = instance;
         this.playerCourseTracker = new HashMap();
-        plugin.getServer().getScheduler().runTaskTimer(plugin, new XpCounterTask(), 20L, 20L);
+        plugin.getServer().getScheduler().runTaskTimer(plugin, new XpCounterTask(), 1L, 1L);
     }
 
     @EventHandler
@@ -93,6 +93,7 @@ public class ParkourListener implements Listener {
                         data.startTime = System.currentTimeMillis();
                         playerCourseTracker.put(player, data);
                         player.setLevel(0);
+                        player.setExp(0.0F);
                         player.removePotionEffect(PotionEffectType.SPEED);
                         player.removePotionEffect(PotionEffectType.SLOW);
                         break;
@@ -100,6 +101,7 @@ public class ParkourListener implements Listener {
                         if (playerCourseTracker.containsKey(player)) {
                             PlayerCourseData endData = playerCourseTracker.remove(player); // They have ended their course anyhow
                             player.setLevel(endData.previousLevel);
+                            player.setExp(0.0F);
                             player.sendMessage(Parkour.getString("course.end", new Object[]{}));
                         }
                         break;
@@ -200,6 +202,7 @@ public class ParkourListener implements Listener {
         if (playerCourseTracker.containsKey(player)) {
             PlayerCourseData data = playerCourseTracker.remove(player);
             player.setLevel(data.previousLevel);
+            player.setExp(0.0F);
             player.teleport(player.getLocation().getWorld().getSpawnLocation()); // Get them out of the arena
         }
     }
@@ -217,7 +220,10 @@ public class ParkourListener implements Listener {
         public void run() {
             for (Player player : playerCourseTracker.keySet()) {
                 int secondsPassed = (int) ((System.currentTimeMillis() - playerCourseTracker.get(player).startTime) / 1000);
+                float remainder = (int) ((System.currentTimeMillis() - playerCourseTracker.get(player).startTime) % 1000);
+                float tenthsPassed = remainder / 1000F;
                 player.setLevel(secondsPassed);
+                player.setExp(tenthsPassed);
             }
         }
     }

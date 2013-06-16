@@ -19,6 +19,7 @@ package me.cmastudios.mcparkour;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -26,7 +27,9 @@ import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerExpChangeEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -98,6 +101,25 @@ public class ParkourListener implements Listener {
     public void onXpLevelChange(final PlayerExpChangeEvent event) {
         if (playerCourseTracker.containsKey(event.getPlayer())) {
             event.setAmount(0);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerInteract(final PlayerInteractEvent event) throws SQLException {
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            if (event.getClickedBlock().getTypeId() == 63 || event.getClickedBlock().getTypeId() == 68) {
+                Sign sign = (Sign) event.getClickedBlock().getState();
+                if (sign.getLine(0).equals("[tp]")) {
+                    // Right clicked a parkour teleport sign
+                    try {
+                        int parkourNumber = Integer.parseInt(sign.getLine(1));
+                        ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), parkourNumber);
+                        event.setCancelled(true);
+                        event.getPlayer().teleport(course.getTeleport());
+                    } catch (IndexOutOfBoundsException | NumberFormatException | NullPointerException ex) {
+                    }
+                }
+            }
         }
     }
 

@@ -28,6 +28,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -83,7 +84,7 @@ public class ParkourListener implements Listener {
                         ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), startParkourId);
                         if (course == null) {
                             event.setTo(player.getLocation().add(2, 0, 0)); // Prevent database spam
-                            player.sendMessage(Parkour.getString("error.course404", new Object[] {}));
+                            player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
                             return; // Prevent console spam
                         }
                         PlayerCourseData data = new PlayerCourseData();
@@ -111,7 +112,7 @@ public class ParkourListener implements Listener {
                         ParkourCourse tpCourse = ParkourCourse.loadCourse(plugin.getCourseDatabase(), tpParkourId);
                         if (tpCourse == null) {
                             event.setTo(player.getLocation().add(2, 0, 0)); // Prevent database spam
-                            player.sendMessage(Parkour.getString("error.course404", new Object[] {}));
+                            player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
                             return; // Prevent console spam
                         }
                         event.setTo(tpCourse.getTeleport());
@@ -177,6 +178,17 @@ public class ParkourListener implements Listener {
             Player player = (Player) event.getEntity();
             if (playerCourseTracker.containsKey(player)) {
                 event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onSignChange(final SignChangeEvent event) {
+        String firstLine = event.getLine(0);
+        if ("[start]".equals(firstLine) || "[end]".equals(firstLine) || "[tp]".equals(firstLine)) {
+            if (!event.getPlayer().hasPermission("parkour.set")) {
+                event.setLine(0, "-removed-");
+                event.getPlayer().sendMessage(Parkour.getString("sign.noperms", new Object[]{}));
             }
         }
     }

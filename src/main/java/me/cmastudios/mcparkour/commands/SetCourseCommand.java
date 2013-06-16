@@ -18,7 +18,7 @@ package me.cmastudios.mcparkour.commands;
 
 import java.sql.SQLException;
 import me.cmastudios.mcparkour.Parkour;
-import me.cmastudios.mcparkour.ParkourCourse;
+import me.cmastudios.mcparkour.data.ParkourCourse;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

@@ -43,15 +43,24 @@ public class Parkour extends JavaPlugin {
         this.getCommand("setcourse").setExecutor(new SetCourseCommand(this));
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.getDataFolder().mkdirs();
-        File courseDatabaseFile = new File(this.getDataFolder(), "courses.sl3");
+        this.saveDefaultConfig();
         try {
-            Class.forName("org.sqlite.JDBC").newInstance();
-            this.courseDatabase = DriverManager.getConnection("jdbc:sqlite:" + courseDatabaseFile.getPath());
+            if (this.getConfig().getBoolean("mysql.enabled", false)) {
+                Class.forName("com.mysql.jdbc.Driver").newInstance();
+                this.courseDatabase = DriverManager.getConnection(String.format("jdbc:mysql://%s:%d/%s",
+                        this.getConfig().getString("mysql.host"), this.getConfig().getInt("mysql.port"), this.getConfig().getString("mysql.database")),
+                        this.getConfig().getString("mysql.username"), this.getConfig().getString("mysql.password"));
+            } else {
+                Class.forName("org.sqlite.JDBC").newInstance();
+                File courseDatabaseFile = new File(this.getDataFolder(), "courses.sl3");
+                this.courseDatabase = DriverManager.getConnection("jdbc:sqlite:" + courseDatabaseFile.getPath());
+            }
             try (Statement initStatement = this.courseDatabase.createStatement()) {
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT)");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (player TEXT, course INTEGER, time BIGINT)");
             }
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
-            this.getLogger().log(Level.SEVERE, "Failed to load SQLite database driver", ex);
+            this.getLogger().log(Level.SEVERE, "Failed to load database driver", ex);
         } catch (SQLException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load course database", ex);
         }

@@ -19,6 +19,8 @@ package me.cmastudios.mcparkour;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import me.cmastudios.mcparkour.data.ParkourCourse;
+import me.cmastudios.mcparkour.data.PlayerHighScore;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -102,6 +104,12 @@ public class ParkourListener implements Listener {
                             PlayerCourseData endData = playerCourseTracker.remove(player); // They have ended their course anyhow
                             player.setLevel(endData.previousLevel);
                             player.setExp(0.0F);
+                            PlayerHighScore highScore = PlayerHighScore.loadHighScore(plugin.getCourseDatabase(), player, endData.course.getId());
+                            long completionTime = System.currentTimeMillis() - endData.startTime;
+                            if (highScore.getTime() > completionTime) {
+                                highScore.setTime(completionTime);
+                                highScore.save(plugin.getCourseDatabase());
+                            }
                             player.sendMessage(Parkour.getString("course.end", new Object[]{}));
                         }
                         break;

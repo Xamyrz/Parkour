@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package me.cmastudios.mcparkour;
+package me.cmastudios.mcparkour.data;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -34,21 +34,17 @@ public class ParkourCourse {
     private Location teleport;
 
     public static ParkourCourse loadCourse(Connection conn, int id) throws SQLException {
-        Location teleport = null;
+        ParkourCourse ret = null;
         try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM courses WHERE id = ?")) {
             stmt.setInt(1, id);
             try (ResultSet result = stmt.executeQuery()) {
                 if (result.next()) {
-                    teleport = new Location(Bukkit.getWorld(result.getString("world")), result.getDouble("x"),
-                            result.getDouble("y"), result.getDouble("z"), result.getFloat("yaw"), result.getFloat("pitch"));
+                    ret = new ParkourCourse(id, new Location(Bukkit.getWorld(result.getString("world")), result.getDouble("x"),
+                            result.getDouble("y"), result.getDouble("z"), result.getFloat("yaw"), result.getFloat("pitch")));
                 }
             }
         }
-        if (teleport != null) {
-            return new ParkourCourse(id, teleport);
-        } else {
-            return null;
-        }
+        return ret;
     }
 
     public ParkourCourse(int id, Location teleport) {

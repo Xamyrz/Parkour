@@ -100,7 +100,6 @@ public class ParkourListener implements Listener {
                         if (playerCourseTracker.containsKey(player)) {
                             PlayerCourseData endData = playerCourseTracker.remove(player); // They have ended their course anyhow
                             player.setLevel(endData.previousLevel);
-                            event.setTo(endData.course.getTeleport());
                             player.sendMessage(Parkour.getString("course.end", new Object[]{}));
                         }
                         break;

@@ -93,6 +93,10 @@ public class ParkourListener implements Listener {
                         }
                         break;
                 }
+            } else if (below.getType() == Material.BEDROCK) {
+                if (playerCourseTracker.containsKey(player)) {
+                    event.setTo(playerCourseTracker.get(player).course.getTeleport());
+                }
             }
         }
     }

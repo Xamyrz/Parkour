@@ -19,7 +19,6 @@ package me.cmastudios.mcparkour;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -30,7 +29,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
@@ -124,6 +126,36 @@ public class ParkourListener implements Listener {
                     }
                 }
             }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerQuit(final PlayerQuitEvent event) {
+        this.handlePlayerLeave(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onPlayerKick(final PlayerKickEvent event) {
+        this.handlePlayerLeave(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onPlayerTeleport(final PlayerTeleportEvent event) {
+        if (event.getTo().distance(event.getFrom()) >= 3) {
+            if (playerCourseTracker.containsKey(event.getPlayer())) {
+                if (playerCourseTracker.get(event.getPlayer()).course.getTeleport() == event.getTo()) {
+                    return;
+                }
+            }
+            this.handlePlayerLeave(event.getPlayer());
+        }
+    }
+
+    private void handlePlayerLeave(Player player) {
+        if (playerCourseTracker.containsKey(player)) {
+            PlayerCourseData data = playerCourseTracker.remove(player);
+            player.setLevel(data.previousLevel);
+            player.teleport(player.getLocation().getWorld().getSpawnLocation()); // Get them out of the arena
         }
     }
 

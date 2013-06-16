@@ -35,6 +35,7 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
@@ -89,6 +90,8 @@ public class ParkourListener implements Listener {
                         data.startTime = System.currentTimeMillis();
                         playerCourseTracker.put(player, data);
                         player.setLevel(0);
+                        player.removePotionEffect(PotionEffectType.SPEED);
+                        player.removePotionEffect(PotionEffectType.SLOW);
                         break;
                     case "[end]":
                         if (playerCourseTracker.containsKey(player)) {

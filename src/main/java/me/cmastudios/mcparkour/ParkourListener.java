@@ -100,6 +100,8 @@ public class ParkourListener implements Listener {
                         if (playerCourseTracker.containsKey(player)) {
                             PlayerCourseData endData = playerCourseTracker.remove(player); // They have ended their course anyhow
                             player.setLevel(endData.previousLevel);
+                            event.setTo(endData.course.getTeleport());
+                            player.sendMessage(Parkour.getString("course.end", new Object[]{}));
                         }
                         break;
                     case "[tp]":
@@ -116,6 +118,7 @@ public class ParkourListener implements Listener {
                             return; // Prevent console spam
                         }
                         event.setTo(tpCourse.getTeleport());
+                        player.sendMessage(Parkour.getString("course.teleport", new Object[]{tpCourse.getId()}));
                         break;
                 }
             } else if (below.getType() == Material.BEDROCK) {
@@ -148,6 +151,7 @@ public class ParkourListener implements Listener {
                         ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), parkourNumber);
                         event.setCancelled(true);
                         event.getPlayer().teleport(course.getTeleport());
+                        event.getPlayer().sendMessage(Parkour.getString("course.teleport", new Object[]{course.getId()}));
                     } catch (IndexOutOfBoundsException | NumberFormatException | NullPointerException ex) {
                     }
                 }

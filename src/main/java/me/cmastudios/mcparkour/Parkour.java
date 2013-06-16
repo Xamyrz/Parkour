@@ -41,6 +41,7 @@ public class Parkour extends JavaPlugin {
     public void onEnable() {
         this.getCommand("parkour").setExecutor(new ParkourCommand(this));
         this.getCommand("setcourse").setExecutor(new SetCourseCommand(this));
+        this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.getDataFolder().mkdirs();
         File courseDatabaseFile = new File(this.getDataFolder(), "courses.sl3");
         try {

@@ -19,6 +19,7 @@ package me.cmastudios.mcparkour;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -28,7 +29,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerKickEvent;
@@ -82,6 +82,8 @@ public class ParkourListener implements Listener {
                         }
                         ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), startParkourId);
                         if (course == null) {
+                            event.setTo(player.getLocation().add(2, 0, 0)); // Prevent database spam
+                            player.sendMessage(Parkour.getString("error.course404", new Object[] {}));
                             return; // Prevent console spam
                         }
                         PlayerCourseData data = new PlayerCourseData();
@@ -99,11 +101,28 @@ public class ParkourListener implements Listener {
                             player.setLevel(endData.previousLevel);
                         }
                         break;
+                    case "[tp]":
+                        int tpParkourId;
+                        try {
+                            tpParkourId = Integer.parseInt(sign.getLine(1));
+                        } catch (IndexOutOfBoundsException | NumberFormatException ex) {
+                            return; // Prevent console spam
+                        }
+                        ParkourCourse tpCourse = ParkourCourse.loadCourse(plugin.getCourseDatabase(), tpParkourId);
+                        if (tpCourse == null) {
+                            event.setTo(player.getLocation().add(2, 0, 0)); // Prevent database spam
+                            player.sendMessage(Parkour.getString("error.course404", new Object[] {}));
+                            return; // Prevent console spam
+                        }
+                        event.setTo(tpCourse.getTeleport());
+                        break;
                 }
             } else if (below.getType() == Material.BEDROCK) {
                 if (playerCourseTracker.containsKey(player)) {
                     player.setFallDistance(0.0F);
-                    event.setTo(playerCourseTracker.get(player).course.getTeleport());
+                    final Location teleport = playerCourseTracker.get(player).course.getTeleport();
+                    this.handlePlayerLeave(player);
+                    event.setTo(teleport);
                 }
             }
         }
@@ -148,11 +167,6 @@ public class ParkourListener implements Listener {
     @EventHandler
     public void onPlayerTeleport(final PlayerTeleportEvent event) {
         if (event.getTo().distance(event.getFrom()) >= 3) {
-            if (playerCourseTracker.containsKey(event.getPlayer())) {
-                if (playerCourseTracker.get(event.getPlayer()).course.getTeleport() == event.getTo()) {
-                    return;
-                }
-            }
             this.handlePlayerLeave(event.getPlayer());
         }
     }

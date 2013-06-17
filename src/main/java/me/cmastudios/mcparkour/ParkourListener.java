@@ -134,7 +134,7 @@ public class ParkourListener implements Listener {
                 if (playerCourseTracker.containsKey(player)) {
                     player.setFallDistance(0.0F);
                     final Location teleport = playerCourseTracker.get(player).course.getTeleport();
-                    this.handlePlayerLeave(player);
+                    this.handlePlayerLeave(player, false);
                     event.setTo(teleport);
                 }
             }
@@ -207,11 +207,17 @@ public class ParkourListener implements Listener {
     }
 
     private void handlePlayerLeave(Player player) {
+        this.handlePlayerLeave(player, true);
+    }
+
+    private void handlePlayerLeave(Player player, boolean teleport) {
         if (playerCourseTracker.containsKey(player)) {
             PlayerCourseData data = playerCourseTracker.remove(player);
             player.setLevel(data.previousLevel);
             player.setExp(0.0F);
-            player.teleport(player.getLocation().getWorld().getSpawnLocation()); // Get them out of the arena
+            if (teleport) {
+                player.teleport(player.getLocation().getWorld().getSpawnLocation());
+            } // Get them out of the arena
         }
     }
 

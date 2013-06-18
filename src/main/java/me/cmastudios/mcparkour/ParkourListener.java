@@ -128,8 +128,8 @@ public class ParkourListener implements Listener {
                             DecimalFormat df = new DecimalFormat("#.###");
                             double completionTimeSeconds = ((double)completionTime) / 1000;
                             player.sendMessage(Parkour.getString("course.end", new Object[]{df.format(completionTimeSeconds)}));
-                            PlayerHighScore bestScore = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), endData.course.getId()).iterator().next();
-                            if (bestScore.equals(highScore) && highScore.getTime() == completionTime) {
+                            PlayerHighScore bestScore = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), endData.course.getId()).get(0);
+                            if (highScore.equals(bestScore) && highScore.getTime() == completionTime) {
                                 plugin.getServer().broadcast(Parkour.getString("course.end.best", new Object[] {player.getDisplayName() + ChatColor.RESET, endData.course.getId(), df.format(completionTimeSeconds)}), "parkour.play");
                             }
                         }

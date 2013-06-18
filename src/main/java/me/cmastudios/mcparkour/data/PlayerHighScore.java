@@ -20,9 +20,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
@@ -51,8 +51,8 @@ public class PlayerHighScore {
         return ret;
     }
 
-    public static Set<PlayerHighScore> loadHighScores(Connection conn, int course) throws SQLException {
-        Set<PlayerHighScore> ret = new HashSet();
+    public static List<PlayerHighScore> loadHighScores(Connection conn, int course) throws SQLException {
+        List<PlayerHighScore> ret = new ArrayList();
         try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE course = ? ORDER BY time")) {
             stmt.setInt(1, course);
             try (ResultSet result = stmt.executeQuery()) {

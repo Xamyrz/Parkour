@@ -41,6 +41,7 @@ public class Parkour extends JavaPlugin {
     public void onEnable() {
         this.getCommand("parkour").setExecutor(new ParkourCommand(this));
         this.getCommand("setcourse").setExecutor(new SetCourseCommand(this));
+        this.getCommand("topscores").setExecutor(new TopScoresCommand(this));
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.getDataFolder().mkdirs();
         this.saveDefaultConfig();

@@ -15,6 +15,11 @@ commands:
     usage: /<command> <course-number>
     aliases: [pkset]
     permission: parkour.set
+  topscores:
+    description: View top scores for a parkour course
+    usage: /<command> <course-number> [page]
+    aliases: [pktop]
+    permission: parkour.play
 permissions:
   parkour.play:
     description: Required in order to play parkour

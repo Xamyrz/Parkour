@@ -62,6 +62,9 @@ public class ParkourListener implements Listener {
         Player player = event.getPlayer();
         World world = player.getLocation().getWorld();
         Block below = world.getBlockAt(player.getLocation().add(0, -2, 0));
+        Block below = world.getBlockAt(player.getLocation().add(0, -3, 0));
+        Block below = world.getBlockAt(player.getLocation().add(0, -4, 0));
+        Block below = world.getBlockAt(player.getLocation().add(0, -5, 0));
         if (below != null) {
             if (below.getType() == Material.SIGN_POST) {
                 final Sign sign = (Sign) below.getState();

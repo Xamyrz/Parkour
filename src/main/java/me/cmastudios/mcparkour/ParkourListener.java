@@ -61,12 +61,21 @@ public class ParkourListener implements Listener {
     public void onPlayerMove(final PlayerMoveEvent event) throws SQLException {
         Player player = event.getPlayer();
         World world = player.getLocation().getWorld();
-        Block below = world.getBlockAt(player.getLocation().add(0, -2, 0));
-        Block below = world.getBlockAt(player.getLocation().add(0, -3, 0));
-        Block below = world.getBlockAt(player.getLocation().add(0, -4, 0));
-        Block below = world.getBlockAt(player.getLocation().add(0, -5, 0));
+        Block below2 = world.getBlockAt(player.getLocation().add(0, -2, 0));
+        Block below3 = world.getBlockAt(player.getLocation().add(0, -3, 0));
+        Block below4 = world.getBlockAt(player.getLocation().add(0, -4, 0));
+        Block below5 = world.getBlockAt(player.getLocation().add(0, -5, 0));
+        Block[] belowArray = {below2, below3, below4, below5};
+        Block below = null;
+        for (Block belowBlock : belowArray) {
+            if (belowBlock.getType() == Material.SIGN_POST
+                    || belowBlock.getType() == Material.WALL_SIGN) {
+                below = belowBlock;
+            }
+        }
         if (below != null) {
-            if (below.getType() == Material.SIGN_POST) {
+            if (below.getType() == Material.SIGN_POST
+                    || below.getType() == Material.WALL_SIGN) {
                 final Sign sign = (Sign) below.getState();
                 final String controlLine = sign.getLine(0);
                 switch (controlLine) {
@@ -133,15 +142,17 @@ public class ParkourListener implements Listener {
                         player.sendMessage(Parkour.getString("course.teleport", new Object[]{tpCourse.getId()}));
                         break;
                 }
-            } else if (below.getType() == Material.BEDROCK) {
-                if (playerCourseTracker.containsKey(player)) {
-                    player.setFallDistance(0.0F);
-                    final Location teleport = playerCourseTracker.get(player).course.getTeleport();
-                    this.handlePlayerLeave(player, false);
-                    event.setTo(teleport);
-                }
             }
         }
+        if (below2.getType() == Material.BEDROCK) {
+            if (playerCourseTracker.containsKey(player)) {
+                player.setFallDistance(0.0F);
+                final Location teleport = playerCourseTracker.get(player).course.getTeleport();
+                this.handlePlayerLeave(player, false);
+                event.setTo(teleport);
+            }
+        }
+
     }
 
     @EventHandler

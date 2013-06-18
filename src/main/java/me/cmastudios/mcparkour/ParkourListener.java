@@ -17,10 +17,12 @@
 package me.cmastudios.mcparkour;
 
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.PlayerHighScore;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -121,8 +123,15 @@ public class ParkourListener implements Listener {
                             if (highScore.getTime() > completionTime) {
                                 highScore.setTime(completionTime);
                                 highScore.save(plugin.getCourseDatabase());
+                                player.sendMessage(Parkour.getString("course.end.personalbest", new Object[]{endData.course.getId()}));
                             }
-                            player.sendMessage(Parkour.getString("course.end", new Object[]{}));
+                            DecimalFormat df = new DecimalFormat("#.###");
+                            double completionTimeSeconds = ((double)completionTime) / 1000;
+                            player.sendMessage(Parkour.getString("course.end", new Object[]{df.format(completionTimeSeconds)}));
+                            PlayerHighScore bestScore = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), endData.course.getId()).iterator().next();
+                            if (bestScore.equals(highScore) && highScore.getTime() == completionTime) {
+                                plugin.getServer().broadcast(Parkour.getString("course.end.best", new Object[] {player.getDisplayName() + ChatColor.RESET, endData.course.getId(), df.format(completionTimeSeconds)}), "parkour.play");
+                            }
                         }
                         break;
                     case "[tp]":

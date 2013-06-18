@@ -46,6 +46,7 @@ public class ParkourCommand implements CommandExecutor {
             ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), id);
             if (course != null) {
                 ((Player)sender).teleport(course.getTeleport());
+                sender.sendMessage(Parkour.getString("course.teleport", new Object[] {id}));
             } else {
                 sender.sendMessage(Parkour.getString("error.course404", new Object[]{}));
             }

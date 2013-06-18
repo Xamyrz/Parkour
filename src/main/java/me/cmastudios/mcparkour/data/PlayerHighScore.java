@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -52,7 +53,7 @@ public class PlayerHighScore {
 
     public static Set<PlayerHighScore> loadHighScores(Connection conn, int course) throws SQLException {
         Set<PlayerHighScore> ret = new HashSet();
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE course = ?")) {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE course = ? ORDER BY time")) {
             stmt.setInt(1, course);
             try (ResultSet result = stmt.executeQuery()) {
                 while (result.next()) {
@@ -102,5 +103,22 @@ public class PlayerHighScore {
 
     public void setTime(long time) {
         this.time = time;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof PlayerHighScore) {
+            return o.hashCode() == this.hashCode();
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 37 * hash + this.course;
+        hash = 37 * hash + Objects.hashCode(this.player);
+        hash = 37 * hash + (int) (this.time ^ (this.time >>> 32));
+        return hash;
     }
 }

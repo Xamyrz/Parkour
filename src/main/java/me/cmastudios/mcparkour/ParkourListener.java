@@ -180,6 +180,10 @@ public class ParkourListener implements Listener {
 
     @EventHandler
     public void onPlayerTeleport(final PlayerTeleportEvent event) {
+        if (event.getTo().getWorld() != event.getFrom().getWorld()) {
+            this.handlePlayerLeave(event.getPlayer());
+            return;
+        }
         if (event.getTo().distance(event.getFrom()) >= 3) {
             this.handlePlayerLeave(event.getPlayer());
         }

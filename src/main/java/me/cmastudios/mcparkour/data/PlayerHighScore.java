@@ -27,7 +27,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 /**
- * Playable parkour course.
+ * The best score for a player in a specific course.
  *
  * @author Connor Monahan
  */
@@ -52,7 +52,7 @@ public class PlayerHighScore {
     }
 
     public static List<PlayerHighScore> loadHighScores(Connection conn, int course) throws SQLException {
-        List<PlayerHighScore> ret = new ArrayList();
+        List<PlayerHighScore> ret = new ArrayList<PlayerHighScore>();
         try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE course = ? ORDER BY time")) {
             stmt.setInt(1, course);
             try (ResultSet result = stmt.executeQuery()) {

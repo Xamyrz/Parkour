@@ -17,12 +17,10 @@
 package me.cmastudios.mcparkour.commands;
 
 import java.sql.SQLException;
-import java.text.DecimalFormat;
 import java.util.List;
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.PlayerHighScore;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -51,7 +49,6 @@ public class TopScoresCommand implements CommandExecutor {
             }
             List<PlayerHighScore> highScores = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), id);
             StringBuilder scores = new StringBuilder();
-            DecimalFormat df = new DecimalFormat("#.###");
             for (PlayerHighScore highScore : highScores) {
                 double completionTimeSeconds = ((double) highScore.getTime()) / 1000;
                 int index = highScores.indexOf(highScore) + 1;

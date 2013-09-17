@@ -55,7 +55,7 @@ public class ParkourListener implements Listener {
 
     public ParkourListener(Parkour instance) {
         this.plugin = instance;
-        this.playerCourseTracker = new HashMap();
+        this.playerCourseTracker = new HashMap<Player, PlayerCourseData>();
         plugin.getServer().getScheduler().runTaskTimer(plugin, new XpCounterTask(), 1L, 1L);
     }
 
@@ -103,21 +103,13 @@ public class ParkourListener implements Listener {
                             player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
                             return; // Prevent console spam
                         }
-                        PlayerCourseData data = new PlayerCourseData();
-                        data.course = course;
-                        data.previousLevel = player.getLevel();
-                        data.startTime = System.currentTimeMillis();
+                        PlayerCourseData data = new PlayerCourseData(course, player);
                         playerCourseTracker.put(player, data);
-                        player.setLevel(0);
-                        player.setExp(0.0F);
-                        player.removePotionEffect(PotionEffectType.SPEED);
-                        player.removePotionEffect(PotionEffectType.SLOW);
                         break;
                     case "[end]":
                         if (playerCourseTracker.containsKey(player)) {
                             PlayerCourseData endData = playerCourseTracker.remove(player); // They have ended their course anyhow
-                            player.setLevel(endData.previousLevel);
-                            player.setExp(0.0F);
+                            endData.restoreState(player);
                             PlayerHighScore highScore = PlayerHighScore.loadHighScore(plugin.getCourseDatabase(), player, endData.course.getId());
                             long completionTime = System.currentTimeMillis() - endData.startTime;
                             if (highScore.getTime() > completionTime) {
@@ -126,11 +118,11 @@ public class ParkourListener implements Listener {
                                 player.sendMessage(Parkour.getString("course.end.personalbest", new Object[]{endData.course.getId()}));
                             }
                             DecimalFormat df = new DecimalFormat("#.###");
-                            double completionTimeSeconds = ((double)completionTime) / 1000;
+                            double completionTimeSeconds = ((double) completionTime) / 1000;
                             player.sendMessage(Parkour.getString("course.end", new Object[]{df.format(completionTimeSeconds)}));
                             PlayerHighScore bestScore = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), endData.course.getId()).get(0);
                             if (highScore.equals(bestScore) && highScore.getTime() == completionTime) {
-                                plugin.getServer().broadcast(Parkour.getString("course.end.best", new Object[] {player.getDisplayName() + ChatColor.RESET, endData.course.getId(), df.format(completionTimeSeconds)}), "parkour.play");
+                                plugin.getServer().broadcast(Parkour.getString("course.end.best", new Object[]{player.getDisplayName() + ChatColor.RESET, endData.course.getId(), df.format(completionTimeSeconds)}), "parkour.play");
                             }
                         }
                         break;
@@ -174,7 +166,8 @@ public class ParkourListener implements Listener {
     @EventHandler
     public void onPlayerInteract(final PlayerInteractEvent event) throws SQLException {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            if (event.getClickedBlock().getTypeId() == 63 || event.getClickedBlock().getTypeId() == 68) {
+            if (event.getClickedBlock().getType() == Material.SIGN_POST
+                    || event.getClickedBlock().getType() == Material.WALL_SIGN) {
                 Sign sign = (Sign) event.getClickedBlock().getState();
                 if (sign.getLine(0).equals("[tp]")) {
                     // Right clicked a parkour teleport sign
@@ -203,12 +196,9 @@ public class ParkourListener implements Listener {
 
     @EventHandler
     public void onPlayerTeleport(final PlayerTeleportEvent event) {
-        if (event.getTo().getWorld() != event.getFrom().getWorld()) {
-            this.handlePlayerLeave(event.getPlayer());
-            return;
-        }
-        if (event.getTo().distance(event.getFrom()) >= 3) {
-            this.handlePlayerLeave(event.getPlayer());
+        if (event.getTo().getWorld() != event.getFrom().getWorld()
+                || event.getTo().distance(event.getFrom()) >= 3) {
+            this.handlePlayerLeave(event.getPlayer(), false);
         }
     }
 
@@ -250,9 +240,24 @@ public class ParkourListener implements Listener {
 
     private class PlayerCourseData {
 
-        public ParkourCourse course;
-        public long startTime;
-        public int previousLevel;
+        public final ParkourCourse course;
+        public final long startTime;
+        public final int previousLevel;
+
+        public void restoreState(Player player) {
+            player.setExp(0.0F);
+            player.setLevel(previousLevel);
+        }
+
+        public PlayerCourseData(ParkourCourse course, Player player) {
+            this.course = course;
+            this.startTime = System.currentTimeMillis();
+            this.previousLevel = player.getLevel();
+            player.setExp(0.0F);
+            player.setLevel(0);
+            player.removePotionEffect(PotionEffectType.SPEED);
+            player.removePotionEffect(PotionEffectType.SLOW);
+        }
     }
 
     private class XpCounterTask extends BukkitRunnable {

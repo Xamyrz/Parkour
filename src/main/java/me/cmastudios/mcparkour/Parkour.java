@@ -45,6 +45,31 @@ public class Parkour extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.getDataFolder().mkdirs();
         this.saveDefaultConfig();
+        this.connectDatabase();
+    }
+
+    @Override
+    public void onDisable() {
+        if (this.courseDatabase != null) {
+            try {
+                this.courseDatabase.close();
+            } catch (SQLException ex) {
+            }
+        }
+    }
+
+    public static String getString(String key, Object[] args) {
+        return MessageFormat.format(messages.getString(key), args);
+    }
+
+    public void connectDatabase() {
+        try {
+            if (courseDatabase != null && !courseDatabase.isClosed()) {
+                courseDatabase.close();
+            }
+        } catch (SQLException ex) {
+            this.getLogger().log(Level.SEVERE, "Failed to close existing connection to database", ex);
+        }
         try {
             if (this.getConfig().getBoolean("mysql.enabled", false)) {
                 Class.forName("com.mysql.jdbc.Driver").newInstance();
@@ -67,21 +92,14 @@ public class Parkour extends JavaPlugin {
         }
     }
 
-    @Override
-    public void onDisable() {
-        if (this.courseDatabase != null) {
-            try {
-                this.courseDatabase.close();
-            } catch (SQLException ex) {
-            }
-        }
-    }
-
-    public static String getString(String key, Object[] args) {
-        return MessageFormat.format(messages.getString(key), args);
-    }
-
     public Connection getCourseDatabase() {
+        try {
+            if (!courseDatabase.isValid(1)) {
+                this.connectDatabase();
+            }
+        } catch (SQLException ex) {
+            this.connectDatabase();
+        }
         return courseDatabase;
     }
 }

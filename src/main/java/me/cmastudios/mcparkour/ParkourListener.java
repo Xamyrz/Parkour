@@ -21,6 +21,7 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 import me.cmastudios.mcparkour.data.ParkourCourse;
+import me.cmastudios.mcparkour.data.PlayerExperience;
 import me.cmastudios.mcparkour.data.PlayerHighScore;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -36,6 +37,7 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -90,6 +92,7 @@ public class ParkourListener implements Listener {
                         }
                         if (playerCourseTracker.containsKey(player)) {
                             if (playerCourseTracker.get(player).course.getId() == startParkourId) {
+                                playerCourseTracker.put(player, new PlayerCourseData(playerCourseTracker.get(player).course, player));
                                 return;
                             } else {
                                 // Remove players from a previous parkour course
@@ -124,6 +127,29 @@ public class ParkourListener implements Listener {
                             if (highScore.equals(bestScore) && highScore.getTime() == completionTime) {
                                 plugin.getServer().broadcast(Parkour.getString("course.end.best", new Object[]{player.getDisplayName() + ChatColor.RESET, endData.course.getId(), df.format(completionTimeSeconds)}), "parkour.play");
                             }
+                            PlayerExperience playerXp = PlayerExperience.loadExperience(plugin.getCourseDatabase(), player);
+                            try {
+                                int courseXp = Integer.parseInt(sign.getLine(1));
+                                playerXp.setExperience(playerXp.getExperience() + courseXp);
+                                playerXp.save(plugin.getCourseDatabase());
+                                player.sendMessage(Parkour.getString("xp.gain", new Object[]{courseXp, playerXp.getExperience()}));
+                                event.getPlayer().setDisplayName(Parkour.getString("xp.prefix", new Object[] {
+                                        plugin.getLevel(playerXp.getExperience()), event.getPlayer().getName() }));
+                            } catch (NumberFormatException | IndexOutOfBoundsException e) { // No XP gain for this course
+                            }
+                        }
+                        break;
+                    case "[vwall]":
+                        if (!playerCourseTracker.containsKey(player)) {
+                            event.setTo(player.getLocation().getBlock().getRelative(
+                                    ((org.bukkit.material.Sign)sign.getData()).getFacing()).getLocation());
+                        }
+                        break;
+                    case "[cancel]":
+                        if (playerCourseTracker.containsKey(player)) {
+                            final Location teleport = playerCourseTracker.get(player).course.getTeleport();
+                            this.handlePlayerLeave(player, false);
+                            event.setTo(teleport);
                         }
                         break;
                     case "[tp]":
@@ -185,6 +211,14 @@ public class ParkourListener implements Listener {
     }
 
     @EventHandler
+    public void onPlayerJoin(final PlayerJoinEvent event) throws SQLException {
+        PlayerExperience playerXp = PlayerExperience.loadExperience(
+            plugin.getCourseDatabase(), event.getPlayer());
+        event.getPlayer().setDisplayName(Parkour.getString("xp.prefix", new Object[]{
+            plugin.getLevel(playerXp.getExperience()), event.getPlayer().getName()}));
+    }
+
+    @EventHandler
     public void onPlayerQuit(final PlayerQuitEvent event) {
         this.handlePlayerLeave(event.getPlayer());
     }
@@ -215,7 +249,7 @@ public class ParkourListener implements Listener {
     @EventHandler
     public void onSignChange(final SignChangeEvent event) {
         String firstLine = event.getLine(0);
-        if ("[start]".equals(firstLine) || "[end]".equals(firstLine) || "[tp]".equals(firstLine)) {
+        if (firstLine.startsWith("[") && firstLine.endsWith("]")) {
             if (!event.getPlayer().hasPermission("parkour.set")) {
                 event.setLine(0, "-removed-");
                 event.getPlayer().sendMessage(Parkour.getString("sign.noperms", new Object[]{}));

@@ -84,6 +84,7 @@ public class Parkour extends JavaPlugin {
             try (Statement initStatement = this.courseDatabase.createStatement()) {
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT)");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (player TEXT, course INTEGER, time BIGINT)");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS experience (player TEXT, xp INTEGER)");
             }
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load database driver", ex);
@@ -101,5 +102,22 @@ public class Parkour extends JavaPlugin {
             this.connectDatabase();
         }
         return courseDatabase;
+    }
+
+    public int getLevel(int experience) {
+        int base = this.getConfig().getInt("levels.base");
+        int addt = this.getConfig().getInt("levels.addition");
+        if (experience < base) {
+            return 1;
+        }
+        int xplast = 0;
+        for (int x = 2; x < Integer.MAX_VALUE; x++) {
+            int xpreq = xplast + base + (addt * (x - 2));
+            if (experience < xpreq) {
+                return x - 1;
+            }
+            xplast = xpreq;
+        }
+        return Integer.MAX_VALUE;
     }
 }

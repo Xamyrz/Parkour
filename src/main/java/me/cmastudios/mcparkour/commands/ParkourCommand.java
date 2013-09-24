@@ -17,8 +17,12 @@
 package me.cmastudios.mcparkour.commands;
 
 import java.sql.SQLException;
+import java.util.List;
+
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.data.ParkourCourse;
+import me.cmastudios.mcparkour.data.PlayerHighScore;
+
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -47,6 +51,8 @@ public class ParkourCommand implements CommandExecutor {
             if (course != null) {
                 ((Player)sender).teleport(course.getTeleport());
                 sender.sendMessage(Parkour.getString("course.teleport", new Object[] {id}));
+                List<PlayerHighScore> highScores = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), id);
+                ((Player)sender).setScoreboard(course.getScoreboard(highScores));
             } else {
                 sender.sendMessage(Parkour.getString("error.course404", new Object[]{}));
             }

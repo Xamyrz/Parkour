@@ -20,8 +20,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+
+import me.cmastudios.mcparkour.Parkour;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Scoreboard;
 
 /**
  * Playable parkour course.
@@ -85,5 +92,20 @@ public class ParkourCourse {
 
     public void setTeleport(Location teleport) {
         this.teleport = teleport;
+    }
+
+    public Scoreboard getScoreboard(List<PlayerHighScore> highScores) {
+        Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
+        Objective obj = sb.registerNewObjective("scores", "dummy");
+        obj.setDisplayName(Parkour.getString("scoreboard.title", new Object[]{id}));
+        for (int count = 0; count < 10; count++) {
+            if (highScores.size() <= count) {
+                break;
+            }
+            PlayerHighScore highScore = highScores.get(count);
+            obj.getScore(highScore.getPlayer()).setScore((int) highScore.getTime());
+        }
+        obj.setDisplaySlot(DisplaySlot.SIDEBAR);
+        return sb;
     }
 }

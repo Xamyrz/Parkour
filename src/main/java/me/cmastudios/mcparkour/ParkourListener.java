@@ -19,10 +19,13 @@ package me.cmastudios.mcparkour;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.PlayerExperience;
 import me.cmastudios.mcparkour.data.PlayerHighScore;
+
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -35,6 +38,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -205,6 +209,50 @@ public class ParkourListener implements Listener {
                         event.getPlayer().sendMessage(Parkour.getString("course.teleport", new Object[]{course.getId()}));
                     } catch (IndexOutOfBoundsException | NumberFormatException | NullPointerException ex) {
                     }
+                    return;
+                }
+            }
+        }
+        if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_AIR
+                || event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) {
+            if (event.getPlayer().getItemInHand().getType() == Material.ENDER_PEARL) {
+                plugin.blindPlayers.remove(event.getPlayer());
+                plugin.refreshVision(event.getPlayer());
+                plugin.refreshHand(event.getPlayer());
+                event.getPlayer().sendMessage(Parkour.getString("blind.disable", new Object[]{}));
+            } else if (event.getPlayer().getItemInHand().getType() == Material.EYE_OF_ENDER) {
+                plugin.blindPlayers.remove(event.getPlayer());
+                plugin.blindPlayers.add(event.getPlayer());
+                plugin.refreshVision(event.getPlayer());
+                plugin.refreshHand(event.getPlayer());
+                event.getPlayer().sendMessage(Parkour.getString("blind.enable", new Object[]{}));
+            } else if (event.getPlayer().getItemInHand().getType() == Material.PAPER) {
+                synchronized (plugin.deafPlayers) {
+                    if (plugin.deafPlayers.contains(event.getPlayer())) {
+                        plugin.deafPlayers.remove(event.getPlayer());
+                        event.getPlayer().sendMessage(Parkour.getString("deaf.disable", new Object[]{}));
+                    } else {
+                        plugin.deafPlayers.add(event.getPlayer());
+                        event.getPlayer().sendMessage(Parkour.getString("deaf.enable", new Object[]{}));
+                    }
+                }
+            } else if (event.getPlayer().getItemInHand().getType() == Material.NETHER_STAR) {
+                event.getPlayer().chat("/spawn");
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerChat(final AsyncPlayerChatEvent event) {
+        synchronized (plugin.deafPlayers) {
+            for (Iterator<Player> it = event.getRecipients().iterator(); it.hasNext();) {
+                Player player = it.next();
+                if (plugin.deafPlayers.contains(player)) {
+                    try {
+                        it.remove();
+                    } catch (Exception ex) {
+                        // Impossible to modify recipients 
+                    }
                 }
             }
         }
@@ -216,15 +264,31 @@ public class ParkourListener implements Listener {
             plugin.getCourseDatabase(), event.getPlayer());
         event.getPlayer().setDisplayName(Parkour.getString("xp.prefix", new Object[]{
             plugin.getLevel(playerXp.getExperience()), event.getPlayer().getName()}));
+        for (Player blindPlayer : plugin.blindPlayers) {
+            plugin.refreshVision(blindPlayer);
+        }
+        if (!event.getPlayer().getInventory().contains(Material.EYE_OF_ENDER)) {
+            event.getPlayer().getInventory().addItem(plugin.VISION);
+        }
+        if (!event.getPlayer().getInventory().contains(Material.PAPER)) {
+            event.getPlayer().getInventory().addItem(plugin.CHAT);
+        }
+        if (!event.getPlayer().getInventory().contains(Material.NETHER_STAR)) {
+            event.getPlayer().getInventory().addItem(plugin.SPAWN);
+        }
     }
 
     @EventHandler
     public void onPlayerQuit(final PlayerQuitEvent event) {
+        plugin.blindPlayers.remove(event.getPlayer());
+        plugin.deafPlayers.remove(event.getPlayer());
         this.handlePlayerLeave(event.getPlayer());
     }
 
     @EventHandler
     public void onPlayerKick(final PlayerKickEvent event) {
+        plugin.blindPlayers.remove(event.getPlayer());
+        plugin.deafPlayers.remove(event.getPlayer());
         this.handlePlayerLeave(event.getPlayer());
     }
 

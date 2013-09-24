@@ -22,9 +22,17 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import me.cmastudios.mcparkour.commands.*;
+
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -36,6 +44,11 @@ public class Parkour extends JavaPlugin {
 
     private static ResourceBundle messages = ResourceBundle.getBundle("messages");
     private Connection courseDatabase;
+    public List<Player> blindPlayers = new ArrayList<Player>();
+    public List<Player> deafPlayers = new ArrayList<Player>();
+    public final ItemStack VISION = new ItemStack(Material.EYE_OF_ENDER);
+    public final ItemStack CHAT = new ItemStack(Material.PAPER);
+    public final ItemStack SPAWN = new ItemStack(Material.NETHER_STAR);
 
     @Override
     public void onEnable() {
@@ -46,6 +59,15 @@ public class Parkour extends JavaPlugin {
         this.getDataFolder().mkdirs();
         this.saveDefaultConfig();
         this.connectDatabase();
+        ItemMeta meta = VISION.getItemMeta();
+        meta.setDisplayName(Parkour.getString("item.vision", new Object[]{}));
+        VISION.setItemMeta(meta);
+        meta = CHAT.getItemMeta();
+        meta.setDisplayName(Parkour.getString("item.chat", new Object[]{}));
+        CHAT.setItemMeta(meta);
+        meta = SPAWN.getItemMeta();
+        meta.setDisplayName(Parkour.getString("item.spawn", new Object[]{}));
+        SPAWN.setItemMeta(meta);
     }
 
     @Override
@@ -55,6 +77,15 @@ public class Parkour extends JavaPlugin {
                 this.courseDatabase.close();
             } catch (SQLException ex) {
             }
+        }
+        for (Iterator<Player> it = blindPlayers.iterator(); it.hasNext();) {
+            Player player = it.next();
+            it.remove();
+            refreshVision(player);
+            refreshHand(player);
+        }
+        synchronized (deafPlayers) {
+            deafPlayers.clear();
         }
     }
 
@@ -119,5 +150,29 @@ public class Parkour extends JavaPlugin {
             xplast = xpreq;
         }
         return Integer.MAX_VALUE;
+    }
+
+    public void refreshVision(Player player) {
+        boolean isBlind = blindPlayers.contains(player);
+        for (Player onlinePlayer : player.getServer().getOnlinePlayers()) {
+            if (player != onlinePlayer && isBlind) {
+                player.hidePlayer(onlinePlayer);
+            } else if (player != onlinePlayer) {
+                player.showPlayer(onlinePlayer);
+            }
+        }
+    }
+
+    public void refreshHand(Player player) {
+        boolean inHand = player.getItemInHand().getType() == Material.ENDER_PEARL || player.getItemInHand().getType() == Material.EYE_OF_ENDER;
+        ItemStack item = VISION.clone();
+        item.setType(blindPlayers.contains(player) ? Material.ENDER_PEARL : Material.EYE_OF_ENDER);
+        player.getInventory().remove(Material.ENDER_PEARL);
+        player.getInventory().remove(Material.EYE_OF_ENDER);
+        if (inHand) {
+            player.setItemInHand(item);
+        } else {
+            player.getInventory().addItem(item);
+        }
     }
 }

@@ -333,9 +333,9 @@ public class ParkourListener implements Listener {
             player.setExp(0.0F);
             if (teleport) {
                 player.teleport(player.getLocation().getWorld().getSpawnLocation());
+                player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
             } // Get them out of the arena
         }
-        player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
     }
 
     private class PlayerCourseData {

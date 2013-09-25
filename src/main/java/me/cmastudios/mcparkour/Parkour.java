@@ -23,17 +23,28 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
-import me.cmastudios.mcparkour.commands.*;
 
+import me.cmastudios.mcparkour.commands.ParkourCommand;
+import me.cmastudios.mcparkour.commands.SetCheckpointCommand;
+import me.cmastudios.mcparkour.commands.SetCourseCommand;
+import me.cmastudios.mcparkour.commands.TopScoresCommand;
+import me.cmastudios.mcparkour.data.ParkourCourse;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffectType;
 
 /**
  * Main class for mcparkour Bukkit plugin.
@@ -46,15 +57,19 @@ public class Parkour extends JavaPlugin {
     private Connection courseDatabase;
     public List<Player> blindPlayers = new ArrayList<Player>();
     public List<Player> deafPlayers = new ArrayList<Player>();
+    public Map<Player, Checkpoint> playerCheckpoints = new HashMap<Player, Checkpoint>();
+    public Map<Player, PlayerCourseData> playerCourseTracker = new HashMap<Player, PlayerCourseData>();
     public final ItemStack VISION = new ItemStack(Material.EYE_OF_ENDER);
     public final ItemStack CHAT = new ItemStack(Material.PAPER);
     public final ItemStack SPAWN = new ItemStack(Material.NETHER_STAR);
+    public final ItemStack POINT = new ItemStack(Material.STICK);
 
     @Override
     public void onEnable() {
         this.getCommand("parkour").setExecutor(new ParkourCommand(this));
         this.getCommand("setcourse").setExecutor(new SetCourseCommand(this));
         this.getCommand("topscores").setExecutor(new TopScoresCommand(this));
+        this.getCommand("checkpoint").setExecutor(new SetCheckpointCommand(this));
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.getDataFolder().mkdirs();
         this.saveDefaultConfig();
@@ -68,6 +83,14 @@ public class Parkour extends JavaPlugin {
         meta = SPAWN.getItemMeta();
         meta.setDisplayName(Parkour.getString("item.spawn", new Object[]{}));
         SPAWN.setItemMeta(meta);
+        meta = POINT.getItemMeta();
+        meta.setDisplayName(Parkour.getString("item.point", new Object[]{}));
+        String[] lore = {
+                Parkour.getString("item.point.description.0", new Object[] {}),
+                Parkour.getString("item.point.description.1", new Object[] {}),
+                Parkour.getString("item.point.description.2", new Object[] {}) };
+        meta.setLore(Arrays.asList(lore));
+        POINT.setItemMeta(meta);
     }
 
     @Override
@@ -86,6 +109,12 @@ public class Parkour extends JavaPlugin {
         }
         synchronized (deafPlayers) {
             deafPlayers.clear();
+        }
+        playerCheckpoints.clear();
+        for (Iterator<Entry<Player, PlayerCourseData>> it = playerCourseTracker.entrySet().iterator(); it.hasNext();) {
+            Entry<Player, PlayerCourseData> entry = it.next();
+            it.remove();
+            entry.getValue().leave(entry.getKey());
         }
     }
 
@@ -173,6 +202,36 @@ public class Parkour extends JavaPlugin {
             player.setItemInHand(item);
         } else {
             player.getInventory().addItem(item);
+        }
+    }
+
+    public static class PlayerCourseData {
+
+        public final ParkourCourse course;
+        public final long startTime;
+        public final int previousLevel;
+
+        public void restoreState(Player player) {
+            player.setExp(0.0F);
+            player.setLevel(previousLevel);
+        }
+
+        public void leave(Player player) {
+            this.restoreState(player);
+            player.chat("/spawn");
+            try {
+                player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+            } catch (Exception ex) {}
+        }
+
+        public PlayerCourseData(ParkourCourse course, Player player) {
+            this.course = course;
+            this.startTime = System.currentTimeMillis();
+            this.previousLevel = player.getLevel();
+            player.setExp(0.0F);
+            player.setLevel(0);
+            player.removePotionEffect(PotionEffectType.SPEED);
+            player.removePotionEffect(PotionEffectType.SLOW);
         }
     }
 }

@@ -20,6 +20,11 @@ commands:
     usage: /<command> <course-number> [page]
     aliases: [pktop]
     permission: parkour.play
+  checkpoint:
+    description: Set a checkpoint in the current course to your location
+    usage: /<command>
+    aliases: [cp]
+    permission: parkour.cp
 permissions:
   parkour.play:
     description: Required in order to play parkour

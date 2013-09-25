@@ -18,16 +18,15 @@ package me.cmastudios.mcparkour;
 
 import java.sql.SQLException;
 import java.text.DecimalFormat;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
+
+import me.cmastudios.mcparkour.Parkour.PlayerCourseData;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.PlayerExperience;
 import me.cmastudios.mcparkour.data.PlayerHighScore;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -39,6 +38,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -46,7 +46,6 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
@@ -57,11 +56,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class ParkourListener implements Listener {
 
     private final Parkour plugin;
-    private Map<Player, PlayerCourseData> playerCourseTracker;
 
     public ParkourListener(Parkour instance) {
         this.plugin = instance;
-        this.playerCourseTracker = new HashMap<Player, PlayerCourseData>();
         plugin.getServer().getScheduler().runTaskTimer(plugin, new XpCounterTask(), 1L, 1L);
     }
 
@@ -94,13 +91,13 @@ public class ParkourListener implements Listener {
                         } catch (IndexOutOfBoundsException | NumberFormatException ex) {
                             return; // Prevent console spam
                         }
-                        if (playerCourseTracker.containsKey(player)) {
-                            if (playerCourseTracker.get(player).course.getId() == startParkourId) {
-                                playerCourseTracker.put(player, new PlayerCourseData(playerCourseTracker.get(player).course, player));
+                        if (plugin.playerCourseTracker.containsKey(player)) {
+                            if (plugin.playerCourseTracker.get(player).course.getId() == startParkourId) {
+                                plugin.playerCourseTracker.put(player, new PlayerCourseData(plugin.playerCourseTracker.get(player).course, player));
                                 return;
                             } else {
                                 // Remove players from a previous parkour course
-                                PlayerCourseData remove = playerCourseTracker.remove(player);
+                                PlayerCourseData remove = plugin.playerCourseTracker.remove(player);
                                 player.setLevel(remove.previousLevel);
                             }
                         }
@@ -111,11 +108,11 @@ public class ParkourListener implements Listener {
                             return; // Prevent console spam
                         }
                         PlayerCourseData data = new PlayerCourseData(course, player);
-                        playerCourseTracker.put(player, data);
+                        plugin.playerCourseTracker.put(player, data);
                         break;
                     case "[end]":
-                        if (playerCourseTracker.containsKey(player)) {
-                            PlayerCourseData endData = playerCourseTracker.remove(player); // They have ended their course anyhow
+                        if (plugin.playerCourseTracker.containsKey(player)) {
+                            PlayerCourseData endData = plugin.playerCourseTracker.remove(player); // They have ended their course anyhow
                             endData.restoreState(player);
                             PlayerHighScore highScore = PlayerHighScore.loadHighScore(plugin.getCourseDatabase(), player, endData.course.getId());
                             long completionTime = System.currentTimeMillis() - endData.startTime;
@@ -134,6 +131,10 @@ public class ParkourListener implements Listener {
                             PlayerExperience playerXp = PlayerExperience.loadExperience(plugin.getCourseDatabase(), player);
                             try {
                                 int courseXp = Integer.parseInt(sign.getLine(1));
+                                Checkpoint cp = plugin.playerCheckpoints.get(player);
+                                if (cp != null && cp.getCourse().getId() == endData.course.getId()) {
+                                    courseXp = cp.getReducedExp(courseXp);
+                                }
                                 playerXp.setExperience(playerXp.getExperience() + courseXp);
                                 playerXp.save(plugin.getCourseDatabase());
                                 player.sendMessage(Parkour.getString("xp.gain", new Object[]{courseXp, playerXp.getExperience()}));
@@ -145,16 +146,16 @@ public class ParkourListener implements Listener {
                         }
                         break;
                     case "[vwall]":
-                        if (!playerCourseTracker.containsKey(player)) {
+                        if (!plugin.playerCourseTracker.containsKey(player)) {
                             event.setTo(player.getLocation().getBlock().getRelative(
                                     ((org.bukkit.material.Sign)sign.getData()).getFacing()).getLocation());
                         }
                         break;
                     case "[cancel]":
-                        if (playerCourseTracker.containsKey(player)) {
-                            final Location teleport = playerCourseTracker.get(player).course.getTeleport();
-                            this.handlePlayerLeave(player, false);
-                            event.setTo(teleport);
+                        if (plugin.playerCourseTracker.containsKey(player)) {
+                            PlayerCourseData cancelData = plugin.playerCourseTracker.remove(event.getPlayer());
+                            cancelData.restoreState(event.getPlayer());
+                            event.setTo(cancelData.course.getTeleport());
                         }
                         break;
                     case "[tp]":
@@ -177,11 +178,18 @@ public class ParkourListener implements Listener {
             }
         }
         if (below2.getType() == Material.BEDROCK) {
-            if (playerCourseTracker.containsKey(player)) {
+            if (plugin.playerCourseTracker.containsKey(player)) {
+                PlayerCourseData data = plugin.playerCourseTracker.get(player);
                 player.setFallDistance(0.0F);
-                final Location teleport = playerCourseTracker.get(player).course.getTeleport();
-                this.handlePlayerLeave(player, false);
-                event.setTo(teleport);
+                Checkpoint cp = plugin.playerCheckpoints.get(event.getPlayer());
+                if (cp != null && cp.getCourse().getId() == data.course.getId()) {
+                    ignoreTeleport = true;
+                    event.setTo(cp.getLocation());
+                    return;
+                }
+                plugin.playerCourseTracker.remove(player);
+                data.restoreState(event.getPlayer());
+                event.setTo(data.course.getTeleport());
             }
         }
 
@@ -189,7 +197,7 @@ public class ParkourListener implements Listener {
 
     @EventHandler
     public void onXpLevelChange(final PlayerExpChangeEvent event) {
-        if (playerCourseTracker.containsKey(event.getPlayer())) {
+        if (plugin.playerCourseTracker.containsKey(event.getPlayer())) {
             event.setAmount(0);
         }
     }
@@ -239,6 +247,8 @@ public class ParkourListener implements Listener {
                 }
             } else if (event.getPlayer().getItemInHand().getType() == Material.NETHER_STAR) {
                 event.getPlayer().chat("/spawn");
+            } else if (event.getPlayer().getItemInHand().getType() == Material.STICK) {
+                event.getPlayer().chat("/cp");
             }
         }
     }
@@ -277,27 +287,45 @@ public class ParkourListener implements Listener {
         if (!event.getPlayer().getInventory().contains(Material.NETHER_STAR)) {
             event.getPlayer().getInventory().addItem(plugin.SPAWN);
         }
+        if (!event.getPlayer().getInventory().contains(Material.STICK)) {
+            event.getPlayer().getInventory().addItem(plugin.POINT);
+        }
     }
 
     @EventHandler
     public void onPlayerQuit(final PlayerQuitEvent event) {
         plugin.blindPlayers.remove(event.getPlayer());
         plugin.deafPlayers.remove(event.getPlayer());
-        this.handlePlayerLeave(event.getPlayer());
+        if (plugin.playerCourseTracker.containsKey(event.getPlayer())) {
+            plugin.playerCourseTracker.remove(event.getPlayer()).leave(event.getPlayer());
+        }
     }
 
     @EventHandler
     public void onPlayerKick(final PlayerKickEvent event) {
         plugin.blindPlayers.remove(event.getPlayer());
         plugin.deafPlayers.remove(event.getPlayer());
-        this.handlePlayerLeave(event.getPlayer());
+        if (plugin.playerCourseTracker.containsKey(event.getPlayer())) {
+            plugin.playerCourseTracker.remove(event.getPlayer()).leave(event.getPlayer());
+        }
     }
 
+    boolean ignoreTeleport = false;
     @EventHandler
     public void onPlayerTeleport(final PlayerTeleportEvent event) {
         if (event.getTo().getWorld() != event.getFrom().getWorld()
-                || event.getTo().distance(event.getFrom()) >= 3) {
-            this.handlePlayerLeave(event.getPlayer(), false);
+                || event.getTo().distance(event.getFrom()) >= 3 && !ignoreTeleport) {
+            if (plugin.playerCourseTracker.containsKey(event.getPlayer())) {
+                plugin.playerCourseTracker.remove(event.getPlayer()).restoreState(event.getPlayer());
+            }
+        }
+        ignoreTeleport = false;
+    }
+
+    @EventHandler
+    public void onPlayerCommand(final PlayerCommandPreprocessEvent event) {
+        if (event.getMessage().equals("/spawn")) {
+            event.getPlayer().setScoreboard(plugin.getServer().getScoreboardManager().getMainScoreboard());
         }
     }
 
@@ -305,7 +333,7 @@ public class ParkourListener implements Listener {
     public void onPlayerDamage(final EntityDamageEvent event) {
         if (event.getEntity() instanceof Player) {
             Player player = (Player) event.getEntity();
-            if (playerCourseTracker.containsKey(player)) {
+            if (plugin.playerCourseTracker.containsKey(player)) {
                 event.setCancelled(true);
             }
         }
@@ -322,51 +350,13 @@ public class ParkourListener implements Listener {
         }
     }
 
-    private void handlePlayerLeave(Player player) {
-        this.handlePlayerLeave(player, true);
-    }
-
-    private void handlePlayerLeave(Player player, boolean teleport) {
-        if (playerCourseTracker.containsKey(player)) {
-            PlayerCourseData data = playerCourseTracker.remove(player);
-            player.setLevel(data.previousLevel);
-            player.setExp(0.0F);
-            if (teleport) {
-                player.teleport(player.getLocation().getWorld().getSpawnLocation());
-                player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-            } // Get them out of the arena
-        }
-    }
-
-    private class PlayerCourseData {
-
-        public final ParkourCourse course;
-        public final long startTime;
-        public final int previousLevel;
-
-        public void restoreState(Player player) {
-            player.setExp(0.0F);
-            player.setLevel(previousLevel);
-        }
-
-        public PlayerCourseData(ParkourCourse course, Player player) {
-            this.course = course;
-            this.startTime = System.currentTimeMillis();
-            this.previousLevel = player.getLevel();
-            player.setExp(0.0F);
-            player.setLevel(0);
-            player.removePotionEffect(PotionEffectType.SPEED);
-            player.removePotionEffect(PotionEffectType.SLOW);
-        }
-    }
-
     private class XpCounterTask extends BukkitRunnable {
 
         @Override
         public void run() {
-            for (Player player : playerCourseTracker.keySet()) {
-                int secondsPassed = (int) ((System.currentTimeMillis() - playerCourseTracker.get(player).startTime) / 1000);
-                float remainder = (int) ((System.currentTimeMillis() - playerCourseTracker.get(player).startTime) % 1000);
+            for (Player player : plugin.playerCourseTracker.keySet()) {
+                int secondsPassed = (int) ((System.currentTimeMillis() - plugin.playerCourseTracker.get(player).startTime) / 1000);
+                float remainder = (int) ((System.currentTimeMillis() - plugin.playerCourseTracker.get(player).startTime) % 1000);
                 float tenthsPassed = remainder / 1000F;
                 player.setLevel(secondsPassed);
                 player.setExp(tenthsPassed);

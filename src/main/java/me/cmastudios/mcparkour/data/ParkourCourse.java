@@ -103,7 +103,7 @@ public class ParkourCourse {
                 break;
             }
             PlayerHighScore highScore = highScores.get(count);
-            obj.getScore(highScore.getPlayer()).setScore((int) highScore.getTime());
+            obj.getScore(highScore.getPlayer()).setScore(-(int) highScore.getTime());
         }
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
         return sb;

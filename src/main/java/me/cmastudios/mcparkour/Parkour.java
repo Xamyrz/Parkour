@@ -39,7 +39,9 @@ import me.cmastudios.mcparkour.commands.TopScoresCommand;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -59,6 +61,7 @@ public class Parkour extends JavaPlugin {
     public List<Player> deafPlayers = new ArrayList<Player>();
     public Map<Player, Checkpoint> playerCheckpoints = new HashMap<Player, Checkpoint>();
     public Map<Player, PlayerCourseData> playerCourseTracker = new HashMap<Player, PlayerCourseData>();
+    public Map<Player, PlayerCourseData> completedCourseTracker = new HashMap<Player, PlayerCourseData>();
     public final ItemStack VISION = new ItemStack(Material.EYE_OF_ENDER);
     public final ItemStack CHAT = new ItemStack(Material.PAPER);
     public final ItemStack SPAWN = new ItemStack(Material.NETHER_STAR);
@@ -116,6 +119,10 @@ public class Parkour extends JavaPlugin {
             it.remove();
             entry.getValue().leave(entry.getKey());
         }
+        for (Player player : completedCourseTracker.keySet()) {
+            player.teleport(this.getSpawn());
+        }
+        completedCourseTracker.clear();
     }
 
     public static String getString(String key, Object[] args) {
@@ -143,7 +150,7 @@ public class Parkour extends JavaPlugin {
             }
             try (Statement initStatement = this.courseDatabase.createStatement()) {
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT)");
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (player TEXT, course INTEGER, time BIGINT)");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (player TEXT, course INTEGER, time BIGINT, plays INT)");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS experience (player TEXT, xp INTEGER)");
             }
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
@@ -205,6 +212,16 @@ public class Parkour extends JavaPlugin {
         }
     }
 
+    public Location getSpawn() {
+        World world = this.getServer().getWorld(this.getConfig().getString("spawn.world"));
+        double x = this.getConfig().getDouble("spawn.x");
+        double y = this.getConfig().getDouble("spawn.y");
+        double z = this.getConfig().getDouble("spawn.z");
+        float pitch = (float) this.getConfig().getDouble("spawn.pitch");
+        float yaw = (float) this.getConfig().getDouble("spawn.yaw");
+        return new Location(world, x, y, z, yaw, pitch);
+    }
+
     public static class PlayerCourseData {
 
         public final ParkourCourse course;
@@ -218,10 +235,10 @@ public class Parkour extends JavaPlugin {
 
         public void leave(Player player) {
             this.restoreState(player);
-            player.chat("/spawn");
             try {
                 player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
             } catch (Exception ex) {}
+            player.teleport(((Parkour)player.getServer().getPluginManager().getPlugin("Parkour")).getSpawn());
         }
 
         public PlayerCourseData(ParkourCourse course, Player player) {

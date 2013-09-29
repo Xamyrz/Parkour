@@ -36,15 +36,16 @@ public class PlayerHighScore {
     private final int course;
     private final OfflinePlayer player;
     private long time;
+    private int plays;
 
     public static PlayerHighScore loadHighScore(Connection conn, OfflinePlayer player, int course) throws SQLException {
-        PlayerHighScore ret = new PlayerHighScore(course, player, Long.MAX_VALUE);
+        PlayerHighScore ret = new PlayerHighScore(course, player, Long.MAX_VALUE, 0);
         try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE player = ? AND course = ?")) {
             stmt.setString(1, player.getName());
             stmt.setInt(2, course);
             try (ResultSet result = stmt.executeQuery()) {
                 if (result.next()) {
-                    ret = new PlayerHighScore(course, player, result.getLong("time"));
+                    ret = new PlayerHighScore(course, player, result.getLong("time"), result.getInt("plays"));
                 }
             }
         }
@@ -57,30 +58,32 @@ public class PlayerHighScore {
             stmt.setInt(1, course);
             try (ResultSet result = stmt.executeQuery()) {
                 while (result.next()) {
-                    ret.add(new PlayerHighScore(course, Bukkit.getOfflinePlayer(result.getString("player")), result.getLong("time")));
+                    ret.add(new PlayerHighScore(course, Bukkit.getOfflinePlayer(result.getString("player")), result.getLong("time"), result.getInt("plays")));
                 }
             }
         }
         return ret;
     }
 
-    public PlayerHighScore(int course, OfflinePlayer player, long time) {
+    public PlayerHighScore(int course, OfflinePlayer player, long time, int plays) {
         this.course = course;
         this.player = player;
         this.time = time;
+        this.plays = plays;
     }
 
     public void save(Connection conn) throws SQLException {
         final String stmtText;
         if (exists(conn)) {
-            stmtText = "UPDATE highscores SET time = ? WHERE player = ? AND course = ?";
+            stmtText = "UPDATE highscores SET time = ?, plays = ? WHERE player = ? AND course = ?";
         } else {
-            stmtText = "INSERT INTO highscores (time, player, course) VALUES (?, ?, ?)";
+            stmtText = "INSERT INTO highscores (time, plays, player, course) VALUES (?, ?, ?, ?)";
         }
         try (PreparedStatement stmt = conn.prepareStatement(stmtText)) {
             stmt.setLong(1, time);
-            stmt.setString(2, player.getName());
-            stmt.setInt(3, course);
+            stmt.setInt(2, plays);
+            stmt.setString(3, player.getName());
+            stmt.setInt(4, course);
             stmt.executeUpdate();
         }
     }
@@ -103,6 +106,18 @@ public class PlayerHighScore {
 
     public void setTime(long time) {
         this.time = time;
+    }
+
+    public int getPlays() {
+        return plays;
+    }
+
+    public void setPlays(int plays) {
+        this.plays = plays;
+    }
+
+    public int getReducedXp(int startingXp) {
+        return (int) (startingXp / Math.min(1.0 + (0.1 * plays), 4.0D));
     }
 
     @Override

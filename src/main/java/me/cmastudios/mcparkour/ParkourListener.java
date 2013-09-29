@@ -26,8 +26,8 @@ import me.cmastudios.mcparkour.data.PlayerExperience;
 import me.cmastudios.mcparkour.data.PlayerHighScore;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -55,6 +55,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class ParkourListener implements Listener {
 
     private final Parkour plugin;
+    public static final int DETECTION_MIN = 2;
+    public static final int SIGN_DETECTION_MAX = 5;
 
     public ParkourListener(Parkour instance) {
         this.plugin = instance;
@@ -64,19 +66,9 @@ public class ParkourListener implements Listener {
     @EventHandler
     public void onPlayerMove(final PlayerMoveEvent event) throws SQLException {
         Player player = event.getPlayer();
-        World world = player.getLocation().getWorld();
-        Block below2 = world.getBlockAt(player.getLocation().add(0, -2, 0));
-        Block below3 = world.getBlockAt(player.getLocation().add(0, -3, 0));
-        Block below4 = world.getBlockAt(player.getLocation().add(0, -4, 0));
-        Block below5 = world.getBlockAt(player.getLocation().add(0, -5, 0));
-        Block[] belowArray = {below2, below3, below4, below5};
-        Block below = null;
-        for (Block belowBlock : belowArray) {
-            if (belowBlock.getType() == Material.SIGN_POST
-                    || belowBlock.getType() == Material.WALL_SIGN) {
-                below = belowBlock;
-            }
-        }
+        Block below = this.detectBlocks(player.getLocation(), Material.SIGN_POST, DETECTION_MIN, SIGN_DETECTION_MAX) ?
+                this.getBlockInDepthRange(player.getLocation(), Material.SIGN_POST, DETECTION_MIN, SIGN_DETECTION_MAX)
+                : this.getBlockInDepthRange(player.getLocation(), Material.WALL_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX);
         if (below != null) {
             if (below.getType() == Material.SIGN_POST
                     || below.getType() == Material.WALL_SIGN) {
@@ -181,8 +173,9 @@ public class ParkourListener implements Listener {
                 }
             }
         }
-        if (below2.getType() == Material.BEDROCK) {
-            if (plugin.playerCourseTracker.containsKey(player)) {
+        if (plugin.playerCourseTracker.containsKey(player)) {
+            int detection = plugin.playerCourseTracker.get(player).course.getDetection();
+            if (detectBlocks(player.getLocation(), Material.BEDROCK, DETECTION_MIN, detection)) {
                 PlayerCourseData data = plugin.playerCourseTracker.get(player);
                 player.setFallDistance(0.0F);
                 Checkpoint cp = plugin.playerCheckpoints.get(event.getPlayer());
@@ -194,12 +187,37 @@ public class ParkourListener implements Listener {
                 plugin.playerCourseTracker.remove(player);
                 data.restoreState(event.getPlayer());
                 event.setTo(data.course.getTeleport());
-            } else if (plugin.completedCourseTracker.containsKey(player)) {
+            }
+        } else if (plugin.completedCourseTracker.containsKey(player)) {
+            int detection = plugin.completedCourseTracker.get(player).course.getDetection();
+            if (detectBlocks(player.getLocation(), Material.BEDROCK, DETECTION_MIN, detection)) {
                 player.setFallDistance(0.0F);
                 event.setTo(plugin.completedCourseTracker.remove(player).course.getTeleport());
             }
         }
+    }
 
+    private boolean detectBlocks(Location loc, Material type, int min, int max) {
+        return this.getBlockInDepthRange(loc, type, min, max) != null;
+    }
+
+    /**
+     * Get a block in a range below a certain location.
+     *
+     * @param loc Base location to search under.
+     * @param type Type of block to look for.
+     * @param min Starting depth.
+     * @param max Maximum depth.
+     * @return block matching type or null if not found.
+     */
+    private Block getBlockInDepthRange(Location loc, Material type, int min, int max) {
+        for (int i = min; i <= max; i++) {
+            Block block = loc.getWorld().getBlockAt(loc.getBlockX(), loc.getBlockY() - i, loc.getBlockZ());
+            if (block.getType() == type) {
+                return block;
+            }
+        }
+        return null;
     }
 
     @EventHandler

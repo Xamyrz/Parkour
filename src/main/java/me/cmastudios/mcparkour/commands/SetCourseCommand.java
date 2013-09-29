@@ -44,12 +44,14 @@ public class SetCourseCommand implements CommandExecutor {
         Player player = (Player) sender;
         try {
             int id = Integer.parseInt(args[0]);
+            int detection = args.length >= 2 ? Integer.parseInt(args[1]) : 2;
             ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), id);
             if (course != null) {
                 course.setTeleport(player.getLocation());
+                course.setDetection(detection);
                 sender.sendMessage(Parkour.getString("course.updated", new Object[]{id}));
             } else {
-                course = new ParkourCourse(id, player.getLocation());
+                course = new ParkourCourse(id, player.getLocation(), detection);
                 sender.sendMessage(Parkour.getString("course.created", new Object[]{id}));
             }
             course.save(plugin.getCourseDatabase());

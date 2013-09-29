@@ -39,6 +39,7 @@ public class ParkourCourse {
 
     private final int id;
     private Location teleport;
+    private int detection;
 
     public static ParkourCourse loadCourse(Connection conn, int id) throws SQLException {
         ParkourCourse ret = null;
@@ -46,25 +47,30 @@ public class ParkourCourse {
             stmt.setInt(1, id);
             try (ResultSet result = stmt.executeQuery()) {
                 if (result.next()) {
-                    ret = new ParkourCourse(id, new Location(Bukkit.getWorld(result.getString("world")), result.getDouble("x"),
-                            result.getDouble("y"), result.getDouble("z"), result.getFloat("yaw"), result.getFloat("pitch")));
+                    ret = new ParkourCourse(id, new Location(
+                            Bukkit.getWorld(result.getString("world")),
+                            result.getDouble("x"), result.getDouble("y"),
+                            result.getDouble("z"), result.getFloat("yaw"),
+                            result.getFloat("pitch")),
+                            result.getInt("detection"));
                 }
             }
         }
         return ret;
     }
 
-    public ParkourCourse(int id, Location teleport) {
+    public ParkourCourse(int id, Location teleport, int detection) {
         this.id = id;
         this.teleport = teleport;
+        this.detection = detection;
     }
 
     public void save(Connection conn) throws SQLException {
         final String stmtText;
         if (exists(conn)) {
-            stmtText = "UPDATE courses SET x = ?, y = ?, z = ?, pitch = ?, yaw = ?, world = ? WHERE id = ?";
+            stmtText = "UPDATE courses SET x = ?, y = ?, z = ?, pitch = ?, yaw = ?, world = ?, detection = ? WHERE id = ?";
         } else {
-            stmtText = "INSERT INTO courses (x, y, z, pitch, yaw, world, id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            stmtText = "INSERT INTO courses (x, y, z, pitch, yaw, world, detection, id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         }
         try (PreparedStatement stmt = conn.prepareStatement(stmtText)) {
             stmt.setDouble(1, teleport.getX());
@@ -73,7 +79,8 @@ public class ParkourCourse {
             stmt.setFloat(4, teleport.getPitch());
             stmt.setFloat(5, teleport.getYaw());
             stmt.setString(6, teleport.getWorld().getName());
-            stmt.setInt(7, id);
+            stmt.setInt(7, detection);
+            stmt.setInt(8, id);
             stmt.executeUpdate();
         }
     }
@@ -92,6 +99,14 @@ public class ParkourCourse {
 
     public void setTeleport(Location teleport) {
         this.teleport = teleport;
+    }
+
+    public int getDetection() {
+        return detection;
+    }
+
+    public void setDetection(int detection) {
+        this.detection = detection;
     }
 
     public Scoreboard getScoreboard(List<PlayerHighScore> highScores) {

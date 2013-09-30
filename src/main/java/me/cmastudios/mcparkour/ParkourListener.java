@@ -338,7 +338,7 @@ public class ParkourListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerQuit(final PlayerQuitEvent event) {
+    public void onPlayerQuit(final PlayerQuitEvent event) throws SQLException {
         plugin.blindPlayers.remove(event.getPlayer());
         plugin.deafPlayers.remove(event.getPlayer());
         plugin.playerCheckpoints.remove(event.getPlayer());
@@ -348,13 +348,13 @@ public class ParkourListener implements Listener {
         }
         Duel duel = plugin.getDuel(event.getPlayer());
         if (duel != null) {
-            duel.cancel(plugin);
+            duel.cancel(plugin, event.getPlayer());
             plugin.activeDuels.remove(duel);
         }
     }
 
     @EventHandler
-    public void onPlayerKick(final PlayerKickEvent event) {
+    public void onPlayerKick(final PlayerKickEvent event) throws SQLException {
         plugin.blindPlayers.remove(event.getPlayer());
         plugin.deafPlayers.remove(event.getPlayer());
         plugin.playerCheckpoints.remove(event.getPlayer());
@@ -364,7 +364,7 @@ public class ParkourListener implements Listener {
         }
         Duel duel = plugin.getDuel(event.getPlayer());
         if (duel != null) {
-            duel.cancel(plugin);
+            duel.cancel(plugin, event.getPlayer());
             plugin.activeDuels.remove(duel);
         }
     }

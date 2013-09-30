@@ -90,18 +90,12 @@ public class Duel {
                 .runTaskTimer(plugin, new DuelCountdownXpTimer(this), 4L, 4L);
     }
 
-    public void cancel(Parkour plugin) {
-        initiator.sendMessage(Parkour.getString("duel.cancelled"));
-        competitor.sendMessage(Parkour.getString("duel.cancelled"));
+    public void cancel(Parkour plugin, Player logoutee) throws SQLException {
         if (started) {
-            if (plugin.playerCourseTracker.containsKey(initiator)) {
-                plugin.playerCourseTracker.remove(initiator).leave(initiator);
-            }
-            if (plugin.playerCourseTracker.containsKey(competitor)) {
-                plugin.playerCourseTracker.remove(competitor).leave(competitor);
-            }
-        }
-        if (accepted) {
+            this.win(logoutee == initiator ? competitor : initiator, plugin);
+        } else if (accepted) {
+            initiator.sendMessage(Parkour.getString("duel.cancelled"));
+            competitor.sendMessage(Parkour.getString("duel.cancelled"));
             initiator.teleport(plugin.getSpawn(), TeleportCause.PLUGIN);
             competitor.teleport(plugin.getSpawn(), TeleportCause.PLUGIN);
         }

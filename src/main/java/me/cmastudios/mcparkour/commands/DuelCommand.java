@@ -57,8 +57,8 @@ public class DuelCommand implements CommandExecutor {
                 sender.sendMessage(Parkour.getString("duel.none"));
                 return true;
             }
-            duel.getInitiator().sendMessage(Parkour.getString("duel.cancelled"));
-            sender.sendMessage(Parkour.getString("duel.cancelled"));
+            duel.getInitiator().sendMessage(Parkour.getString("duel.declined"));
+            sender.sendMessage(Parkour.getString("duel.declined"));
             plugin.activeDuels.remove(duel);
         } else if (args.length >= 3) {
             Player competitor = plugin.getServer().getPlayer(args[0]);

@@ -19,6 +19,7 @@ package me.cmastudios.mcparkour;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.Iterator;
+import java.util.List;
 
 import me.cmastudios.mcparkour.Parkour.PlayerCourseData;
 import me.cmastudios.mcparkour.data.ParkourCourse;
@@ -45,6 +46,7 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
@@ -137,6 +139,12 @@ public class ParkourListener implements Listener {
                             } catch (NumberFormatException | IndexOutOfBoundsException e) { // No XP gain for this course
                             }                            plugin.playerCheckpoints.remove(player);
                             plugin.completedCourseTracker.put(player, endData);
+                            Duel duel = plugin.getDuel(player);
+                            if (duel != null && duel.isAccepted() && duel.hasStarted()) {
+                                duel.win(player, plugin);
+                                plugin.activeDuels.remove(duel);
+                                event.setTo(duel.getCourse().getTeleport());
+                            }
                         }
                         break;
                     case "[vwall]":
@@ -195,6 +203,10 @@ public class ParkourListener implements Listener {
                 event.setTo(plugin.completedCourseTracker.remove(player).course.getTeleport());
             }
         }
+        Duel duel = plugin.getDuel(player);
+        if (duel != null && duel.isAccepted() && !duel.hasStarted()) {
+            event.setTo(duel.getCourse().getTeleport());
+        }
     }
 
     private boolean detectBlocks(Location loc, Material type, int min, int max) {
@@ -242,6 +254,8 @@ public class ParkourListener implements Listener {
                         event.setCancelled(true);
                         event.getPlayer().teleport(course.getTeleport());
                         event.getPlayer().sendMessage(Parkour.getString("course.teleport", new Object[]{course.getId()}));
+                        List<PlayerHighScore> highScores = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), parkourNumber);
+                        event.getPlayer().setScoreboard(course.getScoreboard(highScores));
                     } catch (IndexOutOfBoundsException | NumberFormatException | NullPointerException ex) {
                     }
                     return;
@@ -251,11 +265,13 @@ public class ParkourListener implements Listener {
         if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_AIR
                 || event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) {
             if (event.getPlayer().getItemInHand().getType() == Material.ENDER_PEARL) {
+                event.setCancelled(true);
                 plugin.blindPlayers.remove(event.getPlayer());
                 plugin.refreshVision(event.getPlayer());
                 plugin.refreshHand(event.getPlayer());
                 event.getPlayer().sendMessage(Parkour.getString("blind.disable", new Object[]{}));
             } else if (event.getPlayer().getItemInHand().getType() == Material.EYE_OF_ENDER) {
+                event.setCancelled(true);
                 plugin.blindPlayers.remove(event.getPlayer());
                 plugin.blindPlayers.add(event.getPlayer());
                 plugin.refreshVision(event.getPlayer());
@@ -272,7 +288,7 @@ public class ParkourListener implements Listener {
                     }
                 }
             } else if (event.getPlayer().getItemInHand().getType() == Material.NETHER_STAR) {
-                event.getPlayer().teleport(plugin.getSpawn());
+                event.getPlayer().teleport(plugin.getSpawn(), TeleportCause.COMMAND);
             } else if (event.getPlayer().getItemInHand().getType() == Material.STICK) {
                 event.getPlayer().chat("/cp");
             }
@@ -330,6 +346,11 @@ public class ParkourListener implements Listener {
         if (plugin.playerCourseTracker.containsKey(event.getPlayer())) {
             plugin.playerCourseTracker.remove(event.getPlayer()).leave(event.getPlayer());
         }
+        Duel duel = plugin.getDuel(event.getPlayer());
+        if (duel != null) {
+            duel.cancel(plugin);
+            plugin.activeDuels.remove(duel);
+        }
     }
 
     @EventHandler
@@ -341,15 +362,27 @@ public class ParkourListener implements Listener {
         if (plugin.playerCourseTracker.containsKey(event.getPlayer())) {
             plugin.playerCourseTracker.remove(event.getPlayer()).leave(event.getPlayer());
         }
+        Duel duel = plugin.getDuel(event.getPlayer());
+        if (duel != null) {
+            duel.cancel(plugin);
+            plugin.activeDuels.remove(duel);
+        }
     }
 
     boolean ignoreTeleport = false;
     @EventHandler
     public void onPlayerTeleport(final PlayerTeleportEvent event) {
+        if (event.getCause() == TeleportCause.COMMAND) {
+            event.getPlayer().setScoreboard(plugin.getServer().getScoreboardManager().getMainScoreboard());
+        }
         if (event.getTo().getWorld() != event.getFrom().getWorld()
                 || event.getTo().distance(event.getFrom()) >= 3 && !ignoreTeleport) {
+            Duel duel = plugin.getDuel(event.getPlayer());
+            if (duel != null && duel.isAccepted()) {
+                event.setTo(duel.getCourse().getTeleport());
+                return;
+            }
             plugin.completedCourseTracker.remove(event.getPlayer());
-            event.getPlayer().setScoreboard(plugin.getServer().getScoreboardManager().getMainScoreboard());
             if (plugin.playerCourseTracker.containsKey(event.getPlayer())) {
                 plugin.playerCheckpoints.remove(event.getPlayer());
                 plugin.playerCourseTracker.remove(event.getPlayer()).restoreState(event.getPlayer());

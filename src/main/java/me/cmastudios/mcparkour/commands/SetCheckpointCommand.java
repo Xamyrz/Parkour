@@ -17,6 +17,7 @@
 package me.cmastudios.mcparkour.commands;
 
 import me.cmastudios.mcparkour.Checkpoint;
+import me.cmastudios.mcparkour.Duel;
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 
@@ -42,6 +43,11 @@ public class SetCheckpointCommand implements CommandExecutor {
         Player player = (Player)sender;
         if (!plugin.playerCourseTracker.containsKey(player)) {
             sender.sendMessage(Parkour.getString("checkpoint.course404", new Object[]{}));
+            return true;
+        }
+        Duel duel = plugin.getDuel(player);
+        if (duel != null && duel.hasStarted()) {
+            sender.sendMessage(Parkour.getString("checkpoint.duel"));
             return true;
         }
         ParkourCourse course = plugin.playerCourseTracker.get(player).course;

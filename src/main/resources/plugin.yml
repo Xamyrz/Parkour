@@ -7,7 +7,7 @@ main: ${main.class}
 commands:
   parkour:
     description: Teleport to a parkour course
-    usage: /<command> <course-number>
+    usage: /<command> <course-number> [detection-range]
     aliases: [pk]
     permission: parkour.play
   setcourse:
@@ -25,6 +25,13 @@ commands:
     usage: /<command>
     aliases: [cp]
     permission: parkour.cp
+  duel:
+    description: Start or accept request to begin a parkour duel.
+    usage: |
+      /<command> <player-name> <course-number> <bounty> - Request a duel
+      /<command> accept <bounty> - Accept the last requested duel
+      /<command> decline - Decline the last requested duel
+    permission: parkour.play
 permissions:
   parkour.play:
     description: Required in order to play parkour

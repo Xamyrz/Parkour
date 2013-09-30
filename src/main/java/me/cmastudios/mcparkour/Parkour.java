@@ -32,6 +32,7 @@ import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 
+import me.cmastudios.mcparkour.commands.DuelCommand;
 import me.cmastudios.mcparkour.commands.ParkourCommand;
 import me.cmastudios.mcparkour.commands.SetCheckpointCommand;
 import me.cmastudios.mcparkour.commands.SetCourseCommand;
@@ -62,6 +63,7 @@ public class Parkour extends JavaPlugin {
     public Map<Player, Checkpoint> playerCheckpoints = new HashMap<Player, Checkpoint>();
     public Map<Player, PlayerCourseData> playerCourseTracker = new HashMap<Player, PlayerCourseData>();
     public Map<Player, PlayerCourseData> completedCourseTracker = new HashMap<Player, PlayerCourseData>();
+    public List<Duel> activeDuels = new ArrayList<Duel>();
     public final ItemStack VISION = new ItemStack(Material.EYE_OF_ENDER);
     public final ItemStack CHAT = new ItemStack(Material.PAPER);
     public final ItemStack SPAWN = new ItemStack(Material.NETHER_STAR);
@@ -73,6 +75,7 @@ public class Parkour extends JavaPlugin {
         this.getCommand("setcourse").setExecutor(new SetCourseCommand(this));
         this.getCommand("topscores").setExecutor(new TopScoresCommand(this));
         this.getCommand("checkpoint").setExecutor(new SetCheckpointCommand(this));
+        this.getCommand("duel").setExecutor(new DuelCommand(this));
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.getDataFolder().mkdirs();
         this.saveDefaultConfig();
@@ -125,7 +128,7 @@ public class Parkour extends JavaPlugin {
         completedCourseTracker.clear();
     }
 
-    public static String getString(String key, Object[] args) {
+    public static String getString(String key, Object... args) {
         return MessageFormat.format(messages.getString(key), args);
     }
 
@@ -220,6 +223,15 @@ public class Parkour extends JavaPlugin {
         float pitch = (float) this.getConfig().getDouble("spawn.pitch");
         float yaw = (float) this.getConfig().getDouble("spawn.yaw");
         return new Location(world, x, y, z, yaw, pitch);
+    }
+
+    public Duel getDuel(Player participator) {
+        for (Duel duel : this.activeDuels) {
+            if (duel.getInitiator() == participator || duel.getCompetitor() == participator) {
+                return duel;
+            }
+        }
+        return null;
     }
 
     public static class PlayerCourseData {

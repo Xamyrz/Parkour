@@ -125,6 +125,10 @@ public class Duel {
         competitor.sendMessage(Parkour.getString("duel.win", winner.getName(), bounty));
     }
 
+    public static boolean canDuel(int xp1, int xp2, int bounty) {
+        return xp1 >= bounty && xp2 >= bounty;
+    }
+
     public void startTimeoutTimer(Parkour plugin) {
         plugin.getServer().getScheduler().runTaskLater(plugin, new DuelTimeoutTimer(this, plugin), 1200L);
     }
@@ -187,6 +191,5 @@ public class Duel {
                 player.setExp(Math.max(1.0F - tenthsPassed, 0.0F));
             }
         }
-        
     }
 }

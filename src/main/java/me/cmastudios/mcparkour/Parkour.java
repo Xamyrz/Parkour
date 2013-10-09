@@ -33,6 +33,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 
 import me.cmastudios.mcparkour.commands.DuelCommand;
+import me.cmastudios.mcparkour.commands.LevelCommand;
 import me.cmastudios.mcparkour.commands.ParkourCommand;
 import me.cmastudios.mcparkour.commands.SetCheckpointCommand;
 import me.cmastudios.mcparkour.commands.SetCourseCommand;
@@ -76,6 +77,7 @@ public class Parkour extends JavaPlugin {
         this.getCommand("topscores").setExecutor(new TopScoresCommand(this));
         this.getCommand("checkpoint").setExecutor(new SetCheckpointCommand(this));
         this.getCommand("duel").setExecutor(new DuelCommand(this));
+        this.getCommand("lvl").setExecutor(new LevelCommand(this));
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.getDataFolder().mkdirs();
         this.saveDefaultConfig();
@@ -185,6 +187,23 @@ public class Parkour extends JavaPlugin {
             int xpreq = xplast + base + (addt * (x - 2));
             if (experience < xpreq) {
                 return x - 1;
+            }
+            xplast = xpreq;
+        }
+        return Integer.MAX_VALUE;
+    }
+
+    public int getNextLevelRequiredXp(int experience) {
+        int base = this.getConfig().getInt("levels.base");
+        int addt = this.getConfig().getInt("levels.addition");
+        if (experience < base) {
+            return 1;
+        }
+        int xplast = 0;
+        for (int x = 2; x < Integer.MAX_VALUE; x++) {
+            int xpreq = xplast + base + (addt * (x - 2));
+            if (experience < xpreq) {
+                return experience - xpreq;
             }
             xplast = xpreq;
         }

@@ -88,7 +88,7 @@ public class DuelCommand implements CommandExecutor {
                     return true;
                 }
                 PlayerExperience selfXp = PlayerExperience.loadExperience(plugin.getCourseDatabase(), player);
-                PlayerExperience otherXp = PlayerExperience.loadExperience(plugin.getCourseDatabase(), player);
+                PlayerExperience otherXp = PlayerExperience.loadExperience(plugin.getCourseDatabase(), competitor);
                 if (selfXp.getExperience() < bounty || otherXp.getExperience() < bounty) {
                     sender.sendMessage(Parkour.getString("duel.bounty.insufficient"));
                     return true;

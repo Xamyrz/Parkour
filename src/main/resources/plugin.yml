@@ -32,6 +32,12 @@ commands:
       /<command> accept <bounty> - Accept the last requested duel
       /<command> decline - Decline the last requested duel
     permission: parkour.play
+  lvl:
+    description: View player level and experience.
+    usage: |
+      /<command> - View your level and XP.
+      /<command> <player-name> - View another player's level and XP.
+    permission: parkour.play
 permissions:
   parkour.play:
     description: Required in order to play parkour

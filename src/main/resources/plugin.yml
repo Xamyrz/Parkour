@@ -7,14 +7,24 @@ main: ${main.class}
 commands:
   parkour:
     description: Teleport to a parkour course
-    usage: /<command> <course-number> [detection-range]
-    aliases: [pk]
+    usage: /<command> <course-number>
+    aliases: [pk, kz]
     permission: parkour.play
   setcourse:
     description: Set the teleport for a parkour course
-    usage: /<command> <course-number>
+    usage: /<command> <course-number> [detection-range]
     aliases: [pkset]
     permission: parkour.set
+  listcourses:
+    description: List all valid parkour courses
+    usage: /<command>
+    aliases: [pklist]
+    permission: parkour.play
+  deletecourse:
+    description: Delete the teleport for a parkour course
+    usage: /<command> <course-number>
+    aliases: [pkdelete, pkdel, pkremove, pkrm]
+    permission: parkour.delete
   topscores:
     description: View top scores for a parkour course
     usage: /<command> <course-number> [page]
@@ -28,9 +38,9 @@ commands:
   duel:
     description: Start or accept request to begin a parkour duel.
     usage: |
-      /<command> <player-name> <course-number> <bounty> - Request a duel
-      /<command> accept <bounty> - Accept the last requested duel
-      /<command> decline - Decline the last requested duel
+      /<command> <nazwa gracza> <numer parkourar> <stawka> - wyzywa przeciwnika na duel.
+      /<command> accept <stawka> - akceptuje wyzwanie na duel
+      /<command> decline - odrzuca wyzwanie.
     permission: parkour.play
   lvl:
     description: View player level and experience.

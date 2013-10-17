@@ -32,8 +32,10 @@ import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 
+import me.cmastudios.mcparkour.commands.DeleteCourseCommand;
 import me.cmastudios.mcparkour.commands.DuelCommand;
 import me.cmastudios.mcparkour.commands.LevelCommand;
+import me.cmastudios.mcparkour.commands.ListCoursesCommand;
 import me.cmastudios.mcparkour.commands.ParkourCommand;
 import me.cmastudios.mcparkour.commands.SetCheckpointCommand;
 import me.cmastudios.mcparkour.commands.SetCourseCommand;
@@ -74,6 +76,8 @@ public class Parkour extends JavaPlugin {
     public void onEnable() {
         this.getCommand("parkour").setExecutor(new ParkourCommand(this));
         this.getCommand("setcourse").setExecutor(new SetCourseCommand(this));
+        this.getCommand("deletecourse").setExecutor(new DeleteCourseCommand(this));
+        this.getCommand("listcourses").setExecutor(new ListCoursesCommand(this));
         this.getCommand("topscores").setExecutor(new TopScoresCommand(this));
         this.getCommand("checkpoint").setExecutor(new SetCheckpointCommand(this));
         this.getCommand("duel").setExecutor(new DuelCommand(this));
@@ -203,7 +207,7 @@ public class Parkour extends JavaPlugin {
         for (int x = 2; x < Integer.MAX_VALUE; x++) {
             int xpreq = xplast + base + (addt * (x - 2));
             if (experience < xpreq) {
-                return experience - xpreq;
+                return xpreq - experience;
             }
             xplast = xpreq;
         }

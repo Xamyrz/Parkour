@@ -70,7 +70,7 @@ public class DuelCommand implements CommandExecutor {
                 sender.sendMessage(Parkour.getString("duel.busy"));
                 return true;
             }
-            if (plugin.getDuel(player) != null) {
+            if (plugin.getDuel(player) != null || player == competitor) {
                 sender.sendMessage(Parkour.getString("duel.multiple"));
                 return true;
             }
@@ -79,6 +79,7 @@ public class DuelCommand implements CommandExecutor {
                 ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), courseId);
                 if (course == null) {
                     sender.sendMessage(Parkour.getString("error.course404"));
+                    return true;
                 }
                 int bounty = Integer.parseInt(args[2]);
                 int minBounty = plugin.getConfig().getInt("duel.bounty.minimum");

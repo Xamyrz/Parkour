@@ -25,6 +25,7 @@ import java.util.List;
 import me.cmastudios.mcparkour.Parkour;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
@@ -85,6 +86,13 @@ public class ParkourCourse {
         }
     }
 
+    public void delete(Connection conn) throws SQLException {
+        try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM courses WHERE id = ?")) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        }
+    }
+
     public boolean exists(Connection conn) throws SQLException {
         return ParkourCourse.loadCourse(conn, id) != null;
     }
@@ -118,7 +126,20 @@ public class ParkourCourse {
                 break;
             }
             PlayerHighScore highScore = highScores.get(count);
-            obj.getScore(highScore.getPlayer()).setScore(-(int) highScore.getTime());
+            String name = highScore.getPlayer().getName();
+            if (count == 0) {
+                name = ChatColor.YELLOW + name;
+            } else if (count == 1) {
+                name = ChatColor.GRAY + name;
+            } else if (count == 2) {
+                name = ChatColor.GOLD + name;
+            }
+            double score = ((double) highScore.getTime()) / 1000.0D;
+            String oplr = Parkour.getString("scoreboard.format", score, name);
+            if (oplr.length() > 16) {
+                oplr = oplr.substring(0, 16);
+            }
+            obj.getScore(Bukkit.getOfflinePlayer(oplr)).setScore(-(count + 1));
         }
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
         return sb;

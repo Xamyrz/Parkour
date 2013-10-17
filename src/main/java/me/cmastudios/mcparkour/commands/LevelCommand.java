@@ -31,7 +31,7 @@ public class LevelCommand implements CommandExecutor {
                     plugin.getCourseDatabase(), target);
             int experience = xp.getExperience();
             sender.sendMessage(Parkour.getString("xp.has", target.getName(),
-                    experience, plugin.getLevel(experience)));
+                    plugin.getLevel(experience), experience, plugin.getNextLevelRequiredXp(experience)));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

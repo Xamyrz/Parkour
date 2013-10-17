@@ -65,6 +65,20 @@ public class PlayerHighScore {
         return ret;
     }
 
+    public static List<PlayerHighScore> loadHighScores(Connection conn, int course, int limit) throws SQLException {
+        List<PlayerHighScore> ret = new ArrayList<PlayerHighScore>();
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE course = ? ORDER BY time LIMIT 0, ?")) {
+            stmt.setInt(1, course);
+            stmt.setInt(2, limit);
+            try (ResultSet result = stmt.executeQuery()) {
+                while (result.next()) {
+                    ret.add(new PlayerHighScore(course, Bukkit.getOfflinePlayer(result.getString("player")), result.getLong("time"), result.getInt("plays")));
+                }
+            }
+        }
+        return ret;
+    }
+
     public PlayerHighScore(int course, OfflinePlayer player, long time, int plays) {
         this.course = course;
         this.player = player;
@@ -117,7 +131,7 @@ public class PlayerHighScore {
     }
 
     public int getReducedXp(int startingXp) {
-        return (int) (startingXp / Math.min(1.0 + (0.1 * plays), 4.0D));
+        return (int) (startingXp / Math.min(1.0 + (0.1 * (plays - 1)), 4.0D));
     }
 
     @Override

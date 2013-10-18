@@ -117,6 +117,13 @@ public class ParkourListener implements Listener {
                         break;
                     case "[end]":
                         if (plugin.playerCourseTracker.containsKey(player)) {
+                            try {
+                                int courseCons = Integer.parseInt(sign.getLine(2));
+                                if (plugin.playerCourseTracker.get(player).course.getId() != courseCons) {
+                                    return;
+                                }
+                            } catch (NumberFormatException | IndexOutOfBoundsException e) { // No course constraint
+                            }
                             PlayerCourseData endData = plugin.playerCourseTracker.remove(player); // They have ended their course anyhow
                             endData.restoreState(player);
                             PlayerHighScore highScore = PlayerHighScore.loadHighScore(plugin.getCourseDatabase(), player, endData.course.getId());
@@ -429,6 +436,15 @@ public class ParkourListener implements Listener {
     public void onPlayerCommand(final PlayerCommandPreprocessEvent event) {
         if (event.getMessage().equals("/spawn")) {
             event.getPlayer().setScoreboard(plugin.getServer().getScoreboardManager().getMainScoreboard());
+        }
+        if (plugin.playerCourseTracker.containsKey(event.getPlayer())) {
+            switch (event.getMessage().split(" ")[0]) {
+            case "/spectate":
+            case "/spec":
+            case "/pkpodglad":
+                event.setCancelled(true);
+                break;
+            }
         }
     }
 

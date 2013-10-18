@@ -22,7 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
@@ -34,18 +34,18 @@ import org.bukkit.OfflinePlayer;
 public class PlayerHighScore {
 
     private final int course;
-    private final OfflinePlayer player;
+    private final String player;
     private long time;
     private int plays;
 
     public static PlayerHighScore loadHighScore(Connection conn, OfflinePlayer player, int course) throws SQLException {
-        PlayerHighScore ret = new PlayerHighScore(course, player, Long.MAX_VALUE, 0);
+        PlayerHighScore ret = new PlayerHighScore(course, player.getName(), Long.MAX_VALUE, 0);
         try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE player = ? AND course = ?")) {
             stmt.setString(1, player.getName());
             stmt.setInt(2, course);
             try (ResultSet result = stmt.executeQuery()) {
                 if (result.next()) {
-                    ret = new PlayerHighScore(course, player, result.getLong("time"), result.getInt("plays"));
+                    ret = new PlayerHighScore(course, player.getName(), result.getLong("time"), result.getInt("plays"));
                 }
             }
         }
@@ -58,7 +58,7 @@ public class PlayerHighScore {
             stmt.setInt(1, course);
             try (ResultSet result = stmt.executeQuery()) {
                 while (result.next()) {
-                    ret.add(new PlayerHighScore(course, Bukkit.getOfflinePlayer(result.getString("player")), result.getLong("time"), result.getInt("plays")));
+                    ret.add(new PlayerHighScore(course, result.getString("player"), result.getLong("time"), result.getInt("plays")));
                 }
             }
         }
@@ -72,14 +72,14 @@ public class PlayerHighScore {
             stmt.setInt(2, limit);
             try (ResultSet result = stmt.executeQuery()) {
                 while (result.next()) {
-                    ret.add(new PlayerHighScore(course, Bukkit.getOfflinePlayer(result.getString("player")), result.getLong("time"), result.getInt("plays")));
+                    ret.add(new PlayerHighScore(course, result.getString("player"), result.getLong("time"), result.getInt("plays")));
                 }
             }
         }
         return ret;
     }
 
-    public PlayerHighScore(int course, OfflinePlayer player, long time, int plays) {
+    public PlayerHighScore(int course, String player, long time, int plays) {
         this.course = course;
         this.player = player;
         this.time = time;
@@ -96,14 +96,14 @@ public class PlayerHighScore {
         try (PreparedStatement stmt = conn.prepareStatement(stmtText)) {
             stmt.setLong(1, time);
             stmt.setInt(2, plays);
-            stmt.setString(3, player.getName());
+            stmt.setString(3, player);
             stmt.setInt(4, course);
             stmt.executeUpdate();
         }
     }
 
     public boolean exists(Connection conn) throws SQLException {
-        return PlayerHighScore.loadHighScore(conn, player, course).time != Long.MAX_VALUE;
+        return PlayerHighScore.loadHighScore(conn, this.getPlayer(), course).time != Long.MAX_VALUE;
     }
 
     public int getCourse() {
@@ -111,7 +111,7 @@ public class PlayerHighScore {
     }
 
     public OfflinePlayer getPlayer() {
-        return player;
+        return Bukkit.getOfflinePlayer(player);
     }
 
     public long getTime() {
@@ -135,19 +135,36 @@ public class PlayerHighScore {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o instanceof PlayerHighScore) {
-            return o.hashCode() == this.hashCode();
-        }
-        return false;
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + course;
+        result = prime * result + ((player == null) ? 0 : player.hashCode());
+        result = prime * result + plays;
+        result = prime * result + (int) (time ^ (time >>> 32));
+        return result;
     }
 
     @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 37 * hash + this.course;
-        hash = 37 * hash + Objects.hashCode(this.player);
-        hash = 37 * hash + (int) (this.time ^ (this.time >>> 32));
-        return hash;
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        PlayerHighScore other = (PlayerHighScore) obj;
+        if (course != other.course)
+            return false;
+        if (player == null) {
+            if (other.player != null)
+                return false;
+        } else if (!player.equals(other.player))
+            return false;
+        if (plays != other.plays)
+            return false;
+        if (time != other.time)
+            return false;
+        return true;
     }
 }

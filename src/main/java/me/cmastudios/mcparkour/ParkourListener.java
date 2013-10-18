@@ -133,7 +133,7 @@ public class ParkourListener implements Listener {
                             List<PlayerHighScore> scores = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), endData.course.getId(), 10);
                             PlayerHighScore bestScore = scores.get(0);
                             if (highScore.equals(bestScore) && highScore.getTime() == completionTime) {
-                                plugin.getServer().broadcast(Parkour.getString("course.end.best", new Object[]{player.getDisplayName() + ChatColor.RESET, endData.course.getId(), df.format(completionTimeSeconds)}), "parkour.play");
+                                plugin.getServer().broadcastMessage(Parkour.getString("course.end.best", player.getDisplayName() + ChatColor.RESET, endData.course.getId(), df.format(completionTimeSeconds)));
                             }
                             PlayerExperience playerXp = PlayerExperience.loadExperience(plugin.getCourseDatabase(), player);
                             try {

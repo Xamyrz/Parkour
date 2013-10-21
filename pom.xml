@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>me.cmastudios</groupId>
     <artifactId>mcparkour</artifactId>
-    <version>0.1</version>
+    <version>0.2-SNAPSHOT</version>
     <name>Parkour</name>
     <url>http://cmastudios.github.io/mcparkour</url>
     <description>Simple parkour plugin for Bukkit</description>

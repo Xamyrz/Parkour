@@ -170,13 +170,19 @@ public class ParkourListener implements Listener {
                         break;
                     case "[vwall]":
                         if (!plugin.playerCourseTracker.containsKey(player)) {
-                            event.setTo(player.getLocation().getBlock().getRelative(
-                                    ((org.bukkit.material.Sign)sign.getData()).getFacing()).getLocation());
+                            Location signFaceBlockV = player.getLocation().getBlock().getRelative(((org.bukkit.material.Sign)sign.getData()).getFacing()).getLocation();
+                            signFaceBlockV.setPitch(player.getLocation().getPitch());
+                            signFaceBlockV.setYaw(player.getLocation().getYaw());
+                            signFaceBlockV.add(0.5, 0, 0.5);
+                            event.setTo(signFaceBlockV);
                         }
                         break;
                     case "[avwall]":
-                        event.setTo(player.getLocation().getBlock().getRelative(
-                                ((org.bukkit.material.Sign)sign.getData()).getFacing()).getLocation());
+                        Location signFaceBlockA = player.getLocation().getBlock().getRelative(((org.bukkit.material.Sign)sign.getData()).getFacing()).getLocation();
+                        signFaceBlockA.setPitch(player.getLocation().getPitch());
+                        signFaceBlockA.setYaw(player.getLocation().getYaw());
+                        signFaceBlockA.add(0.5, 0, 0.5);
+                        event.setTo(signFaceBlockA);
                         break;
                     case "[cancel]":
                         if (plugin.playerCourseTracker.containsKey(player)) {

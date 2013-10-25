@@ -34,6 +34,7 @@ import java.util.logging.Level;
 
 import me.cmastudios.mcparkour.commands.DeleteCourseCommand;
 import me.cmastudios.mcparkour.commands.DuelCommand;
+import me.cmastudios.mcparkour.commands.GuildCommand;
 import me.cmastudios.mcparkour.commands.LevelCommand;
 import me.cmastudios.mcparkour.commands.ListCoursesCommand;
 import me.cmastudios.mcparkour.commands.ParkourCommand;
@@ -82,6 +83,7 @@ public class Parkour extends JavaPlugin {
         this.getCommand("checkpoint").setExecutor(new SetCheckpointCommand(this));
         this.getCommand("duel").setExecutor(new DuelCommand(this));
         this.getCommand("lvl").setExecutor(new LevelCommand(this));
+        this.getCommand("guild").setExecutor(new GuildCommand(this));
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.getDataFolder().mkdirs();
         this.saveDefaultConfig();
@@ -159,8 +161,10 @@ public class Parkour extends JavaPlugin {
             }
             try (Statement initStatement = this.courseDatabase.createStatement()) {
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT)");
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (player TEXT, course INTEGER, time BIGINT, plays INT)");
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS experience (player TEXT, xp INTEGER)");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (player varchar(16), course INTEGER, time BIGINT, plays INT)");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS experience (player varchar(16), xp INTEGER)");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guilds (tag varchar(5), name varchar(32))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guildplayers (player varchar(16), guild varchar(5), rank enum('default','officer','leader') NOT NULL DEFAULT 'default')");
             }
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load database driver", ex);
@@ -255,6 +259,12 @@ public class Parkour extends JavaPlugin {
             }
         }
         return null;
+    }
+
+    public static void broadcast(List<Player> list, String message) {
+        for (Player receipient : list) {
+            receipient.sendMessage(message);
+        }
     }
 
     public static class PlayerCourseData {

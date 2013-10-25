@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import me.cmastudios.mcparkour.Parkour.PlayerCourseData;
+import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.PlayerExperience;
 import me.cmastudios.mcparkour.data.PlayerHighScore;
@@ -349,9 +350,12 @@ public class ParkourListener implements Listener {
         }
         PlayerExperience playerXp = PlayerExperience.loadExperience(
                 plugin.getCourseDatabase(), event.getPlayer());
-        event.setFormat(Parkour.getString("xp.prefix", plugin.getLevel(playerXp
-                .getExperience()), event.getPlayer().getName())
-                + event.getFormat());
+        GuildPlayer playerGp = GuildPlayer.loadGuildPlayer(plugin.getCourseDatabase(), event.getPlayer());
+        String prefix = Parkour.getString("xp.prefix", plugin.getLevel(playerXp.getExperience()));
+        if (playerGp.inGuild()) {
+            prefix += Parkour.getString("guild.chatprefix", playerGp.getGuild().getTag());
+        }
+        event.setFormat(prefix + event.getFormat());
     }
 
     @EventHandler

@@ -48,6 +48,10 @@ commands:
       /<command> - View your level and XP.
       /<command> <player-name> - View another player's level and XP.
     permission: parkour.play
+  guild:
+    description: Guild management
+    usage: |
+      /<command> create <tag> <name> - Create a guild
 permissions:
   parkour.play:
     description: Required in order to play parkour
@@ -55,4 +59,6 @@ permissions:
     description: Required in order to set teleports for courses or to create control signs
   parkour.tpexempt:
     description: Exempt a player from being teleported back to spawn on join.
+  parkour.guild.create:
+    description: Power to create a guild
 

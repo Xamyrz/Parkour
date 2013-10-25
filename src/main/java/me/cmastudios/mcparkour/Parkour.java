@@ -41,6 +41,7 @@ import me.cmastudios.mcparkour.commands.ParkourCommand;
 import me.cmastudios.mcparkour.commands.SetCheckpointCommand;
 import me.cmastudios.mcparkour.commands.SetCourseCommand;
 import me.cmastudios.mcparkour.commands.TopScoresCommand;
+import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 
 import org.bukkit.Bukkit;
@@ -67,6 +68,7 @@ public class Parkour extends JavaPlugin {
     public Map<Player, Checkpoint> playerCheckpoints = new HashMap<Player, Checkpoint>();
     public Map<Player, PlayerCourseData> playerCourseTracker = new HashMap<Player, PlayerCourseData>();
     public Map<Player, PlayerCourseData> completedCourseTracker = new HashMap<Player, PlayerCourseData>();
+    public Map<Player, GuildPlayer> guildChat = new HashMap<Player, GuildPlayer>();
     public List<Duel> activeDuels = new ArrayList<Duel>();
     public final ItemStack VISION = new ItemStack(Material.EYE_OF_ENDER);
     public final ItemStack CHAT = new ItemStack(Material.PAPER);

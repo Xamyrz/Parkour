@@ -143,6 +143,7 @@ public class ParkourListener implements Listener {
                             if (highScore.equals(bestScore) && highScore.getTime() == completionTime) {
                                 plugin.getServer().broadcastMessage(Parkour.getString("course.end.best", player.getDisplayName() + ChatColor.RESET, endData.course.getId(), df.format(completionTimeSeconds)));
                             }
+                            Duel duel = plugin.getDuel(player);
                             PlayerExperience playerXp = PlayerExperience.loadExperience(plugin.getCourseDatabase(), player);
                             try {
                                 int courseXp = Integer.parseInt(sign.getLine(1));
@@ -151,6 +152,7 @@ public class ParkourListener implements Listener {
                                     courseXp = cp.getReducedExp(courseXp);
                                 }
                                 courseXp = highScore.getReducedXp(courseXp);
+                                if (duel != null && duel.hasStarted()) throw new IndexOutOfBoundsException(); // Skip XP gain
                                 playerXp.setExperience(playerXp.getExperience() + courseXp);
                                 playerXp.save(plugin.getCourseDatabase());
                                 player.sendMessage(Parkour.getString("xp.gain", new Object[]{courseXp, playerXp.getExperience()}));
@@ -159,7 +161,6 @@ public class ParkourListener implements Listener {
                             plugin.playerCheckpoints.remove(player);
                             plugin.completedCourseTracker.put(player, endData);
                             player.setScoreboard(endData.course.getScoreboard(scores));
-                            Duel duel = plugin.getDuel(player);
                             if (duel != null && duel.isAccepted() && duel.hasStarted()) {
                                 duel.win(player, plugin);
                                 plugin.activeDuels.remove(duel);
@@ -347,6 +348,18 @@ public class ParkourListener implements Listener {
                     }
                 }
             }
+        }
+        if (plugin.guildChat.containsKey(event.getPlayer())) {
+            GuildPlayer gp = plugin.guildChat.get(event.getPlayer());
+            try {
+                event.getRecipients().clear();
+                event.getRecipients().addAll(GuildPlayer.getPlayers(gp.getGuild().getPlayers(plugin.getCourseDatabase())));
+                event.setFormat(Parkour.getString("guild.chatformat", gp.getRank().toString(), event.getPlayer().getName(), event.getMessage()));
+                return;
+            } catch (Exception e) {
+                event.setCancelled(true);
+            }
+            return;
         }
         PlayerExperience playerXp = PlayerExperience.loadExperience(
                 plugin.getCourseDatabase(), event.getPlayer());

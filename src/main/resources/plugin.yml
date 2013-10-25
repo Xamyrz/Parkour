@@ -52,6 +52,12 @@ commands:
     description: Guild management
     usage: |
       /<command> create <tag> <name> - Create a guild
+      /<command> invite <player> - Invite player to join guild
+      /<command> accept <tag> - Accept invite to guild
+      /<command> decline - Decline invite to guild
+      /<command> leave - Leave your guild. If it will empty, it will be destroyed.
+      /<command> kick <player> - Remove player from guild.
+      /<command> rank <player> <rank> - Change player rank
 permissions:
   parkour.play:
     description: Required in order to play parkour

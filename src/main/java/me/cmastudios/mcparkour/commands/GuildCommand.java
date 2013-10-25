@@ -79,7 +79,11 @@ public class GuildCommand implements CommandExecutor {
             if (args.length < 2) {
                 return false;
             }
-            OfflinePlayer invitedPlayer = Bukkit.getOfflinePlayer(args[1]);
+            OfflinePlayer invitedPlayer = Bukkit.getPlayer(args[1]);
+            if (invitedPlayer == null) {
+                sender.sendMessage(Parkour.getString("error.player404"));
+                return true;
+            }
             if (invitedPlayer.getName() == sender.getName())
                 return true;
             try {
@@ -252,10 +256,8 @@ public class GuildCommand implements CommandExecutor {
                 return false;
             }
             OfflinePlayer rankPlayer = Bukkit.getOfflinePlayer(args[1]);
-            GuildRank rankNew;
-            try {
-                rankNew = GuildRank.valueOf(args[2].toUpperCase());
-            } catch (Exception e1) {
+            GuildRank rankNew = GuildRank.getRank(args[2]);
+            if (rankNew == null) {
                 sender.sendMessage(Parkour.getString("guild.rank.rank404"));
                 return true;
             }
@@ -297,6 +299,22 @@ public class GuildCommand implements CommandExecutor {
             }
             break;
         case "chat":
+            try {
+                GuildPlayer player = GuildPlayer.loadGuildPlayer(
+                        plugin.getCourseDatabase(),
+                        Bukkit.getOfflinePlayer(sender.getName()));
+                if (player == null || !player.inGuild()) {
+                    sender.sendMessage(Parkour.getString("guild.notin"));
+                    return true;
+                }
+                if (plugin.guildChat.containsKey((Player) sender)) {
+                    plugin.guildChat.remove((Player) sender);
+                } else {
+                    plugin.guildChat.put((Player) sender, player);
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
             break;
         case "war":
             break;

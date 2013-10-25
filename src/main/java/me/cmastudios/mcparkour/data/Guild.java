@@ -232,6 +232,20 @@ public class Guild {
         public boolean canInvite() {
             return this == OFFICER || this == LEADER;
         }
+
+        public String toString() {
+            return Parkour.getString("guild.rank." + this.name().toLowerCase());
+        }
+
+        public static GuildRank getRank(String localized) {
+            for (GuildRank rank : GuildRank.values()) {
+                if (localized.equalsIgnoreCase(rank.name())
+                        || rank.toString().equalsIgnoreCase(localized)) {
+                    return rank;
+                }
+            }
+            return null;
+        }
     }
 
 }

@@ -201,6 +201,9 @@ public class GuildCommand implements CommandExecutor {
                     return true;
                 }
                 kickGP.delete(plugin.getCourseDatabase());
+                if (kickGP.getPlayer().isOnline()) {
+                    plugin.guildChat.remove(kickGP.getPlayer().getPlayer());
+                }
                 kickGP.getGuild().broadcast(
                         Parkour.getString("guild.part", kickGP.getPlayer()
                                 .getName(), player.getGuild().getTag()),
@@ -221,6 +224,7 @@ public class GuildCommand implements CommandExecutor {
                 Guild oldGuild = player.getGuild();
                 GuildRank oldRank = player.getRank();
                 player.delete(plugin.getCourseDatabase());
+                plugin.guildChat.remove(player.getPlayer().getPlayer());
                 List<GuildPlayer> oldPlayers = oldGuild.getPlayers(plugin
                         .getCourseDatabase());
                 Parkour.broadcast(GuildPlayer.getPlayers(oldPlayers), Parkour
@@ -282,6 +286,9 @@ public class GuildCommand implements CommandExecutor {
                 }
                 rankGP.setRank(rankNew);
                 rankGP.save(plugin.getCourseDatabase());
+                if (rankGP.getPlayer().isOnline() && plugin.guildChat.containsKey(rankGP.getPlayer().getPlayer())) {
+                    plugin.guildChat.put(rankGP.getPlayer().getPlayer(), rankGP);
+                }
                 rankGP.getGuild().broadcast(
                         Parkour.getString("guild.chrank", rankGP.getPlayer()
                                 .getName(), rankGP.getRank()),

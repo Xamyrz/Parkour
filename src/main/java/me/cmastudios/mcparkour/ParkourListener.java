@@ -405,6 +405,7 @@ public class ParkourListener implements Listener {
         event.getPlayer().getInventory().remove(Material.ENDER_PEARL);
         plugin.deafPlayers.remove(event.getPlayer());
         plugin.playerCheckpoints.remove(event.getPlayer());
+        plugin.guildChat.remove(event.getPlayer());
         plugin.completedCourseTracker.remove(event.getPlayer());
         if (plugin.playerCourseTracker.containsKey(event.getPlayer())) {
             plugin.playerCourseTracker.remove(event.getPlayer()).leave(event.getPlayer());
@@ -422,6 +423,7 @@ public class ParkourListener implements Listener {
         event.getPlayer().getInventory().remove(Material.ENDER_PEARL);
         plugin.deafPlayers.remove(event.getPlayer());
         plugin.playerCheckpoints.remove(event.getPlayer());
+        plugin.guildChat.remove(event.getPlayer());
         plugin.completedCourseTracker.remove(event.getPlayer());
         if (plugin.playerCourseTracker.containsKey(event.getPlayer())) {
             plugin.playerCourseTracker.remove(event.getPlayer()).leave(event.getPlayer());

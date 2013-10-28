@@ -23,7 +23,9 @@ import java.util.List;
 
 import me.cmastudios.mcparkour.Parkour.PlayerCourseData;
 import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
+import me.cmastudios.mcparkour.data.Guild.GuildWar;
 import me.cmastudios.mcparkour.data.ParkourCourse;
+import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
 import me.cmastudios.mcparkour.data.PlayerExperience;
 import me.cmastudios.mcparkour.data.PlayerHighScore;
 
@@ -111,6 +113,11 @@ public class ParkourListener implements Listener {
                             player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
                             return; // Prevent console spam
                         }
+                        if (course.getMode() == CourseMode.GUILDWAR && plugin.getWar(player) == null) {
+                            // Player trying to play in a guild war course but they are not in a guild
+                            event.setTo(plugin.getSpawn());
+                            return;
+                        }
                         List<PlayerHighScore> startScores = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), course.getId(), 10);
                         player.setScoreboard(course.getScoreboard(startScores));
                         PlayerCourseData data = new PlayerCourseData(course, player);
@@ -165,6 +172,11 @@ public class ParkourListener implements Listener {
                                 duel.win(player, plugin);
                                 plugin.activeDuels.remove(duel);
                                 event.setTo(duel.getCourse().getTeleport());
+                            }
+                            GuildPlayer gp = GuildPlayer.loadGuildPlayer(plugin.getCourseDatabase(), player);
+                            GuildWar war = plugin.getWar(player);
+                            if (gp != null && war != null && war.isAccepted()) {
+                                war.handleFinish(gp, plugin);
                             }
                         }
                         break;
@@ -397,6 +409,11 @@ public class ParkourListener implements Listener {
         if (!event.getPlayer().hasPermission("parkour.tpexempt")) {
             event.getPlayer().teleport(plugin.getSpawn());
         }
+        GuildPlayer gp = GuildPlayer.loadGuildPlayer(plugin.getCourseDatabase(), event.getPlayer());
+        GuildWar war = plugin.getWar(gp.getGuild());
+        if (gp != null && war != null) {
+            war.handleRejoin(event.getPlayer(), plugin);
+        }
     }
 
     @EventHandler
@@ -415,6 +432,11 @@ public class ParkourListener implements Listener {
             duel.cancel(plugin, event.getPlayer());
             plugin.activeDuels.remove(duel);
         }
+        GuildWar war = plugin.getWar(event.getPlayer());
+        if (war != null) {
+            GuildPlayer gp = war.getPlayer(event.getPlayer());
+            war.handleDisconnect(gp, plugin);
+        }
     }
 
     @EventHandler
@@ -432,6 +454,11 @@ public class ParkourListener implements Listener {
         if (duel != null) {
             duel.cancel(plugin, event.getPlayer());
             plugin.activeDuels.remove(duel);
+        }
+        GuildWar war = plugin.getWar(event.getPlayer());
+        if (war != null) {
+            GuildPlayer gp = war.getPlayer(event.getPlayer());
+            war.handleDisconnect(gp, plugin);
         }
     }
 
@@ -499,6 +526,7 @@ public class ParkourListener implements Listener {
         @Override
         public void run() {
             for (Player player : plugin.playerCourseTracker.keySet()) {
+                if (plugin.playerCourseTracker.get(player).course.getMode() == CourseMode.GUILDWAR) continue;
                 int secondsPassed = (int) ((System.currentTimeMillis() - plugin.playerCourseTracker.get(player).startTime) / 1000);
                 float remainder = (int) ((System.currentTimeMillis() - plugin.playerCourseTracker.get(player).startTime) % 1000);
                 float tenthsPassed = remainder / 1000F;

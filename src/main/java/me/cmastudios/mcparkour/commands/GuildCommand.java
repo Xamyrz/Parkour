@@ -8,8 +8,11 @@ import java.util.Random;
 
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.data.Guild;
+import me.cmastudios.mcparkour.data.Guild.GuildWar;
+import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.Guild.GuildRank;
+import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -23,7 +26,6 @@ public class GuildCommand implements CommandExecutor {
 
     private final Parkour plugin;
     private static final Map<Player, Guild> invites = new HashMap<Player, Guild>();
-
     public GuildCommand(Parkour plugin) {
         this.plugin = plugin;
     }
@@ -47,7 +49,7 @@ public class GuildCommand implements CommandExecutor {
                 return false;
             }
             String createTag = args[1];
-            String createName = args[2];
+            String createName = args[2]; // TODO name with spaces
             if (!StringUtils.isAlphanumeric(createTag)
                     || createTag.length() > 5) {
                 sender.sendMessage(Parkour.getString("guild.create.invalid"));
@@ -189,6 +191,10 @@ public class GuildCommand implements CommandExecutor {
                     sender.sendMessage(Parkour.getString("guild.kick.noperms"));
                     return true;
                 }
+                if (plugin.getWar(player.getGuild()) != null) {
+                    sender.sendMessage(Parkour.getString("guild.war.nocmds"));
+                    return true;
+                }
                 GuildPlayer kickGP = GuildPlayer.loadGuildPlayer(
                         plugin.getCourseDatabase(), kickPlayer);
                 if (kickGP == null || !kickGP.inGuild()
@@ -219,6 +225,10 @@ public class GuildCommand implements CommandExecutor {
                         Bukkit.getOfflinePlayer(sender.getName()));
                 if (player == null || !player.inGuild()) {
                     sender.sendMessage(Parkour.getString("guild.notin"));
+                    return true;
+                }
+                if (plugin.getWar(player.getGuild()) != null) {
+                    sender.sendMessage(Parkour.getString("guild.war.nocmds"));
                     return true;
                 }
                 Guild oldGuild = player.getGuild();
@@ -324,6 +334,91 @@ public class GuildCommand implements CommandExecutor {
             }
             break;
         case "war":
+            if (args.length < 2) {
+                return false;
+            }
+            try {
+                GuildPlayer player = GuildPlayer.loadGuildPlayer(
+                        plugin.getCourseDatabase(),
+                        Bukkit.getOfflinePlayer(sender.getName()));
+                if (player == null || !player.inGuild()) {
+                    sender.sendMessage(Parkour.getString("guild.notin"));
+                    return true;
+                }
+                if (!player.getRank().canDeclareWar()) {
+                    sender.sendMessage(Parkour.getString("guild.war.noperms"));
+                    return true;
+                }
+                if (args[1].equalsIgnoreCase("decline")) {
+                    GuildWar war = plugin.getWar(player.getGuild());
+                    if (war == null) {
+                        sender.sendMessage(Parkour.getString("guild.war.notin"));
+                        return true;
+                    } else if (war.isAccepted()) {
+                        sender.sendMessage(Parkour.getString("guild.war.nocmds"));
+                        return true;
+                    }
+                    war.broadcast(Parkour.getString("guild.war.decline"));
+                    plugin.activeWars.remove(war);
+                    return true;
+                }
+                Guild opponent = Guild.loadGuild(plugin.getCourseDatabase(), args[1]);
+                if (opponent == null) {
+                    sender.sendMessage(Parkour.getString("guild.guild404"));
+                    return true;
+                }
+                if (opponent.equals(player.getGuild())) {
+                    // silently fail, no internal conflicts
+                    return true;
+                }
+                if (plugin.getWar(player.getGuild()) != null
+                        && (plugin.getWar(player.getGuild()) == plugin.getWar(opponent))) {
+                    // accepting a declaration of war (we only allow mutual wars)
+                    GuildWar leWar = plugin.getWar(player.getGuild());
+                    leWar.initiateWar(plugin);
+                    return true;
+                }
+                if (plugin.getWar(player.getGuild()) != null) { // Only one war at a time
+                    sender.sendMessage(Parkour.getString("guild.war.already.self"));
+                    return true;
+                }
+                if (plugin.getWar(opponent) != null) { // opponent is declaring war
+                    sender.sendMessage(Parkour.getString("guild.war.already.other"));
+                    return true;
+                }
+                // declaring war on other guild
+                if (args.length < 3) return false;
+                int courseId = Integer.parseInt(args[2]);
+                ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), courseId);
+                if (course == null) {
+                    sender.sendMessage(Parkour.getString("error.course404"));
+                    return true;
+                }
+                if (course.getMode() != CourseMode.GUILDWAR) {
+                    sender.sendMessage(Parkour.getString("guild.war.invalidmode"));
+                    return true;
+                }
+                if (GuildPlayer.getPlayers(opponent.getPlayers(plugin.getCourseDatabase())).isEmpty()) {
+                    sender.sendMessage(Parkour.getString("guild.war.none"));
+                    return true;
+                }
+                GuildWar war = new GuildWar(player.getGuild(), opponent, course);
+                war.startAcceptTimer(plugin);
+                plugin.activeWars.add(war);
+                opponent.broadcast(Parkour.getString("guild.war.declare",
+                        player.getGuild().getTag(), player.getGuild().getName(), courseId),
+                        plugin.getCourseDatabase());
+                player.getGuild().broadcast(Parkour.getString("guild.war.declare",
+                        player.getGuild().getTag(), player.getGuild().getName(), courseId),
+                        plugin.getCourseDatabase());
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            } catch (NumberFormatException nfe) {
+                sender.sendMessage(Parkour.getString("error.invalidint"));
+            }
+            break;
+        case "chname":
+            // TODO mutable guild name
             break;
         default:
             return false;

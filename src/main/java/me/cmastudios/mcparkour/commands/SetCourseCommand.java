@@ -19,6 +19,9 @@ package me.cmastudios.mcparkour.commands;
 import java.sql.SQLException;
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.data.ParkourCourse;
+import me.cmastudios.mcparkour.data.ParkourCourse.CourseDifficulty;
+import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
+
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -45,20 +48,26 @@ public class SetCourseCommand implements CommandExecutor {
         try {
             int id = Integer.parseInt(args[0]);
             int detection = args.length >= 2 ? Integer.parseInt(args[1]) : 2;
+            CourseMode mode = args.length >= 3 ? CourseMode.valueOf(args[2].toUpperCase()) : CourseMode.NORMAL;
+            CourseDifficulty diff = args.length >= 4 ? CourseDifficulty.valueOf(args[3].toUpperCase()) : CourseDifficulty.EASY;
             ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), id);
             if (course != null) {
                 course.setTeleport(player.getLocation());
                 course.setDetection(detection);
-                sender.sendMessage(Parkour.getString("course.updated", new Object[]{id}));
+                course.setMode(mode);
+                course.setDifficulty(diff);
+                sender.sendMessage(Parkour.getString("course.updated", id));
             } else {
-                course = new ParkourCourse(id, player.getLocation(), detection);
-                sender.sendMessage(Parkour.getString("course.created", new Object[]{id}));
+                course = new ParkourCourse(id, player.getLocation(), detection, mode, diff);
+                sender.sendMessage(Parkour.getString("course.created", id));
             }
             course.save(plugin.getCourseDatabase());
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         } catch (NumberFormatException ex) {
             sender.sendMessage(Parkour.getString("error.invalidint", new Object[]{}));
+        } catch (IllegalArgumentException e) {
+            return false;
         }
         return true;
     }

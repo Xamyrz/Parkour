@@ -41,7 +41,9 @@ import me.cmastudios.mcparkour.commands.ParkourCommand;
 import me.cmastudios.mcparkour.commands.SetCheckpointCommand;
 import me.cmastudios.mcparkour.commands.SetCourseCommand;
 import me.cmastudios.mcparkour.commands.TopScoresCommand;
+import me.cmastudios.mcparkour.data.Guild;
 import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
+import me.cmastudios.mcparkour.data.Guild.GuildWar;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 
 import org.bukkit.Bukkit;
@@ -70,6 +72,7 @@ public class Parkour extends JavaPlugin {
     public Map<Player, PlayerCourseData> completedCourseTracker = new HashMap<Player, PlayerCourseData>();
     public Map<Player, GuildPlayer> guildChat = new HashMap<Player, GuildPlayer>();
     public List<Duel> activeDuels = new ArrayList<Duel>();
+    public List<GuildWar> activeWars = new ArrayList<GuildWar>();
     public final ItemStack VISION = new ItemStack(Material.EYE_OF_ENDER);
     public final ItemStack CHAT = new ItemStack(Material.PAPER);
     public final ItemStack SPAWN = new ItemStack(Material.NETHER_STAR);
@@ -162,7 +165,7 @@ public class Parkour extends JavaPlugin {
                 this.courseDatabase = DriverManager.getConnection("jdbc:sqlite:" + courseDatabaseFile.getPath());
             }
             try (Statement initStatement = this.courseDatabase.createStatement()) {
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT)");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT, mode ENUM('normal', 'guildwar', 'adventure', 'vip') NOT NULL DEFAULT 'normal', difficulty ENUM('easy', 'medium', 'hard') NOT NULL DEFAULT 'easy')");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (player varchar(16), course INTEGER, time BIGINT, plays INT)");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS experience (player varchar(16), xp INTEGER)");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guilds (tag varchar(5), name varchar(32))");
@@ -258,6 +261,26 @@ public class Parkour extends JavaPlugin {
         for (Duel duel : this.activeDuels) {
             if (duel.getInitiator() == participator || duel.getCompetitor() == participator) {
                 return duel;
+            }
+        }
+        return null;
+    }
+
+    public GuildWar getWar(Guild belligerent) {
+        for (GuildWar war : this.activeWars) {
+            if (war.getInitiator().equals(belligerent) || war.getCompetitor().equals(belligerent)) {
+                return war;
+            }
+        }
+        return null;
+    }
+
+    public GuildWar getWar(Player belligerent) {
+        for (GuildWar war : this.activeWars) {
+            for (GuildPlayer warrior : war.getWarriors()) {
+                if (warrior.getPlayer().getName().equals(belligerent.getName())) {
+                    return war;
+                }
             }
         }
         return null;

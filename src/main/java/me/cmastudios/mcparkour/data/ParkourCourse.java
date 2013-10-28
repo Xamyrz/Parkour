@@ -41,6 +41,8 @@ public class ParkourCourse {
     private final int id;
     private Location teleport;
     private int detection;
+    private CourseMode mode;
+    private CourseDifficulty diff;
 
     public static ParkourCourse loadCourse(Connection conn, int id) throws SQLException {
         ParkourCourse ret = null;
@@ -53,25 +55,29 @@ public class ParkourCourse {
                             result.getDouble("x"), result.getDouble("y"),
                             result.getDouble("z"), result.getFloat("yaw"),
                             result.getFloat("pitch")),
-                            result.getInt("detection"));
+                            result.getInt("detection"),
+                            CourseMode.valueOf(result.getString("mode").toUpperCase()),
+                            CourseDifficulty.valueOf(result.getString("difficulty").toUpperCase()));
                 }
             }
         }
         return ret;
     }
 
-    public ParkourCourse(int id, Location teleport, int detection) {
+    public ParkourCourse(int id, Location teleport, int detection, CourseMode mode, CourseDifficulty diff) {
         this.id = id;
         this.teleport = teleport;
         this.detection = detection;
+        this.mode = mode;
+        this.diff = diff;
     }
 
     public void save(Connection conn) throws SQLException {
         final String stmtText;
         if (exists(conn)) {
-            stmtText = "UPDATE courses SET x = ?, y = ?, z = ?, pitch = ?, yaw = ?, world = ?, detection = ? WHERE id = ?";
+            stmtText = "UPDATE courses SET x = ?, y = ?, z = ?, pitch = ?, yaw = ?, world = ?, detection = ?, mode = ?, difficulty = ? WHERE id = ?";
         } else {
-            stmtText = "INSERT INTO courses (x, y, z, pitch, yaw, world, detection, id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            stmtText = "INSERT INTO courses (x, y, z, pitch, yaw, world, detection, mode, difficulty, id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         }
         try (PreparedStatement stmt = conn.prepareStatement(stmtText)) {
             stmt.setDouble(1, teleport.getX());
@@ -81,7 +87,9 @@ public class ParkourCourse {
             stmt.setFloat(5, teleport.getYaw());
             stmt.setString(6, teleport.getWorld().getName());
             stmt.setInt(7, detection);
-            stmt.setInt(8, id);
+            stmt.setString(8, mode.name());
+            stmt.setString(9, diff.name());
+            stmt.setInt(10, id);
             stmt.executeUpdate();
         }
     }
@@ -117,6 +125,22 @@ public class ParkourCourse {
         this.detection = detection;
     }
 
+    public CourseMode getMode() {
+        return mode;
+    }
+
+    public void setMode(CourseMode mode) {
+        this.mode = mode;
+    }
+
+    public CourseDifficulty getDifficulty() {
+        return diff;
+    }
+
+    public void setDifficulty(CourseDifficulty diff) {
+        this.diff = diff;
+    }
+
     public Scoreboard getScoreboard(List<PlayerHighScore> highScores) {
         Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
         Objective obj = sb.registerNewObjective("scores", "dummy");
@@ -143,5 +167,22 @@ public class ParkourCourse {
         }
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
         return sb;
+    }
+
+    public static enum CourseMode {
+        NORMAL, GUILDWAR, ADVENTURE, VIP;
+
+        public boolean hasScores() {
+            switch (this) {
+                case NORMAL:
+                case VIP:
+                    return true;
+            }
+            return false;
+        }
+    }
+
+    public static enum CourseDifficulty {
+        EASY, MEDIUM, HARD
     }
 }

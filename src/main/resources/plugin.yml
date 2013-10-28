@@ -12,7 +12,7 @@ commands:
     permission: parkour.play
   setcourse:
     description: Set the teleport for a parkour course
-    usage: /<command> <course-number> [detection-range]
+    usage: /<command> <course-number> <detection-range> <normal/vip/adventure/guildwar> <easy/medium/hard>
     aliases: [pkset]
     permission: parkour.set
   listcourses:
@@ -58,6 +58,10 @@ commands:
       /<command> leave - Leave your guild. If it will empty, it will be destroyed.
       /<command> kick <player> - Remove player from guild.
       /<command> rank <player> <rank> - Change player rank
+      /<command> chat - Toggle guild chat status
+      /<command> war <tag> <course> - Declare war on guild at course
+      /<command> war <tag> - Accept war with guild
+      /<command> war decline - Decline war with guild
 permissions:
   parkour.play:
     description: Required in order to play parkour

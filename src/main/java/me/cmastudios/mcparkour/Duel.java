@@ -87,7 +87,7 @@ public class Duel {
         plugin.getServer().getScheduler()
                 .runTaskLater(plugin, new DuelStartTimer(this), 200L);
         xpbar = plugin.getServer().getScheduler()
-                .runTaskTimer(plugin, new DuelCountdownXpTimer(this), 4L, 4L);
+                .runTaskTimer(plugin, new DuelCountdownXpTimer(this), 1L, 1L);
     }
 
     public void cancel(Parkour plugin, Player logoutee) throws SQLException {

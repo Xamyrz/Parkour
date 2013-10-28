@@ -326,8 +326,10 @@ public class GuildCommand implements CommandExecutor {
                 }
                 if (plugin.guildChat.containsKey((Player) sender)) {
                     plugin.guildChat.remove((Player) sender);
+                    sender.sendMessage(Parkour.getString("guild.chat.toggle.off"));
                 } else {
                     plugin.guildChat.put((Player) sender, player);
+                    sender.sendMessage(Parkour.getString("guild.chat.toggle.on"));
                 }
             } catch (SQLException e) {
                 throw new RuntimeException(e);

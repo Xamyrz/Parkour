@@ -372,7 +372,7 @@ public class ParkourListener implements Listener {
             try {
                 event.getRecipients().clear();
                 event.getRecipients().addAll(GuildPlayer.getPlayers(gp.getGuild().getPlayers(plugin.getCourseDatabase())));
-                event.setFormat(Parkour.getString("guild.chatformat", gp.getRank().toString(), event.getPlayer().getName(), event.getMessage()));
+                event.setFormat(Parkour.getString("guild.chat.format", gp.getRank().toString(), event.getPlayer().getName(), event.getMessage()));
                 return;
             } catch (Exception e) {
                 event.setCancelled(true);
@@ -384,7 +384,7 @@ public class ParkourListener implements Listener {
         GuildPlayer playerGp = GuildPlayer.loadGuildPlayer(plugin.getCourseDatabase(), event.getPlayer());
         String prefix = Parkour.getString("xp.prefix", plugin.getLevel(playerXp.getExperience()));
         if (playerGp.inGuild()) {
-            prefix += Parkour.getString("guild.chatprefix", playerGp.getGuild().getTag());
+            prefix += Parkour.getString("guild.chat.prefix", playerGp.getGuild().getTag());
         }
         event.setFormat(prefix + event.getFormat());
     }

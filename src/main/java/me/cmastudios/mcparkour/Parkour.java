@@ -45,6 +45,8 @@ import me.cmastudios.mcparkour.data.Guild;
 import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.Guild.GuildWar;
 import me.cmastudios.mcparkour.data.ParkourCourse;
+import me.cmastudios.mcparkour.data.ParkourCourse.CourseDifficulty;
+import me.cmastudios.mcparkour.data.PlayerExperience;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -165,7 +167,7 @@ public class Parkour extends JavaPlugin {
                 this.courseDatabase = DriverManager.getConnection("jdbc:sqlite:" + courseDatabaseFile.getPath());
             }
             try (Statement initStatement = this.courseDatabase.createStatement()) {
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT, mode ENUM('normal', 'guildwar', 'adventure', 'vip') NOT NULL DEFAULT 'normal', difficulty ENUM('easy', 'medium', 'hard') NOT NULL DEFAULT 'easy')");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT, mode ENUM('normal', 'guildwar', 'adventure', 'vip') NOT NULL DEFAULT 'normal', difficulty ENUM('easy', 'medium', 'hard', 'veryhard') NOT NULL DEFAULT 'easy')");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (player varchar(16), course INTEGER, time BIGINT, plays INT)");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS experience (player varchar(16), xp INTEGER)");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guilds (tag varchar(5), name varchar(32))");
@@ -284,6 +286,14 @@ public class Parkour extends JavaPlugin {
             }
         }
         return null;
+    }
+
+    public boolean canDuel(int exp) {
+        return this.getLevel(exp) >= 8;
+    }
+
+    public boolean canPlay(int exp, CourseDifficulty diff) {
+        return this.getLevel(exp) >= this.getConfig().getInt("restriction." + diff.name().toLowerCase());
     }
 
     public static void broadcast(List<Player> list, String message) {

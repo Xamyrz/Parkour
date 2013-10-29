@@ -94,6 +94,10 @@ public class DuelCommand implements CommandExecutor {
                     sender.sendMessage(Parkour.getString("duel.bounty.insufficient"));
                     return true;
                 }
+                if (!plugin.canDuel(selfXp.getExperience()) || !plugin.canDuel(otherXp.getExperience())) {
+                    sender.sendMessage(Parkour.getString("duel.insufficient"));
+                    return true;
+                }
                 Duel duel = new Duel(player, competitor, course, bounty);
                 plugin.activeDuels.add(duel);
                 duel.startTimeoutTimer(plugin);

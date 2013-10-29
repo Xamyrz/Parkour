@@ -109,12 +109,19 @@ public class ParkourListener implements Listener {
                         }
                         ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), startParkourId);
                         if (course == null) {
-                            event.setTo(player.getLocation().add(2, 0, 0)); // Prevent database spam
+                            event.setTo(plugin.getSpawn());
                             player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
                             return; // Prevent console spam
                         }
                         if (course.getMode() == CourseMode.GUILDWAR && plugin.getWar(player) == null) {
                             // Player trying to play in a guild war course but they are not in a guild
+                            player.sendMessage(Parkour.getString("guild.war.notin"));
+                            event.setTo(plugin.getSpawn());
+                            return;
+                        }
+                        PlayerExperience exp = PlayerExperience.loadExperience(plugin.getCourseDatabase(), player);
+                        if (!plugin.canPlay(exp.getExperience(), course.getDifficulty())) {
+                            player.sendMessage(Parkour.getString("xp.insufficient"));
                             event.setTo(plugin.getSpawn());
                             return;
                         }

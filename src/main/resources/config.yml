@@ -21,3 +21,9 @@ duel:
  bounty:
    minimum: 10
    maximum: 10000
+restriction:
+  easy: 0
+  medium: 8
+  hard: 16
+  veryhard: 24
+

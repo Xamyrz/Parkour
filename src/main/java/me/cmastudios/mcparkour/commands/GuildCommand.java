@@ -8,10 +8,10 @@ import java.util.Random;
 
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.data.Guild;
-import me.cmastudios.mcparkour.data.Guild.GuildWar;
-import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.Guild.GuildRank;
+import me.cmastudios.mcparkour.data.Guild.GuildWar;
+import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
 
 import org.apache.commons.lang.StringUtils;
@@ -26,6 +26,7 @@ public class GuildCommand implements CommandExecutor {
 
     private final Parkour plugin;
     private static final Map<Player, Guild> invites = new HashMap<Player, Guild>();
+    private static final Map<CommandSender, String> confirm = new HashMap<CommandSender, String>();
     public GuildCommand(Parkour plugin) {
         this.plugin = plugin;
     }
@@ -219,6 +220,13 @@ public class GuildCommand implements CommandExecutor {
             }
             break;
         case "leave":
+            String leaveArgs = StringUtils.join(args);
+            String leaveConfirm = confirm.remove(sender);
+            if (!leaveArgs.equals(leaveConfirm)) {
+                confirm.put(sender, leaveArgs);
+                sender.sendMessage(Parkour.getString("guild.confirm"));
+                break;
+            }
             try {
                 GuildPlayer player = GuildPlayer.loadGuildPlayer(
                         plugin.getCourseDatabase(),
@@ -233,13 +241,14 @@ public class GuildCommand implements CommandExecutor {
                 }
                 Guild oldGuild = player.getGuild();
                 GuildRank oldRank = player.getRank();
-                player.delete(plugin.getCourseDatabase());
-                plugin.guildChat.remove(player.getPlayer().getPlayer());
                 List<GuildPlayer> oldPlayers = oldGuild.getPlayers(plugin
                         .getCourseDatabase());
                 Parkour.broadcast(GuildPlayer.getPlayers(oldPlayers), Parkour
                         .getString("guild.part", sender.getName(),
                                 oldGuild.getTag()));
+                player.delete(plugin.getCourseDatabase());
+                plugin.guildChat.remove(player.getPlayer().getPlayer());
+                oldPlayers.remove(player);
                 if (oldPlayers.isEmpty()) {
                     oldGuild.delete(plugin.getCourseDatabase());
                     plugin.getLogger().info(

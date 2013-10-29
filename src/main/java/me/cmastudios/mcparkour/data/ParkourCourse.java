@@ -174,15 +174,17 @@ public class ParkourCourse {
 
         public boolean hasScores() {
             switch (this) {
-                case NORMAL:
-                case VIP:
-                    return true;
+            case NORMAL:
+            case VIP:
+                return true;
+            default:
+                break;
             }
             return false;
         }
     }
 
     public static enum CourseDifficulty {
-        EASY, MEDIUM, HARD
+        EASY, MEDIUM, HARD, VERYHARD
     }
 }

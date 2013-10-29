@@ -28,6 +28,7 @@ public class DeleteCourseCommand implements CommandExecutor {
                     plugin.getCourseDatabase(), id);
             if (course != null) {
                 course.delete(plugin.getCourseDatabase());
+                sender.sendMessage(Parkour.getString("course.delete"));
             } else {
                 sender.sendMessage(Parkour.getString("error.course404"));
             }

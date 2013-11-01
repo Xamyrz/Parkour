@@ -32,6 +32,7 @@ import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 
+import me.cmastudios.mcparkour.commands.AdventureCommand;
 import me.cmastudios.mcparkour.commands.DeleteCourseCommand;
 import me.cmastudios.mcparkour.commands.DuelCommand;
 import me.cmastudios.mcparkour.commands.GuildCommand;
@@ -46,7 +47,6 @@ import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.Guild.GuildWar;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseDifficulty;
-import me.cmastudios.mcparkour.data.PlayerExperience;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -91,6 +91,7 @@ public class Parkour extends JavaPlugin {
         this.getCommand("duel").setExecutor(new DuelCommand(this));
         this.getCommand("lvl").setExecutor(new LevelCommand(this));
         this.getCommand("guild").setExecutor(new GuildCommand(this));
+        this.getCommand("adventure").setExecutor(new AdventureCommand(this));
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.getDataFolder().mkdirs();
         this.saveDefaultConfig();
@@ -172,6 +173,7 @@ public class Parkour extends JavaPlugin {
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS experience (player varchar(16), xp INTEGER)");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guilds (tag varchar(5), name varchar(32))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guildplayers (player varchar(16), guild varchar(5), rank enum('default','officer','leader') NOT NULL DEFAULT 'default')");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS adventures (name varchar(32), course INTEGER)");
             }
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load database driver", ex);

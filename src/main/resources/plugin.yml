@@ -63,6 +63,14 @@ commands:
       /<command> war <tag> <course> - Wyzywa gildie na danej mapie
       /<command> war <tag> - Akceptuje wyzwanie do walki
       /<command> war decline - Odrzuca wyzwanie do walki.
+  adventure:
+    description: Manage adventure parkour courses
+    permission: parkour.play
+    aliases: [adv, advcontinue, advset, advadd]
+    usage: |
+      /<command> <adventure course> - Teleport to adventure course
+      /<command> <adventure course> <chapter> - Teleport to specific adventure chapter
+      /<command> <adventure course> add <course> - (admn) Add course to adventure
 permissions:
   parkour.play:
     description: Required in order to play parkour

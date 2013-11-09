@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import me.cmastudios.mcparkour.Parkour.PlayerCourseData;
+import me.cmastudios.mcparkour.data.AdventureCourse;
 import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.Guild.GuildWar;
 import me.cmastudios.mcparkour.data.ParkourCourse;
@@ -124,6 +125,16 @@ public class ParkourListener implements Listener {
                             player.sendMessage(Parkour.getString("xp.insufficient"));
                             event.setTo(plugin.getSpawn());
                             return;
+                        }
+                        AdventureCourse adv = AdventureCourse.loadAdventure(plugin.getCourseDatabase(), course);
+                        if (adv != null && adv.getChapter(course) > 1) {
+                            ParkourCourse parent = adv.getCourses().get(adv.getChapter(course) - 2);
+                            PlayerHighScore score = PlayerHighScore.loadHighScore(plugin.getCourseDatabase(), player, parent.getId());
+                            if (score.getTime() == Long.MAX_VALUE) {
+                                player.sendMessage(Parkour.getString("adv.notplayed"));
+                                event.setTo(plugin.getSpawn());
+                                return;
+                            }
                         }
                         List<PlayerHighScore> startScores = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), course.getId(), 10);
                         player.setScoreboard(course.getScoreboard(startScores));

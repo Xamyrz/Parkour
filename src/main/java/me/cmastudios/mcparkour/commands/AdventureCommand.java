@@ -57,14 +57,18 @@ public class AdventureCommand implements CommandExecutor {
                 ParkourCourse chap = course.getCourses().get(chapter - 1);
                 if (chap == null) {
                     sender.sendMessage(Parkour.getString("error.course404"));
-                } else {
-                    PlayerHighScore score = PlayerHighScore.loadHighScore(plugin.getCourseDatabase(), (Player) sender, chap.getId());
+                } else if (chapter > 1) {
+                    ParkourCourse parent = course.getCourses().get(chapter - 2);
+                    PlayerHighScore score = PlayerHighScore.loadHighScore(plugin.getCourseDatabase(), (Player) sender, parent.getId());
                     if (score.getTime() == Long.MAX_VALUE) {
                         sender.sendMessage(Parkour.getString("adv.notplayed"));
                     } else {
                         ((Player) sender).teleport(chap.getTeleport());
                         sender.sendMessage(Parkour.getString("adv.tp", chapter, course.getName()));
                     }
+                } else {
+                    ((Player) sender).teleport(chap.getTeleport());
+                    sender.sendMessage(Parkour.getString("adv.tp", chapter, course.getName()));
                 }
             } else {
                 ((Player) sender).teleport(course.getCourses().get(0).getTeleport());

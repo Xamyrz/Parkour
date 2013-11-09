@@ -67,12 +67,21 @@ public class AdventureCourse {
         return new AdventureCourse(name, courses);
     }
 
+    public static AdventureCourse loadAdventure(Connection conn, ParkourCourse member) throws SQLException {
+        String parent = findParent(conn, member.getId());
+        if (parent != null && !parent.isEmpty()) {
+            return loadAdventure(conn, parent);
+        } else {
+            return null;
+        }
+    }
+
     public static String findParent(Connection conn, int course) throws SQLException {
         try (PreparedStatement stmt = conn.prepareStatement("SELECT name FROM adventures WHERE course = ? LIMIT 1")) {
             stmt.setInt(1, course);
             try (ResultSet result = stmt.executeQuery()) {
                 if (result.next()) {
-                    return result.getString("parent");
+                    return result.getString("name");
                 }
             }
         }
@@ -100,5 +109,16 @@ public class AdventureCourse {
             }
             stmt.executeBatch();
         }
+    }
+
+    public int getChapter(ParkourCourse member) {
+        int chapter = 1;
+        for (ParkourCourse course : courses) {
+            if (course.getId() == member.getId()) {
+                return chapter;
+            }
+            chapter++;
+        }
+        return Integer.MAX_VALUE;
     }
 }

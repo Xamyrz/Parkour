@@ -98,6 +98,17 @@ public class DuelCommand implements CommandExecutor {
                     sender.sendMessage(Parkour.getString("duel.insufficient"));
                     return true;
                 }
+                if (course.getMode() == ParkourCourse.CourseMode.VIP) {
+                    if (!player.hasPermission("parkour.vip") || !competitor.hasPermission("parkour.vip")) {
+                        player.sendMessage(Parkour.getString("duel.novip"));
+                        return true;
+                    }
+                }
+                if (course.getMode() == ParkourCourse.CourseMode.ADVENTURE
+                        || course.getMode() == ParkourCourse.CourseMode.GUILDWAR) {
+                    player.sendMessage(Parkour.getString("duel.badcourse"));
+                    return true;
+                }
                 Duel duel = new Duel(player, competitor, course, bounty);
                 plugin.activeDuels.add(duel);
                 duel.startTimeoutTimer(plugin);

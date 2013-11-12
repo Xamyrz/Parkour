@@ -80,4 +80,6 @@ permissions:
     description: Exempt a player from being teleported back to spawn on join.
   parkour.guild.create:
     description: Power to create a guild
+  parkour.vip:
+    description: Permission to play on VIP maps
 

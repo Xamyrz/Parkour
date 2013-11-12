@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2013 Connor Monahan
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package me.cmastudios.mcparkour.commands;
 
 import java.sql.SQLException;
@@ -25,8 +42,8 @@ import org.bukkit.entity.Player;
 public class GuildCommand implements CommandExecutor {
 
     private final Parkour plugin;
-    private static final Map<Player, Guild> invites = new HashMap<Player, Guild>();
-    private static final Map<CommandSender, String> confirm = new HashMap<CommandSender, String>();
+    private static final Map<Player, Guild> invites = new HashMap<>();
+    private static final Map<CommandSender, String> confirm = new HashMap<>();
     public GuildCommand(Parkour plugin) {
         this.plugin = plugin;
     }

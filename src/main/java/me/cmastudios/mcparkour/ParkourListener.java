@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package me.cmastudios.mcparkour;
 
 import java.sql.SQLException;
@@ -251,7 +252,7 @@ public class ParkourListener implements Listener {
                             }
                             Location loc = new Location(world, x, y, z);
                             player.teleport(loc);
-                        } catch (IndexOutOfBoundsException | NumberFormatException ex) {
+                        } catch (IndexOutOfBoundsException | NumberFormatException ignored) {
                         }
                         break;
                 }
@@ -332,7 +333,7 @@ public class ParkourListener implements Listener {
                         event.getPlayer().sendMessage(Parkour.getString("course.teleport", new Object[]{course.getId()}));
                         List<PlayerHighScore> highScores = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), parkourNumber);
                         event.getPlayer().setScoreboard(course.getScoreboard(highScores));
-                    } catch (IndexOutOfBoundsException | NumberFormatException | NullPointerException ex) {
+                    } catch (IndexOutOfBoundsException | NumberFormatException | NullPointerException ignored) {
                     }
                     return;
                 }
@@ -429,7 +430,7 @@ public class ParkourListener implements Listener {
         }
         GuildPlayer gp = GuildPlayer.loadGuildPlayer(plugin.getCourseDatabase(), event.getPlayer());
         GuildWar war = plugin.getWar(gp.getGuild());
-        if (gp != null && war != null) {
+        if (war != null) {
             war.handleRejoin(event.getPlayer(), plugin);
         }
     }

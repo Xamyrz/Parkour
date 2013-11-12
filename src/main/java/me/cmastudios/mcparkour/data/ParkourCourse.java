@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package me.cmastudios.mcparkour.data;
 
 import java.sql.Connection;
@@ -144,7 +145,7 @@ public class ParkourCourse {
     public Scoreboard getScoreboard(List<PlayerHighScore> highScores) {
         Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
         Objective obj = sb.registerNewObjective("scores", "dummy");
-        obj.setDisplayName(Parkour.getString("scoreboard.title", new Object[]{id}));
+        obj.setDisplayName(Parkour.getString("scoreboard.title", id));
         for (int count = 0; count < 10; count++) {
             if (highScores.size() <= count) {
                 break;
@@ -170,18 +171,7 @@ public class ParkourCourse {
     }
 
     public static enum CourseMode {
-        NORMAL, GUILDWAR, ADVENTURE, VIP;
-
-        public boolean hasScores() {
-            switch (this) {
-            case NORMAL:
-            case VIP:
-                return true;
-            default:
-                break;
-            }
-            return false;
-        }
+        NORMAL, GUILDWAR, ADVENTURE, VIP
     }
 
     public static enum CourseDifficulty {

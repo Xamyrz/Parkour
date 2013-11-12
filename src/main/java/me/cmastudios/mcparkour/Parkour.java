@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package me.cmastudios.mcparkour;
 
 import java.io.File;
@@ -67,14 +68,14 @@ public class Parkour extends JavaPlugin {
 
     private static ResourceBundle messages = ResourceBundle.getBundle("messages");
     private Connection courseDatabase;
-    public List<Player> blindPlayers = new ArrayList<Player>();
-    public List<Player> deafPlayers = new ArrayList<Player>();
-    public Map<Player, Checkpoint> playerCheckpoints = new HashMap<Player, Checkpoint>();
-    public Map<Player, PlayerCourseData> playerCourseTracker = new HashMap<Player, PlayerCourseData>();
-    public Map<Player, PlayerCourseData> completedCourseTracker = new HashMap<Player, PlayerCourseData>();
-    public Map<Player, GuildPlayer> guildChat = new HashMap<Player, GuildPlayer>();
-    public List<Duel> activeDuels = new ArrayList<Duel>();
-    public List<GuildWar> activeWars = new ArrayList<GuildWar>();
+    public List<Player> blindPlayers = new ArrayList<>();
+    public final List<Player> deafPlayers = new ArrayList<>();
+    public Map<Player, Checkpoint> playerCheckpoints = new HashMap<>();
+    public Map<Player, PlayerCourseData> playerCourseTracker = new HashMap<>();
+    public Map<Player, PlayerCourseData> completedCourseTracker = new HashMap<>();
+    public Map<Player, GuildPlayer> guildChat = new HashMap<>();
+    public List<Duel> activeDuels = new ArrayList<>();
+    public List<GuildWar> activeWars = new ArrayList<>();
     public final ItemStack VISION = new ItemStack(Material.EYE_OF_ENDER);
     public final ItemStack CHAT = new ItemStack(Material.PAPER);
     public final ItemStack SPAWN = new ItemStack(Material.NETHER_STAR);
@@ -93,24 +94,23 @@ public class Parkour extends JavaPlugin {
         this.getCommand("guild").setExecutor(new GuildCommand(this));
         this.getCommand("adventure").setExecutor(new AdventureCommand(this));
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
-        this.getDataFolder().mkdirs();
         this.saveDefaultConfig();
         this.connectDatabase();
         ItemMeta meta = VISION.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.vision", new Object[]{}));
+        meta.setDisplayName(Parkour.getString("item.vision"));
         VISION.setItemMeta(meta);
         meta = CHAT.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.chat", new Object[]{}));
+        meta.setDisplayName(Parkour.getString("item.chat"));
         CHAT.setItemMeta(meta);
         meta = SPAWN.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.spawn", new Object[]{}));
+        meta.setDisplayName(Parkour.getString("item.spawn"));
         SPAWN.setItemMeta(meta);
         meta = POINT.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.point", new Object[]{}));
+        meta.setDisplayName(Parkour.getString("item.point"));
         String[] lore = {
-                Parkour.getString("item.point.description.0", new Object[] {}),
-                Parkour.getString("item.point.description.1", new Object[] {}),
-                Parkour.getString("item.point.description.2", new Object[] {}) };
+                Parkour.getString("item.point.description.0"),
+                Parkour.getString("item.point.description.1"),
+                Parkour.getString("item.point.description.2") };
         meta.setLore(Arrays.asList(lore));
         POINT.setItemMeta(meta);
     }
@@ -120,7 +120,7 @@ public class Parkour extends JavaPlugin {
         if (this.courseDatabase != null) {
             try {
                 this.courseDatabase.close();
-            } catch (SQLException ex) {
+            } catch (SQLException ignored) {
             }
         }
         for (Iterator<Player> it = blindPlayers.iterator(); it.hasNext();) {
@@ -319,7 +319,7 @@ public class Parkour extends JavaPlugin {
             this.restoreState(player);
             try {
                 player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-            } catch (Exception ex) {}
+            } catch (Exception ignored) {}
             player.teleport(((Parkour)player.getServer().getPluginManager().getPlugin("Parkour")).getSpawn());
         }
 

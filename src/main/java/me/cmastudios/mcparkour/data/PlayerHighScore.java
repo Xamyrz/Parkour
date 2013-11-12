@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package me.cmastudios.mcparkour.data;
 
 import java.sql.Connection;
@@ -53,7 +54,7 @@ public class PlayerHighScore {
     }
 
     public static List<PlayerHighScore> loadHighScores(Connection conn, int course) throws SQLException {
-        List<PlayerHighScore> ret = new ArrayList<PlayerHighScore>();
+        List<PlayerHighScore> ret = new ArrayList<>();
         try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE course = ? ORDER BY time")) {
             stmt.setInt(1, course);
             try (ResultSet result = stmt.executeQuery()) {
@@ -66,7 +67,7 @@ public class PlayerHighScore {
     }
 
     public static List<PlayerHighScore> loadHighScores(Connection conn, int course, int limit) throws SQLException {
-        List<PlayerHighScore> ret = new ArrayList<PlayerHighScore>();
+        List<PlayerHighScore> ret = new ArrayList<>();
         try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE course = ? ORDER BY time LIMIT 0, ?")) {
             stmt.setInt(1, course);
             stmt.setInt(2, limit);
@@ -135,36 +136,20 @@ public class PlayerHighScore {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + course;
-        result = prime * result + ((player == null) ? 0 : player.hashCode());
-        result = prime * result + plays;
-        result = prime * result + (int) (time ^ (time >>> 32));
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PlayerHighScore that = (PlayerHighScore) o;
+        return course == that.course && plays == that.plays && time == that.time && player.equals(that.player);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        PlayerHighScore other = (PlayerHighScore) obj;
-        if (course != other.course)
-            return false;
-        if (player == null) {
-            if (other.player != null)
-                return false;
-        } else if (!player.equals(other.player))
-            return false;
-        if (plays != other.plays)
-            return false;
-        if (time != other.time)
-            return false;
-        return true;
+    public int hashCode() {
+        int result = course;
+        result = 31 * result + player.hashCode();
+        result = 31 * result + (int) (time ^ (time >>> 32));
+        result = 31 * result + plays;
+        return result;
     }
 }

@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2013 Connor Monahan
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package me.cmastudios.mcparkour.data;
 
 import java.sql.Connection;
@@ -39,12 +56,13 @@ public class AdventureCourse {
         courses.add(course);
     }
 
+    // TODO Add command to remove courses from adv parkour
     public void removeCourse(ParkourCourse course) {
         courses.remove(course);
     }
 
     public static AdventureCourse loadAdventure(Connection conn, String name) throws SQLException {
-        List<ParkourCourse> courses = new ArrayList<ParkourCourse>();
+        List<ParkourCourse> courses = new ArrayList<>();
         try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM adventures JOIN courses ON adventures.course = courses.id WHERE adventures.name = ? ORDER BY course")) {
             stmt.setString(1, name);
             try (ResultSet result = stmt.executeQuery()) {

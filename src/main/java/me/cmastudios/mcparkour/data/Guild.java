@@ -262,7 +262,15 @@ public class Guild {
         }
 
         public String toString() {
-            return Parkour.getString("guild.rank." + this.name().toLowerCase());
+            switch (this) {
+                case DEFAULT:
+                    return Parkour.getString("guild.rank.default");
+                case OFFICER:
+                    return Parkour.getString("guild.rank.officer");
+                case LEADER:
+                    return Parkour.getString("guild.rank.leader");
+            }
+            return null;
         }
 
         public static GuildRank getRank(String localized) {
@@ -277,6 +285,8 @@ public class Guild {
     }
 
     public static class GuildWar {
+        private static final int MAX_PLAYERS = 2; // Maximum players on each guild's team
+        private static final int MAX_PLAYERS_TOTAL = MAX_PLAYERS * 2;
         private final Guild initiator;
         private final Guild competitor;
         private final ParkourCourse course;
@@ -303,13 +313,30 @@ public class Guild {
             this.warriors = new ArrayList<GuildPlayer>();
         }
 
-        public void initiateWar(Parkour plugin) throws SQLException {
-            List<GuildPlayer> compendium = initiator.getPlayers(plugin.getCourseDatabase());
-            compendium.addAll(competitor.getPlayers(plugin.getCourseDatabase()));
-            for (GuildPlayer player : compendium) {
-                if (player.getPlayer().isOnline()) {
-                    this.warriors.add(player);
+        /**
+         * Add a player to participate in the guild war.
+         *
+         * @param player Player to add.
+         * @throws IllegalArgumentException Player is already a warrior.
+         * @throws IllegalStateException Too many players signed up for the guild already.
+         */
+        public void addPlayer(GuildPlayer player) {
+            synchronized (warriors) { // Chat is async
+                if (warriors.contains(player))  {
+                    throw new IllegalArgumentException(Parkour.getString("guild.war.add.already"));
                 }
+                if (this.getWarriors(player.getGuild()).size() >= MAX_PLAYERS) {
+                    throw new IllegalStateException(Parkour.getString("guild.war.add.toomuch"));
+                }
+            }
+        }
+
+        public void initiateWar(Parkour plugin) throws SQLException {
+            if (warriors.size() < MAX_PLAYERS_TOTAL) { // add subroutine prevents more than 5 players per team
+                throw new IllegalStateException(Parkour.getString("guild.war.insufficient"));
+            }
+            if (warriors.size() > MAX_PLAYERS_TOTAL) {
+                throw new AssertionError("More than " + MAX_PLAYERS_TOTAL + " players");
             }
             this.accepted = true;
             this.startTime = System.currentTimeMillis();
@@ -319,8 +346,10 @@ public class Guild {
                     plugin.playerCourseTracker.remove(player).leave(player);
                 }
                 player.teleport(course.getTeleport(), TeleportCause.COMMAND);
+                player.sendMessage(Parkour.getString("guild.war.start"));
             }
             xp = plugin.getServer().getScheduler().runTaskTimer(plugin, new XpCounterTask(this), 1L, 1L);
+            this.startTimeoutTimer(plugin);
         }
 
         public void handleDisconnect(GuildPlayer player, Parkour plugin) {
@@ -460,7 +489,7 @@ public class Guild {
 
             @Override
             public void run() {
-                if (war.isAccepted()) {
+                if (war.hasStarted()) {
                     return;
                 }
                 plugin.activeWars.remove(war);
@@ -549,6 +578,10 @@ public class Guild {
 
         public void setAccepted(boolean accepted) {
             this.accepted = accepted;
+        }
+
+        public boolean hasStarted() {
+            return this.isAccepted() && this.getWarriors().size() >= 10;
         }
     }
 }

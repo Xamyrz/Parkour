@@ -60,9 +60,8 @@ public class GuildCommand implements CommandExecutor {
                 GuildPlayer createPlayer = GuildPlayer.loadGuildPlayer(
                         plugin.getCourseDatabase(),
                         Bukkit.getOfflinePlayer(sender.getName()));
-                if (createPlayer != null && createPlayer.inGuild()) {
-                    sender.sendMessage(Parkour
-                            .getString("guild.create.inguild"));
+                if (createPlayer.inGuild()) {
+                    sender.sendMessage(Parkour.getString("guild.create.inguild"));
                     return true;
                 }
                 if (Guild.loadGuild(plugin.getCourseDatabase(), createTag) != null) {
@@ -87,7 +86,7 @@ public class GuildCommand implements CommandExecutor {
                 sender.sendMessage(Parkour.getString("error.player404"));
                 return true;
             }
-            if (invitedPlayer.getName() == sender.getName())
+            if (invitedPlayer.getName().equals(sender.getName()))
                 return true;
             try {
                 GuildPlayer player = GuildPlayer.loadGuildPlayer(
@@ -123,7 +122,8 @@ public class GuildCommand implements CommandExecutor {
             }
             break;
         case "accept":
-            Guild acreq = invites.get(Bukkit.getPlayerExact(sender.getName()));
+            Player acplr = Bukkit.getPlayerExact(sender.getName());
+            Guild acreq = invites.get(acplr);
             if (acreq == null) {
                 sender.sendMessage(Parkour.getString("guild.invite.404"));
                 return true;
@@ -144,7 +144,7 @@ public class GuildCommand implements CommandExecutor {
                             .getString("guild.create.inguild"));
                     return true;
                 }
-                invites.remove(acreq);
+                invites.remove(acplr);
                 gp.setGuild(acreq);
                 gp.setRank(GuildRank.DEFAULT);
                 gp.save(plugin.getCourseDatabase());
@@ -156,7 +156,8 @@ public class GuildCommand implements CommandExecutor {
             }
             break;
         case "decline":
-            Guild dcreq = invites.get(Bukkit.getPlayerExact(sender.getName()));
+            Player dcplr = Bukkit.getPlayerExact(sender.getName());
+            Guild dcreq = invites.get(dcplr);
             if (dcreq == null) {
                 sender.sendMessage(Parkour.getString("guild.invite.404"));
                 return true;
@@ -166,7 +167,7 @@ public class GuildCommand implements CommandExecutor {
                     sender.sendMessage(Parkour.getString("guild.invite.404"));
                     return true;
                 }
-                invites.remove(dcreq);
+                invites.remove(dcplr);
             } catch (SQLException e2) {
                 throw new RuntimeException(e2);
             }
@@ -176,7 +177,7 @@ public class GuildCommand implements CommandExecutor {
                 return false;
             }
             OfflinePlayer kickPlayer = Bukkit.getOfflinePlayer(args[1]);
-            if (kickPlayer.getName() == sender.getName()) {
+            if (kickPlayer.getName().equals(sender.getName())) {
                 sender.getServer().dispatchCommand(sender, "guild leave");
                 return true;
             }
@@ -333,8 +334,8 @@ public class GuildCommand implements CommandExecutor {
                     sender.sendMessage(Parkour.getString("guild.notin"));
                     return true;
                 }
-                if (plugin.guildChat.containsKey((Player) sender)) {
-                    plugin.guildChat.remove((Player) sender);
+                if (plugin.guildChat.containsKey(sender)) {
+                    plugin.guildChat.remove(sender);
                     sender.sendMessage(Parkour.getString("guild.chat.toggle.off"));
                 } else {
                     plugin.guildChat.put((Player) sender, player);
@@ -372,6 +373,40 @@ public class GuildCommand implements CommandExecutor {
                     war.broadcast(Parkour.getString("guild.war.decline"));
                     plugin.activeWars.remove(war);
                     return true;
+                } else if (args[1].equalsIgnoreCase("add") && args.length >= 3) {
+                    GuildWar war = plugin.getWar(player.getGuild());
+                    if (war == null) {
+                        sender.sendMessage(Parkour.getString("guild.war.notin"));
+                        return true;
+                    } else if (war.hasStarted()) {
+                        sender.sendMessage(Parkour.getString("guild.war.add.started"));
+                        return true;
+                    } else if (!war.isAccepted()) {
+                        war.setAccepted(true);
+                    }
+                    Player bukkitTarget = Bukkit.getPlayer(args[2]);
+                    if (bukkitTarget == null) {
+                        sender.sendMessage(Parkour.getString("error.player404", args[2]));
+                        return true;
+                    }
+                    GuildPlayer target = GuildPlayer.loadGuildPlayer(plugin.getCourseDatabase(), bukkitTarget);
+                    if (target == null || !target.inGuild() || !target.getGuild().equals(player.getGuild())) {
+                        sender.sendMessage(Parkour.getString("error.player404", args[2]));
+                        return true;
+                    }
+                    try {
+                        war.addPlayer(target);
+                    } catch (IllegalArgumentException | IllegalStateException e) {
+                        sender.sendMessage(e.getMessage());
+                        return true;
+                    }
+                    sender.sendMessage(Parkour.getString("guild.war.add.confirm", bukkitTarget.getName()));
+                    bukkitTarget.sendMessage(Parkour.getString("guild.war.add.notice"));
+                    if (war.hasStarted()) {
+                        // Automatically start the war if there are enough players
+                        war.initiateWar(plugin);
+                    }
+                    return true;
                 }
                 Guild opponent = Guild.loadGuild(plugin.getCourseDatabase(), args[1]);
                 if (opponent == null) {
@@ -385,8 +420,9 @@ public class GuildCommand implements CommandExecutor {
                 if (plugin.getWar(player.getGuild()) != null
                         && (plugin.getWar(player.getGuild()) == plugin.getWar(opponent))) {
                     // accepting a declaration of war (we only allow mutual wars)
-                    GuildWar leWar = plugin.getWar(player.getGuild());
-                    leWar.initiateWar(plugin);
+                    plugin.getWar(player.getGuild()).setAccepted(true);
+                    // War will be initiated when enough players are added
+                    sender.sendMessage(Parkour.getString("guild.war.accept"));
                     return true;
                 }
                 if (plugin.getWar(player.getGuild()) != null) { // Only one war at a time

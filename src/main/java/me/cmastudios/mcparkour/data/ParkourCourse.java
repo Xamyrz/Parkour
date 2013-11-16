@@ -17,20 +17,19 @@
 
 package me.cmastudios.mcparkour.data;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-
 import me.cmastudios.mcparkour.Parkour;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Playable parkour course.
@@ -91,6 +90,17 @@ public class ParkourCourse {
             stmt.setString(8, mode.name());
             stmt.setString(9, diff.name());
             stmt.setInt(10, id);
+            stmt.executeUpdate();
+        }
+    }
+
+    public void clearHeads(Parkour plugin) throws SQLException {
+        for (EffectHead head : EffectHead.loadHeads(plugin.getCourseDatabase(), this)) {
+            head.getLocation().getBlock().removeMetadata("mcparkour-head", plugin);
+        }
+        try (PreparedStatement stmt = plugin.getCourseDatabase().prepareStatement(
+                "DELETE FROM courseheads WHERE course_id = ?")) {
+            stmt.setInt(1, id);
             stmt.executeUpdate();
         }
     }
@@ -177,4 +187,5 @@ public class ParkourCourse {
     public static enum CourseDifficulty {
         EASY, MEDIUM, HARD, VERYHARD
     }
+
 }

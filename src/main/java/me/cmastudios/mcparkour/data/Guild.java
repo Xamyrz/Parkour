@@ -357,6 +357,11 @@ public class Guild {
             }
             this.accepted = true;
             this.startTime = System.currentTimeMillis();
+            try {
+                plugin.rebuildHeads(course);
+            } catch (SQLException e) {
+                plugin.getLogger().log(Level.WARNING, "Failed loading effect heads", e);
+            }
             for (GuildPlayer warrior : warriors) {
                 Player player = warrior.getPlayer().getPlayer();
                 if (plugin.playerCourseTracker.containsKey(player)) {
@@ -579,10 +584,6 @@ public class Guild {
 
         public ParkourCourse getCourse() {
             return course;
-        }
-
-        public long getStartTime() {
-            return startTime;
         }
 
         public List<GuildPlayer> getWarriors() {

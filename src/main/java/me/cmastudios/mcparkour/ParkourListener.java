@@ -17,45 +17,35 @@
 
 package me.cmastudios.mcparkour;
 
-import java.sql.SQLException;
-import java.text.DecimalFormat;
-import java.util.Iterator;
-import java.util.List;
-
 import me.cmastudios.mcparkour.Parkour.PlayerCourseData;
-import me.cmastudios.mcparkour.data.AdventureCourse;
+import me.cmastudios.mcparkour.data.*;
 import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.Guild.GuildWar;
-import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
-import me.cmastudios.mcparkour.data.PlayerExperience;
-import me.cmastudios.mcparkour.data.PlayerHighScore;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.apache.commons.lang.Validate;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.block.Skull;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerExpChangeEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerKickEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.metadata.MetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Responds to Bukkit events for the Parkour plugin.
@@ -284,6 +274,19 @@ public class ParkourListener implements Listener {
         if (duel != null && duel.isAccepted() && !duel.hasStarted()) {
             event.setTo(duel.getCourse().getTeleport());
         }
+        GuildWar war = plugin.getWar(player);
+        if (war != null && war.hasStarted()) {
+            Block potentialHead = this.getBlockInDepthRange(player.getLocation(), Material.SKULL, 0, 1);
+            if (potentialHead != null && potentialHead.hasMetadata("mcparkour-head")) {
+                List<MetadataValue> metadata = potentialHead.getMetadata("mcparkour-head");
+                Validate.notEmpty(metadata); // assert
+                Validate.notNull(metadata.get(0)); // assert
+                Validate.isTrue(metadata.get(0).value() instanceof EffectHead); // assert
+                EffectHead head = (EffectHead) metadata.get(0).value();
+                potentialHead.setType(Material.AIR);
+                event.getPlayer().getInventory().addItem(head.getPotion());
+            }
+        }
     }
 
     private boolean detectBlocks(Location loc, Material type, int min, int max) {
@@ -369,6 +372,13 @@ public class ParkourListener implements Listener {
             } else if (event.getPlayer().getItemInHand().getType() == Material.STICK) {
                 event.getPlayer().chat("/cp");
             }
+        }
+        if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK
+                && event.getPlayer().getItemInHand().getType() == Material.POTION) {
+            PotionMeta potion = (PotionMeta) event.getPlayer().getItemInHand().getItemMeta();
+            event.getPlayer().addPotionEffects(potion.getCustomEffects());
+            event.getPlayer().getInventory().remove(event.getPlayer().getItemInHand());
+            event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BURP, 10, 0);
         }
     }
 
@@ -536,6 +546,54 @@ public class ParkourListener implements Listener {
             if (!event.getPlayer().hasPermission("parkour.set")) {
                 event.setLine(0, "-removed-");
                 event.getPlayer().sendMessage(Parkour.getString("sign.noperms", new Object[]{}));
+            }
+        }
+    }
+
+    @EventHandler
+    public void onBlockBreak(final BlockBreakEvent event) {
+        if (event.getBlock().hasMetadata("mcparkour-head")) if (event.getPlayer().hasPermission("parkour.set")) {
+            try {
+                List<MetadataValue> metadata = event.getBlock().getMetadata("mcparkour-head");
+                Validate.notEmpty(metadata); // assert
+                Validate.notNull(metadata.get(0)); // assert
+                Validate.isTrue(metadata.get(0).value() instanceof EffectHead); // assert
+                EffectHead head = (EffectHead) metadata.get(0).value();
+                head.delete(plugin);
+                event.getBlock().removeMetadata("mcparkour-head", plugin);
+            } catch (Exception ex) {
+                event.setCancelled(true);
+                event.getPlayer().sendMessage(ChatColor.RED + ex.toString());
+            }
+            event.getPlayer().playSound(event.getBlock().getLocation(), Sound.ANVIL_BREAK, 10, 1); // Confirmation
+        } else {
+            event.getPlayer().sendMessage(Parkour.getString("sign.noperms"));
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onBlockPlace(final BlockPlaceEvent event) throws SQLException {
+        if (event.getBlock().getType() == Material.SKULL
+                && event.getItemInHand().getItemMeta().hasDisplayName()
+                && event.getPlayer().hasPermission("parkour.set")) {
+            try {
+                int courseId = Integer.parseInt(event.getItemInHand().getItemMeta().getDisplayName());
+                event.setCancelled(true);
+                ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), courseId);
+                Validate.notNull(course, Parkour.getString("error.course404"));
+                Validate.isTrue(course.getMode() == CourseMode.GUILDWAR, Parkour.getString("error.coursewar"));
+                Validate.isTrue(event.getBlock().getState() instanceof Skull); // assert
+                SkullType type = ((Skull)event.getBlock().getState()).getSkullType();
+                Validate.notNull(type); // assert
+                EffectHead head = new EffectHead(event.getBlock().getLocation(), course, type);
+                head.save(plugin.getCourseDatabase());
+                head.setBlock(plugin);
+                event.getPlayer().playSound(event.getBlock().getLocation(), Sound.ANVIL_USE, 10, 1); // Confirmation
+            } catch (NumberFormatException ignored) { // Why a skull decoration would have a custom name, I don't know
+            } catch (Exception ex) {
+                event.setCancelled(true);
+                event.getPlayer().sendMessage(ChatColor.RED + ex.toString());
             }
         }
     }

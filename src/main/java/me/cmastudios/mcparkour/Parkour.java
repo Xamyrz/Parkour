@@ -17,38 +17,13 @@
 
 package me.cmastudios.mcparkour;
 
-import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.ResourceBundle;
-import java.util.logging.Level;
-
-import me.cmastudios.mcparkour.commands.AdventureCommand;
-import me.cmastudios.mcparkour.commands.DeleteCourseCommand;
-import me.cmastudios.mcparkour.commands.DuelCommand;
-import me.cmastudios.mcparkour.commands.GuildCommand;
-import me.cmastudios.mcparkour.commands.LevelCommand;
-import me.cmastudios.mcparkour.commands.ListCoursesCommand;
-import me.cmastudios.mcparkour.commands.ParkourCommand;
-import me.cmastudios.mcparkour.commands.SetCheckpointCommand;
-import me.cmastudios.mcparkour.commands.SetCourseCommand;
-import me.cmastudios.mcparkour.commands.TopScoresCommand;
+import me.cmastudios.mcparkour.commands.*;
+import me.cmastudios.mcparkour.data.EffectHead;
 import me.cmastudios.mcparkour.data.Guild;
 import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.Guild.GuildWar;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseDifficulty;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -58,6 +33,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.logging.Level;
 
 /**
  * Main class for mcparkour Bukkit plugin.
@@ -113,6 +97,11 @@ public class Parkour extends JavaPlugin {
                 Parkour.getString("item.point.description.2") };
         meta.setLore(Arrays.asList(lore));
         POINT.setItemMeta(meta);
+        try {
+            this.rebuildHeads();
+        } catch (SQLException e) {
+            this.getLogger().log(Level.WARNING, "Failed loading effect heads", e);
+        }
     }
 
     @Override
@@ -145,7 +134,7 @@ public class Parkour extends JavaPlugin {
     }
 
     public static String getString(String key, Object... args) {
-        return MessageFormat.format(messages.getString(key), args);
+        return MessageFormat.format(messages.getString(key), args).replace("\u00A0", " ");
     }
 
     public void connectDatabase() {
@@ -157,16 +146,10 @@ public class Parkour extends JavaPlugin {
             this.getLogger().log(Level.SEVERE, "Failed to close existing connection to database", ex);
         }
         try {
-            if (this.getConfig().getBoolean("mysql.enabled", false)) {
-                Class.forName("com.mysql.jdbc.Driver").newInstance();
-                this.courseDatabase = DriverManager.getConnection(String.format("jdbc:mysql://%s:%d/%s",
-                        this.getConfig().getString("mysql.host"), this.getConfig().getInt("mysql.port"), this.getConfig().getString("mysql.database")),
-                        this.getConfig().getString("mysql.username"), this.getConfig().getString("mysql.password"));
-            } else {
-                Class.forName("org.sqlite.JDBC").newInstance();
-                File courseDatabaseFile = new File(this.getDataFolder(), "courses.sl3");
-                this.courseDatabase = DriverManager.getConnection("jdbc:sqlite:" + courseDatabaseFile.getPath());
-            }
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
+            this.courseDatabase = DriverManager.getConnection(String.format("jdbc:mysql://%s:%d/%s",
+                    this.getConfig().getString("mysql.host"), this.getConfig().getInt("mysql.port"), this.getConfig().getString("mysql.database")),
+                    this.getConfig().getString("mysql.username"), this.getConfig().getString("mysql.password"));
             try (Statement initStatement = this.courseDatabase.createStatement()) {
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT, mode ENUM('normal', 'guildwar', 'adventure', 'vip') NOT NULL DEFAULT 'normal', difficulty ENUM('easy', 'medium', 'hard', 'veryhard') NOT NULL DEFAULT 'easy')");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (player varchar(16), course INTEGER, time BIGINT, plays INT)");
@@ -174,6 +157,7 @@ public class Parkour extends JavaPlugin {
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guilds (tag varchar(5), name varchar(32))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guildplayers (player varchar(16), guild varchar(5), rank enum('default','officer','leader') NOT NULL DEFAULT 'default')");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS adventures (name varchar(32), course INTEGER)");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courseheads (world_name varchar(32), x INTEGER, y INTEGER, z INTEGER, course_id INTEGER, skull_type_name varchar(32))");
             }
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load database driver", ex);
@@ -299,8 +283,20 @@ public class Parkour extends JavaPlugin {
     }
 
     public static void broadcast(List<Player> list, String message) {
-        for (Player receipient : list) {
-            receipient.sendMessage(message);
+        for (Player recipient : list) {
+            recipient.sendMessage(message);
+        }
+    }
+
+    public void rebuildHeads() throws SQLException {
+        for (EffectHead head : EffectHead.loadHeads(this.getCourseDatabase())) {
+            head.setBlock(this);
+        }
+    }
+
+    public void rebuildHeads(ParkourCourse course) throws SQLException {
+        for (EffectHead head : EffectHead.loadHeads(this.getCourseDatabase(), course)) {
+             head.setBlock(this);
         }
     }
 

@@ -17,13 +17,13 @@
 
 package me.cmastudios.mcparkour.commands;
 
-import java.sql.SQLException;
-
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+
+import java.sql.SQLException;
 
 public class DeleteCourseCommand implements CommandExecutor {
 
@@ -45,6 +45,7 @@ public class DeleteCourseCommand implements CommandExecutor {
                     plugin.getCourseDatabase(), id);
             if (course != null) {
                 course.delete(plugin.getCourseDatabase());
+                course.clearHeads(plugin);
                 sender.sendMessage(Parkour.getString("course.delete"));
             } else {
                 sender.sendMessage(Parkour.getString("error.course404"));

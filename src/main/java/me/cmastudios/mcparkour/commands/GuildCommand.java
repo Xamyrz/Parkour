@@ -54,6 +54,36 @@ public class GuildCommand implements CommandExecutor {
         if (args.length < 1)
             return false;
         if (!(sender instanceof Player)) {
+            if (args.length >= 4 && args[0].equalsIgnoreCase("create")) {
+                String createTag = args[1];
+                String createName = args[2];
+                String leader = args[3];
+                if (!StringUtils.isAlphanumeric(createTag) || createTag.length() > 5) {
+                    sender.sendMessage(Parkour.getString("guild.create.invalid"));
+                    return true;
+                }
+                try {
+                    GuildPlayer createPlayer = GuildPlayer.loadGuildPlayer(
+                            plugin.getCourseDatabase(),
+                            Bukkit.getOfflinePlayer(leader));
+                    if (createPlayer.inGuild()) {
+                        sender.sendMessage(Parkour.getString("guild.create.inguild"));
+                        return true;
+                    }
+                    if (Guild.loadGuild(plugin.getCourseDatabase(), createTag) != null) {
+                        sender.sendMessage(Parkour.getString("guild.create.exists"));
+                        return true;
+                    }
+                    Guild createGuild = new Guild(createTag, createName);
+                    createGuild.save(plugin.getCourseDatabase());
+                    createPlayer.setGuild(createGuild);
+                    createPlayer.setRank(GuildRank.LEADER);
+                    createPlayer.save(plugin.getCourseDatabase());
+                    return true;
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
             sender.sendMessage(Parkour.getString("error.playerreq"));
             return true;
         }

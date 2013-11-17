@@ -132,18 +132,24 @@ public class EffectHead {
         this.getLocation().getBlock().removeMetadata("mcparkour-head", plugin);
     }
 
+    private static final List<BlockFace> validRotations = Arrays.asList(
+            BlockFace.EAST,
+            BlockFace.NORTH, BlockFace.NORTH_EAST, BlockFace.NORTH_WEST,
+            BlockFace.SOUTH, BlockFace.SOUTH_EAST, BlockFace.SOUTH_WEST,
+            BlockFace.WEST
+    );
     public void setBlock(Parkour plugin) {
         Random rotator = new Random();
         Block block = this.getLocation().getBlock();
         block.setType(Material.SKULL);
         block.setMetadata("mcparkour-head", new FixedMetadataValue(plugin, this));
         BlockState modify = block.getState();
-        if (modify.getData() instanceof Skull) {
-            Skull data = (Skull) modify.getData();
-            BlockFace randomAngle = BlockFace.values()[rotator.nextInt(BlockFace.values().length)];
+        if (modify instanceof Skull) {
+            Skull data = (Skull) modify;
+            BlockFace randomAngle = validRotations.get(rotator.nextInt(validRotations.size()));
             data.setRotation(randomAngle);
             data.setSkullType(this.getSkullType());
-            modify.update(true, true);
+            data.update(true, true);
         }
     }
 

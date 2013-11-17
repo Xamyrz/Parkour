@@ -373,7 +373,7 @@ public class ParkourListener implements Listener {
                 event.getPlayer().chat("/cp");
             }
         }
-        if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK
+        if ((event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK)
                 && event.getPlayer().getItemInHand().getType() == Material.POTION) {
             PotionMeta potion = (PotionMeta) event.getPlayer().getItemInHand().getItemMeta();
             event.getPlayer().addPotionEffects(potion.getCustomEffects());
@@ -572,7 +572,7 @@ public class ParkourListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBlockPlace(final BlockPlaceEvent event) throws SQLException {
         if (event.getBlock().getType() == Material.SKULL
                 && event.getItemInHand().getItemMeta().hasDisplayName()
@@ -584,11 +584,12 @@ public class ParkourListener implements Listener {
                 Validate.notNull(course, Parkour.getString("error.course404"));
                 Validate.isTrue(course.getMode() == CourseMode.GUILDWAR, Parkour.getString("error.coursewar"));
                 Validate.isTrue(event.getBlock().getState() instanceof Skull); // assert
-                SkullType type = ((Skull)event.getBlock().getState()).getSkullType();
+                SkullType type = plugin.getSkullFromDurability(event.getItemInHand().getDurability());
                 Validate.notNull(type); // assert
                 EffectHead head = new EffectHead(event.getBlock().getLocation(), course, type);
                 head.save(plugin.getCourseDatabase());
                 head.setBlock(plugin);
+                event.setCancelled(false);
                 event.getPlayer().playSound(event.getBlock().getLocation(), Sound.ANVIL_USE, 10, 1); // Confirmation
             } catch (NumberFormatException ignored) { // Why a skull decoration would have a custom name, I don't know
             } catch (Exception ex) {

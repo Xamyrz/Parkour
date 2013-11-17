@@ -24,10 +24,7 @@ import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.Guild.GuildWar;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseDifficulty;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -297,6 +294,17 @@ public class Parkour extends JavaPlugin {
     public void rebuildHeads(ParkourCourse course) throws SQLException {
         for (EffectHead head : EffectHead.loadHeads(this.getCourseDatabase(), course)) {
              head.setBlock(this);
+        }
+    }
+
+    public SkullType getSkullFromDurability(short durability) {
+        switch (durability) {
+            case 1:
+                return SkullType.WITHER;
+            case 3:
+                return SkullType.PLAYER;
+            default:
+                return SkullType.SKELETON;
         }
     }
 

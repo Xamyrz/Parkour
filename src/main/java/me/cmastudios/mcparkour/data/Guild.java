@@ -22,6 +22,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -345,6 +346,7 @@ public class Guild {
                 if (this.getWarriors(player.getGuild()).size() >= MAX_PLAYERS) {
                     throw new IllegalStateException(Parkour.getString("guild.war.add.toomuch"));
                 }
+                warriors.add(player);
             }
         }
 
@@ -353,7 +355,7 @@ public class Guild {
                 throw new IllegalStateException(Parkour.getString("guild.war.insufficient"));
             }
             if (warriors.size() > MAX_PLAYERS_TOTAL) {
-                throw new AssertionError("More than " + MAX_PLAYERS_TOTAL + " players");
+                throw new ConcurrentModificationException("More than " + MAX_PLAYERS_TOTAL + " players");
             }
             this.accepted = true;
             this.startTime = System.currentTimeMillis();
@@ -599,7 +601,7 @@ public class Guild {
         }
 
         public boolean hasStarted() {
-            return this.isAccepted() && this.getWarriors().size() >= 10;
+            return this.isAccepted() && this.getWarriors().size() >= MAX_PLAYERS_TOTAL;
         }
     }
 }

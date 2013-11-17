@@ -408,8 +408,8 @@ public class GuildCommand implements CommandExecutor {
                     sender.sendMessage(Parkour.getString("guild.war.noperms"));
                     return true;
                 }
+                GuildWar war = plugin.getWar(player.getGuild());
                 if (args[1].equalsIgnoreCase("decline")) {
-                    GuildWar war = plugin.getWar(player.getGuild());
                     if (war == null) {
                         sender.sendMessage(Parkour.getString("guild.war.notin"));
                         return true;
@@ -421,7 +421,6 @@ public class GuildCommand implements CommandExecutor {
                     plugin.activeWars.remove(war);
                     return true;
                 } else if (args[1].equalsIgnoreCase("add") && args.length >= 3) {
-                    GuildWar war = plugin.getWar(player.getGuild());
                     if (war == null) {
                         sender.sendMessage(Parkour.getString("guild.war.notin"));
                         return true;
@@ -464,19 +463,20 @@ public class GuildCommand implements CommandExecutor {
                     // silently fail, no internal conflicts
                     return true;
                 }
-                if (plugin.getWar(player.getGuild()) != null
-                        && (plugin.getWar(player.getGuild()) == plugin.getWar(opponent))) {
+                GuildWar opponentWar = plugin.getWar(opponent);
+                if (war != null && (war == opponentWar)) {
                     // accepting a declaration of war (we only allow mutual wars)
-                    plugin.getWar(player.getGuild()).setAccepted(true);
+                    war.setAccepted(true);
+                    war.addPlayer(player);
                     // War will be initiated when enough players are added
                     sender.sendMessage(Parkour.getString("guild.war.accept"));
                     return true;
                 }
-                if (plugin.getWar(player.getGuild()) != null) { // Only one war at a time
+                if (war != null) { // Only one war at a time
                     sender.sendMessage(Parkour.getString("guild.war.already.self"));
                     return true;
                 }
-                if (plugin.getWar(opponent) != null) { // opponent is declaring war
+                if (opponentWar != null) { // opponent is declaring war
                     sender.sendMessage(Parkour.getString("guild.war.already.other"));
                     return true;
                 }
@@ -496,8 +496,9 @@ public class GuildCommand implements CommandExecutor {
                     sender.sendMessage(Parkour.getString("guild.war.none"));
                     return true;
                 }
-                GuildWar war = new GuildWar(player.getGuild(), opponent, course);
+                war = new GuildWar(player.getGuild(), opponent, course);
                 war.startAcceptTimer(plugin);
+                war.addPlayer(player);
                 plugin.activeWars.add(war);
                 opponent.broadcast(Parkour.getString("guild.war.declare",
                         player.getGuild().getTag(), player.getGuild().getName(), courseId),

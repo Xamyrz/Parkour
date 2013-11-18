@@ -167,18 +167,18 @@ public class EffectHead {
     }
 
     private static final List<PotionEffect> playerEffects = Arrays.asList(
-            new PotionEffect(PotionEffectType.SPEED, 4, 1),
-            new PotionEffect(PotionEffectType.SPEED, 3, 2),
-            new PotionEffect(PotionEffectType.JUMP, 3, 1),
+            new PotionEffect(PotionEffectType.SPEED, 80, 1),
+            new PotionEffect(PotionEffectType.SPEED, 60, 2),
+            new PotionEffect(PotionEffectType.JUMP, 60, 1),
             new PotionEffect(PotionEffectType.NIGHT_VISION, 30, 1),
-            new PotionEffect(PotionEffectType.SPEED, 3, 1),
-            new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10, 1)
+            new PotionEffect(PotionEffectType.SPEED, 60, 1),
+            new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 1)
     );
     private static final List<PotionEffect> witherEffects = Arrays.asList(
-            new PotionEffect(PotionEffectType.SLOW, 4, 1),
-            new PotionEffect(PotionEffectType.BLINDNESS, 3, 1),
-            new PotionEffect(PotionEffectType.CONFUSION, 10, 1),
-            new PotionEffect(PotionEffectType.POISON, 4, 1)
+            new PotionEffect(PotionEffectType.SLOW, 80, 1),
+            new PotionEffect(PotionEffectType.BLINDNESS, 60, 1),
+            new PotionEffect(PotionEffectType.CONFUSION, 200, 1),
+            new PotionEffect(PotionEffectType.POISON, 80, 1)
     );
 
     Random potionTypeRNG = new Random();

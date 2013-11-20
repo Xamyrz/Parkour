@@ -17,8 +17,10 @@
 
 package me.cmastudios.mcparkour;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
+import me.cmastudios.mcparkour.data.GameResult;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.PlayerExperience;
 
@@ -86,11 +88,7 @@ public class Duel {
         return acceptTime;
     }
 
-    public void setAcceptTime(long acceptTime) {
-        this.acceptTime = acceptTime;
-    }
-
-    public void initiateDuel(Parkour plugin) {
+	public void initiateDuel(Parkour plugin) {
         if (plugin.playerCourseTracker.containsKey(initiator)) {
             plugin.playerCourseTracker.remove(initiator).leave(initiator);
         }
@@ -119,10 +117,9 @@ public class Duel {
     }
 
     public void win(Player winner, Parkour plugin) throws SQLException {
-        PlayerExperience initXp = PlayerExperience.loadExperience(
-                plugin.getCourseDatabase(), initiator);
-        PlayerExperience compXp = PlayerExperience.loadExperience(
-                plugin.getCourseDatabase(), competitor);
+		Connection db = plugin.getCourseDatabase();
+        PlayerExperience initXp = PlayerExperience.loadExperience(db, initiator);
+        PlayerExperience compXp = PlayerExperience.loadExperience(db, competitor);
         if (winner == initiator) {
             initXp.setExperience(initXp.getExperience() + bounty);
             compXp.setExperience(compXp.getExperience() - bounty);
@@ -130,8 +127,8 @@ public class Duel {
             initXp.setExperience(initXp.getExperience() - bounty);
             compXp.setExperience(compXp.getExperience() + bounty);
         }
-        initXp.save(plugin.getCourseDatabase());
-        compXp.save(plugin.getCourseDatabase());
+        initXp.save(db);
+        compXp.save(db);
         if (plugin.playerCourseTracker.containsKey(initiator)) {
             plugin.playerCourseTracker.remove(initiator).leave(initiator);
         }
@@ -140,6 +137,8 @@ public class Duel {
         }
         initiator.sendMessage(Parkour.getString("duel.win", winner.getName(), bounty));
         competitor.sendMessage(Parkour.getString("duel.win", winner.getName(), bounty));
+		GameResult result = new GameResult(winner, winner == initiator ? competitor : initiator);
+		result.save(db);
     }
 
     public void startTimeoutTimer(Parkour plugin) {

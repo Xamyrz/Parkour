@@ -461,9 +461,30 @@ public class Guild {
             }
             xp.cancel();
             plugin.activeWars.remove(this);
+			GameResult result = new GameResult(guild, guild.equals(initiator) ? competitor : initiator);
+			plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new SaveResultsTask(result, plugin.getCourseDatabase()));
         }
 
-        public Guild getWinner() {
+		private class SaveResultsTask extends BukkitRunnable {
+			private final GameResult result;
+			private final Connection connection;
+
+			public SaveResultsTask(GameResult result, Connection connection) {
+				this.result = result;
+				this.connection = connection;
+			}
+
+			@Override
+			public void run() {
+				try {
+					result.save(connection);
+				} catch (SQLException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		}
+
+		public Guild getWinner() {
             if (offlineInit >= 2) return competitor;
             if (offlineComp >= 2) return initiator;
             // add total player time to the longest time plus 30 seconds if there is a player offline

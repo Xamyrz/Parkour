@@ -17,12 +17,7 @@
 
 package me.cmastudios.mcparkour.commands;
 
-import java.sql.SQLException;
-import java.util.List;
-
 import me.cmastudios.mcparkour.Parkour;
-import me.cmastudios.mcparkour.data.ParkourCourse;
-import me.cmastudios.mcparkour.data.PlayerHighScore;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -48,17 +43,7 @@ public class ParkourCommand implements CommandExecutor {
         }
         try {
             int id = Integer.parseInt(args[0]);
-            ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), id);
-            if (course != null) {
-                ((Player)sender).teleport(course.getTeleport());
-                sender.sendMessage(Parkour.getString("course.teleport", new Object[] {id}));
-                List<PlayerHighScore> highScores = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), id);
-                ((Player)sender).setScoreboard(course.getScoreboard(highScores));
-            } else {
-                sender.sendMessage(Parkour.getString("error.course404", new Object[]{}));
-            }
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
+            plugin.teleportToCourse((Player)sender, id);
         } catch (NumberFormatException ex) {
             sender.sendMessage(Parkour.getString("error.invalidint", new Object[]{}));
         }

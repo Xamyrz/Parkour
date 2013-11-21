@@ -221,14 +221,10 @@ public class ParkourListener implements Listener {
                         } catch (IndexOutOfBoundsException | NumberFormatException ex) {
                             return; // Prevent console spam
                         }
-                        ParkourCourse tpCourse = ParkourCourse.loadCourse(plugin.getCourseDatabase(), tpParkourId);
-                        if (tpCourse == null) {
-                            event.setTo(player.getLocation().add(2, 0, 0)); // Prevent database spam
-                            player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
-                            return; // Prevent console spam
+                        if(!plugin.teleportToCourse(player, tpParkourId)) {
+                            event.setTo(player.getLocation().add(2, 0, 0)); // Prevent console spam
+                            return;
                         }
-                        event.setTo(tpCourse.getTeleport());
-                        player.sendMessage(Parkour.getString("course.teleport", new Object[]{tpCourse.getId()}));
                         break;
                     case "[portal]":
                         try {

@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package me.cmastudios.mcparkour;
 
 import me.cmastudios.mcparkour.commands.*;
@@ -39,6 +38,8 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import me.cmastudios.mcparkour.data.PlayerExperience;
 
 /**
  * Main class for mcparkour Bukkit plugin.
@@ -89,9 +90,9 @@ public class Parkour extends JavaPlugin {
         meta = POINT.getItemMeta();
         meta.setDisplayName(Parkour.getString("item.point"));
         String[] lore = {
-                Parkour.getString("item.point.description.0"),
-                Parkour.getString("item.point.description.1"),
-                Parkour.getString("item.point.description.2") };
+            Parkour.getString("item.point.description.0"),
+            Parkour.getString("item.point.description.1"),
+            Parkour.getString("item.point.description.2")};
         meta.setLore(Arrays.asList(lore));
         POINT.setItemMeta(meta);
         try {
@@ -154,8 +155,8 @@ public class Parkour extends JavaPlugin {
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guilds (tag varchar(5), name varchar(32))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guildplayers (player varchar(16), guild varchar(5), rank enum('default','officer','leader') NOT NULL DEFAULT 'default')");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS adventures (name varchar(32), course INTEGER)");
-				initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courseheads (world_name varchar(32), x INTEGER, y INTEGER, z INTEGER, course_id INTEGER, skull_type_name varchar(32))");
-				initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS gameresults (time TIMESTAMP, type enum('duel','guildwar'), winner varchar(16), loser varchar(16))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courseheads (world_name varchar(32), x INTEGER, y INTEGER, z INTEGER, course_id INTEGER, skull_type_name varchar(32))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS gameresults (time TIMESTAMP, type enum('duel','guildwar'), winner varchar(16), loser varchar(16))");
             }
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load database driver", ex);
@@ -164,7 +165,7 @@ public class Parkour extends JavaPlugin {
         }
     }
 
-	// TODO replace with connection pool
+    // TODO replace with connection pool
     public Connection getCourseDatabase() {
         try {
             if (!courseDatabase.isValid(1)) {
@@ -281,6 +282,27 @@ public class Parkour extends JavaPlugin {
         return this.getLevel(exp) >= this.getConfig().getInt("restriction." + diff.name().toLowerCase());
     }
 
+    public boolean teleportToCourse(Player player, int tpParkourId) {
+        try {
+            ParkourCourse tpCourse = ParkourCourse.loadCourse(this.getCourseDatabase(), tpParkourId);
+            if (tpCourse == null) {
+                player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
+            } else {
+                PlayerExperience pcd = PlayerExperience.loadExperience(this.getCourseDatabase(), player);
+                if (!this.canPlay(pcd.getExperience(), tpCourse.getDifficulty())) {
+                    player.sendMessage(Parkour.getString("xp.insufficient"));
+                } else {
+                    player.teleport(tpCourse.getTeleport());
+                    player.sendMessage(Parkour.getString("course.teleport", new Object[]{tpCourse.getId()}));
+                    return true;
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(Parkour.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
+
     public static void broadcast(List<Player> list, String message) {
         for (Player recipient : list) {
             recipient.sendMessage(message);
@@ -295,7 +317,7 @@ public class Parkour extends JavaPlugin {
 
     public void rebuildHeads(ParkourCourse course) throws SQLException {
         for (EffectHead head : EffectHead.loadHeads(this.getCourseDatabase(), course)) {
-             head.setBlock(this);
+            head.setBlock(this);
         }
     }
 
@@ -325,8 +347,9 @@ public class Parkour extends JavaPlugin {
             this.restoreState(player);
             try {
                 player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-            } catch (Exception ignored) {}
-            player.teleport(((Parkour)player.getServer().getPluginManager().getPlugin("Parkour")).getSpawn());
+            } catch (Exception ignored) {
+            }
+            player.teleport(((Parkour) player.getServer().getPluginManager().getPlugin("Parkour")).getSpawn());
         }
 
         public PlayerCourseData(ParkourCourse course, Player player) {

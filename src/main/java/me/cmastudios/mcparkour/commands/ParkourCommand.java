@@ -17,7 +17,12 @@
 
 package me.cmastudios.mcparkour.commands;
 
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import me.cmastudios.mcparkour.Parkour;
+import me.cmastudios.mcparkour.data.ParkourCourse;
+import me.cmastudios.mcparkour.data.PlayerExperience;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -41,9 +46,21 @@ public class ParkourCommand implements CommandExecutor {
             sender.sendMessage(Parkour.getString("error.playerreq", new Object[]{}));
             return true;
         }
+        PlayerExperience pcd;
+        try {
+            pcd = PlayerExperience.loadExperience(plugin.getCourseDatabase(), (Player)sender);
+            
+            if(plugin.getLevel(pcd.getExperience())<plugin.getConfig().getInt("restriction.levelRequiredToUsePkCommand")) {
+                sender.sendMessage(Parkour.getString("xp.insufficient.command", new Object[]{}));
+                return true;
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(ParkourCommand.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         try {
             int id = Integer.parseInt(args[0]);
-            plugin.teleportToCourse((Player)sender, id);
+            plugin.teleportToCourse((Player)sender, id,true);
         } catch (NumberFormatException ex) {
             sender.sendMessage(Parkour.getString("error.invalidint", new Object[]{}));
         }

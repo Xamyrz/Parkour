@@ -39,6 +39,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
 import me.cmastudios.mcparkour.data.PlayerExperience;
 
 /**
@@ -149,7 +150,7 @@ public class Parkour extends JavaPlugin {
                     this.getConfig().getString("mysql.host"), this.getConfig().getInt("mysql.port"), this.getConfig().getString("mysql.database")),
                     this.getConfig().getString("mysql.username"), this.getConfig().getString("mysql.password"));
             try (Statement initStatement = this.courseDatabase.createStatement()) {
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT, mode ENUM('normal', 'guildwar', 'adventure', 'vip') NOT NULL DEFAULT 'normal', difficulty ENUM('easy', 'medium', 'hard', 'veryhard') NOT NULL DEFAULT 'easy')");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT, mode ENUM('normal', 'guildwar', 'adventure', 'vip', 'hidden') NOT NULL DEFAULT 'normal', difficulty ENUM('easy', 'medium', 'hard', 'veryhard') NOT NULL DEFAULT 'easy')");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (player varchar(16), course INTEGER, time BIGINT, plays INT)");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS experience (player varchar(16), xp INTEGER)");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guilds (tag varchar(5), name varchar(32))");
@@ -279,15 +280,23 @@ public class Parkour extends JavaPlugin {
     }
 
     public boolean canPlay(int exp, CourseDifficulty diff) {
-        return this.getLevel(exp) >= this.getConfig().getInt("restriction." + diff.name().toLowerCase());
+        return this.getLevel(exp) >= getLevelRequiredToPlay(diff);
+    }
+    
+    public int getLevelRequiredToPlay(CourseDifficulty diff) {
+        return this.getConfig().getInt("restriction." + diff.name().toLowerCase());
     }
 
-    public boolean teleportToCourse(Player player, int tpParkourId) {
+    public boolean teleportToCourse(Player player, int tpParkourId, boolean isCommand) {
         try {
             ParkourCourse tpCourse = ParkourCourse.loadCourse(this.getCourseDatabase(), tpParkourId);
             if (tpCourse == null) {
                 player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
             } else {
+                if(tpCourse.getMode()==CourseMode.HIDDEN&&isCommand) {
+                    player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
+                    return false;
+                } 
                 PlayerExperience pcd = PlayerExperience.loadExperience(this.getCourseDatabase(), player);
                 if (!this.canPlay(pcd.getExperience(), tpCourse.getDifficulty())) {
                     player.sendMessage(Parkour.getString("xp.insufficient"));

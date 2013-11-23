@@ -12,7 +12,7 @@ commands:
     permission: parkour.play
   setcourse:
     description: Set the teleport for a parkour course
-    usage: /<command> <course-number> <detection-range> <normal/vip/adventure/guildwar> <easy/medium/hard>
+    usage: /<command> <course-number> <detection-range> <normal/vip/adventure/guildwar/hidden> <easy/medium/hard>
     aliases: [pkset]
     permission: parkour.set
   listcourses:

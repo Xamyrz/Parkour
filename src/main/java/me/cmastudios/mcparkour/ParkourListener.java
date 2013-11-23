@@ -221,7 +221,7 @@ public class ParkourListener implements Listener {
                         } catch (IndexOutOfBoundsException | NumberFormatException ex) {
                             return; // Prevent console spam
                         }
-                        if(!plugin.teleportToCourse(player, tpParkourId)) {
+                        if(!plugin.teleportToCourse(player, tpParkourId,false)) {
                             event.setTo(player.getLocation().add(2, 0, 0)); // Prevent console spam
                             return;
                         }

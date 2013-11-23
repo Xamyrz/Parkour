@@ -449,29 +449,16 @@ public class ParkourListener implements Listener {
         plugin.playerCheckpoints.remove(event.getPlayer());
         plugin.guildChat.remove(event.getPlayer());
         plugin.completedCourseTracker.remove(event.getPlayer());
-        if (plugin.playerCourseTracker.containsKey(event.getPlayer())) {
-            plugin.playerCourseTracker.remove(event.getPlayer()).leave(event.getPlayer());
+        if(plugin.blindPlayerExempts.containsKey(event.getPlayer())) {
+            plugin.blindPlayerExempts.remove(event.getPlayer());
         }
-        Duel duel = plugin.getDuel(event.getPlayer());
-        if (duel != null) {
-            duel.cancel(plugin, event.getPlayer());
-            plugin.activeDuels.remove(duel);
+        
+        for(List<Player> pl : plugin.blindPlayerExempts.values()) {
+            if (pl.contains(event.getPlayer())) {
+                pl.remove(event.getPlayer());
+            }
         }
-        GuildWar war = plugin.getWar(event.getPlayer());
-        if (war != null) {
-            GuildPlayer gp = war.getPlayer(event.getPlayer());
-            war.handleDisconnect(gp, plugin);
-        }
-    }
-
-    @EventHandler
-    public void onPlayerKick(final PlayerKickEvent event) throws SQLException {
-        plugin.blindPlayers.remove(event.getPlayer());
-        event.getPlayer().getInventory().remove(Material.ENDER_PEARL);
-        plugin.deafPlayers.remove(event.getPlayer());
-        plugin.playerCheckpoints.remove(event.getPlayer());
-        plugin.guildChat.remove(event.getPlayer());
-        plugin.completedCourseTracker.remove(event.getPlayer());
+        
         if (plugin.playerCourseTracker.containsKey(event.getPlayer())) {
             plugin.playerCourseTracker.remove(event.getPlayer()).leave(event.getPlayer());
         }

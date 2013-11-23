@@ -55,8 +55,9 @@ public class Parkour extends JavaPlugin {
     public final List<Player> deafPlayers = new ArrayList<>();
     public Map<Player, Checkpoint> playerCheckpoints = new HashMap<>();
     public Map<Player, PlayerCourseData> playerCourseTracker = new HashMap<>();
-    public Map<Player, PlayerCourseData> completedCourseTracker = new HashMap<>();
+    public Map<Player, PlayerCourseData> completedCourseTracker = new HashMap<>(); //You shouldn't use Player in collections, it can cause memory leaks if not managed properly
     public Map<Player, GuildPlayer> guildChat = new HashMap<>();
+    public Map<Player, List<Player>> blindPlayerExempts = new HashMap<>();
     public List<Duel> activeDuels = new ArrayList<>();
     public List<GuildWar> activeWars = new ArrayList<>();
     public final ItemStack VISION = new ItemStack(Material.EYE_OF_ENDER);
@@ -76,6 +77,7 @@ public class Parkour extends JavaPlugin {
         this.getCommand("lvl").setExecutor(new LevelCommand(this));
         this.getCommand("guild").setExecutor(new GuildCommand(this));
         this.getCommand("adventure").setExecutor(new AdventureCommand(this));
+        this.getCommand("see").setExecutor(new BlindCommand(this));
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.saveDefaultConfig();
         this.connectDatabase();
@@ -130,6 +132,7 @@ public class Parkour extends JavaPlugin {
             player.teleport(this.getSpawn());
         }
         completedCourseTracker.clear();
+        blindPlayerExempts.clear();
     }
 
     public static String getString(String key, Object... args) {
@@ -216,6 +219,12 @@ public class Parkour extends JavaPlugin {
         boolean isBlind = blindPlayers.contains(player);
         for (Player onlinePlayer : player.getServer().getOnlinePlayers()) {
             if (player != onlinePlayer && isBlind) {
+                if(blindPlayerExempts.containsKey(player)) {
+                    if(blindPlayerExempts.get(player).contains(onlinePlayer)) {
+                        player.showPlayer(onlinePlayer);
+                        continue;
+                    }
+                }
                 player.hidePlayer(onlinePlayer);
             } else if (player != onlinePlayer) {
                 player.showPlayer(onlinePlayer);

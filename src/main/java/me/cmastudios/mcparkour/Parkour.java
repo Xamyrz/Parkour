@@ -78,6 +78,7 @@ public class Parkour extends JavaPlugin {
         this.getCommand("guild").setExecutor(new GuildCommand(this));
         this.getCommand("adventure").setExecutor(new AdventureCommand(this));
         this.getCommand("see").setExecutor(new BlindCommand(this));
+        this.getCommand("highscores").setExecutor(new HighscoresCommand(this));
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.saveDefaultConfig();
         this.connectDatabase();

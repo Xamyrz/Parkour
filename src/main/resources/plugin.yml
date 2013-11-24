@@ -30,6 +30,15 @@ commands:
     usage: /<command> <numer-parkoura> [strona] - Wyswietla wszystkie czasu na danym parkourze
     aliases: [pktop]
     permission: parkour.play
+  highscores:
+    description: Manage highscores and experience
+    usage: |
+      /<command> set <player> <xp> - set player's xp
+      /<command> reset <player> - resets player's highscores
+      /<command> reset <course> - resets all highscores on specified course
+      /<command> reset <course> <player> - resets all player's highscores on specified course
+    aliases: [highscore, wyniki,hs]
+    permission: parkour.highscores
   checkpoint:
     description: Set a checkpoint in the current course to your location
     usage: /<command>

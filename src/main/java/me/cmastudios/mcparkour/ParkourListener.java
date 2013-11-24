@@ -452,13 +452,11 @@ public class ParkourListener implements Listener {
         if(plugin.blindPlayerExempts.containsKey(event.getPlayer())) {
             plugin.blindPlayerExempts.remove(event.getPlayer());
         }
-        
         for(List<Player> pl : plugin.blindPlayerExempts.values()) {
             if (pl.contains(event.getPlayer())) {
                 pl.remove(event.getPlayer());
             }
         }
-        
         if (plugin.playerCourseTracker.containsKey(event.getPlayer())) {
             plugin.playerCourseTracker.remove(event.getPlayer()).leave(event.getPlayer());
         }

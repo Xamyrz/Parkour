@@ -55,7 +55,7 @@ public class Parkour extends JavaPlugin {
     public final List<Player> deafPlayers = new ArrayList<>();
     public Map<Player, Checkpoint> playerCheckpoints = new HashMap<>();
     public Map<Player, PlayerCourseData> playerCourseTracker = new HashMap<>();
-    public Map<Player, PlayerCourseData> completedCourseTracker = new HashMap<>(); //You shouldn't use Player in collections, it can cause memory leaks if not managed properly
+    public Map<Player, PlayerCourseData> completedCourseTracker = new HashMap<>();
     public Map<Player, GuildPlayer> guildChat = new HashMap<>();
     public Map<Player, List<Player>> blindPlayerExempts = new HashMap<>();
     public List<Duel> activeDuels = new ArrayList<>();

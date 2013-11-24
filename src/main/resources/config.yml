@@ -26,4 +26,5 @@ restriction:
   medium: 8
   hard: 16
   veryhard: 24
+  levelRequiredToUsePkCommand: 8
 

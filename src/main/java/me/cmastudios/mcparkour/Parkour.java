@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package me.cmastudios.mcparkour;
 
 import me.cmastudios.mcparkour.commands.*;
@@ -39,6 +38,9 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
+import me.cmastudios.mcparkour.data.PlayerExperience;
 
 /**
  * Main class for mcparkour Bukkit plugin.
@@ -55,6 +57,7 @@ public class Parkour extends JavaPlugin {
     public Map<Player, PlayerCourseData> playerCourseTracker = new HashMap<>();
     public Map<Player, PlayerCourseData> completedCourseTracker = new HashMap<>();
     public Map<Player, GuildPlayer> guildChat = new HashMap<>();
+    public Map<Player, List<Player>> blindPlayerExempts = new HashMap<>();
     public List<Duel> activeDuels = new ArrayList<>();
     public List<GuildWar> activeWars = new ArrayList<>();
     public final ItemStack VISION = new ItemStack(Material.EYE_OF_ENDER);
@@ -74,6 +77,8 @@ public class Parkour extends JavaPlugin {
         this.getCommand("lvl").setExecutor(new LevelCommand(this));
         this.getCommand("guild").setExecutor(new GuildCommand(this));
         this.getCommand("adventure").setExecutor(new AdventureCommand(this));
+        this.getCommand("see").setExecutor(new BlindCommand(this));
+        this.getCommand("highscores").setExecutor(new HighscoresCommand(this));
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.saveDefaultConfig();
         this.connectDatabase();
@@ -89,9 +94,9 @@ public class Parkour extends JavaPlugin {
         meta = POINT.getItemMeta();
         meta.setDisplayName(Parkour.getString("item.point"));
         String[] lore = {
-                Parkour.getString("item.point.description.0"),
-                Parkour.getString("item.point.description.1"),
-                Parkour.getString("item.point.description.2") };
+            Parkour.getString("item.point.description.0"),
+            Parkour.getString("item.point.description.1"),
+            Parkour.getString("item.point.description.2")};
         meta.setLore(Arrays.asList(lore));
         POINT.setItemMeta(meta);
         try {
@@ -128,6 +133,7 @@ public class Parkour extends JavaPlugin {
             player.teleport(this.getSpawn());
         }
         completedCourseTracker.clear();
+        blindPlayerExempts.clear();
     }
 
     public static String getString(String key, Object... args) {
@@ -148,14 +154,14 @@ public class Parkour extends JavaPlugin {
                     this.getConfig().getString("mysql.host"), this.getConfig().getInt("mysql.port"), this.getConfig().getString("mysql.database")),
                     this.getConfig().getString("mysql.username"), this.getConfig().getString("mysql.password"));
             try (Statement initStatement = this.courseDatabase.createStatement()) {
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT, mode ENUM('normal', 'guildwar', 'adventure', 'vip') NOT NULL DEFAULT 'normal', difficulty ENUM('easy', 'medium', 'hard', 'veryhard') NOT NULL DEFAULT 'easy')");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT, mode ENUM('normal', 'guildwar', 'adventure', 'vip', 'hidden') NOT NULL DEFAULT 'normal', difficulty ENUM('easy', 'medium', 'hard', 'veryhard') NOT NULL DEFAULT 'easy')");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (player varchar(16), course INTEGER, time BIGINT, plays INT)");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS experience (player varchar(16), xp INTEGER)");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guilds (tag varchar(5), name varchar(32))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guildplayers (player varchar(16), guild varchar(5), rank enum('default','officer','leader') NOT NULL DEFAULT 'default')");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS adventures (name varchar(32), course INTEGER)");
-				initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courseheads (world_name varchar(32), x INTEGER, y INTEGER, z INTEGER, course_id INTEGER, skull_type_name varchar(32))");
-				initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS gameresults (time TIMESTAMP, type enum('duel','guildwar'), winner varchar(16), loser varchar(16))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courseheads (world_name varchar(32), x INTEGER, y INTEGER, z INTEGER, course_id INTEGER, skull_type_name varchar(32))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS gameresults (time TIMESTAMP, type enum('duel','guildwar'), winner varchar(16), loser varchar(16))");
             }
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load database driver", ex);
@@ -164,7 +170,7 @@ public class Parkour extends JavaPlugin {
         }
     }
 
-	// TODO replace with connection pool
+    // TODO replace with connection pool
     public Connection getCourseDatabase() {
         try {
             if (!courseDatabase.isValid(1)) {
@@ -214,6 +220,12 @@ public class Parkour extends JavaPlugin {
         boolean isBlind = blindPlayers.contains(player);
         for (Player onlinePlayer : player.getServer().getOnlinePlayers()) {
             if (player != onlinePlayer && isBlind) {
+                if(blindPlayerExempts.containsKey(player)) {
+                    if(blindPlayerExempts.get(player).contains(onlinePlayer)) {
+                        player.showPlayer(onlinePlayer);
+                        continue;
+                    }
+                }
                 player.hidePlayer(onlinePlayer);
             } else if (player != onlinePlayer) {
                 player.showPlayer(onlinePlayer);
@@ -278,7 +290,36 @@ public class Parkour extends JavaPlugin {
     }
 
     public boolean canPlay(int exp, CourseDifficulty diff) {
-        return this.getLevel(exp) >= this.getConfig().getInt("restriction." + diff.name().toLowerCase());
+        return this.getLevel(exp) >= getLevelRequiredToPlay(diff);
+    }
+    
+    public int getLevelRequiredToPlay(CourseDifficulty diff) {
+        return this.getConfig().getInt("restriction." + diff.name().toLowerCase());
+    }
+
+    public boolean teleportToCourse(Player player, int tpParkourId, boolean isCommand) {
+        try {
+            ParkourCourse tpCourse = ParkourCourse.loadCourse(this.getCourseDatabase(), tpParkourId);
+            if (tpCourse == null) {
+                player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
+            } else {
+                if(tpCourse.getMode()==CourseMode.HIDDEN&&isCommand) {
+                    player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
+                    return false;
+                } 
+                PlayerExperience pcd = PlayerExperience.loadExperience(this.getCourseDatabase(), player);
+                if (!this.canPlay(pcd.getExperience(), tpCourse.getDifficulty())) {
+                    player.sendMessage(Parkour.getString("xp.insufficient"));
+                } else {
+                    player.teleport(tpCourse.getTeleport());
+                    player.sendMessage(Parkour.getString("course.teleport", new Object[]{tpCourse.getId()}));
+                    return true;
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(Parkour.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
     }
 
     public static void broadcast(List<Player> list, String message) {
@@ -295,7 +336,7 @@ public class Parkour extends JavaPlugin {
 
     public void rebuildHeads(ParkourCourse course) throws SQLException {
         for (EffectHead head : EffectHead.loadHeads(this.getCourseDatabase(), course)) {
-             head.setBlock(this);
+            head.setBlock(this);
         }
     }
 
@@ -325,8 +366,9 @@ public class Parkour extends JavaPlugin {
             this.restoreState(player);
             try {
                 player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-            } catch (Exception ignored) {}
-            player.teleport(((Parkour)player.getServer().getPluginManager().getPlugin("Parkour")).getSpawn());
+            } catch (Exception ignored) {
+            }
+            player.teleport(((Parkour) player.getServer().getPluginManager().getPlugin("Parkour")).getSpawn());
         }
 
         public PlayerCourseData(ParkourCourse course, Player player) {

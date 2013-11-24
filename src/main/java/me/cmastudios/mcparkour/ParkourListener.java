@@ -221,14 +221,10 @@ public class ParkourListener implements Listener {
                         } catch (IndexOutOfBoundsException | NumberFormatException ex) {
                             return; // Prevent console spam
                         }
-                        ParkourCourse tpCourse = ParkourCourse.loadCourse(plugin.getCourseDatabase(), tpParkourId);
-                        if (tpCourse == null) {
-                            event.setTo(player.getLocation().add(2, 0, 0)); // Prevent database spam
-                            player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
-                            return; // Prevent console spam
+                        if(!plugin.teleportToCourse(player, tpParkourId,false)) {
+                            event.setTo(player.getLocation().add(2, 0, 0)); // Prevent console spam
+                            return;
                         }
-                        event.setTo(tpCourse.getTeleport());
-                        player.sendMessage(Parkour.getString("course.teleport", new Object[]{tpCourse.getId()}));
                         break;
                     case "[portal]":
                         try {
@@ -453,29 +449,14 @@ public class ParkourListener implements Listener {
         plugin.playerCheckpoints.remove(event.getPlayer());
         plugin.guildChat.remove(event.getPlayer());
         plugin.completedCourseTracker.remove(event.getPlayer());
-        if (plugin.playerCourseTracker.containsKey(event.getPlayer())) {
-            plugin.playerCourseTracker.remove(event.getPlayer()).leave(event.getPlayer());
+        if(plugin.blindPlayerExempts.containsKey(event.getPlayer())) {
+            plugin.blindPlayerExempts.remove(event.getPlayer());
         }
-        Duel duel = plugin.getDuel(event.getPlayer());
-        if (duel != null) {
-            duel.cancel(plugin, event.getPlayer());
-            plugin.activeDuels.remove(duel);
+        for(List<Player> pl : plugin.blindPlayerExempts.values()) {
+            if (pl.contains(event.getPlayer())) {
+                pl.remove(event.getPlayer());
+            }
         }
-        GuildWar war = plugin.getWar(event.getPlayer());
-        if (war != null) {
-            GuildPlayer gp = war.getPlayer(event.getPlayer());
-            war.handleDisconnect(gp, plugin);
-        }
-    }
-
-    @EventHandler
-    public void onPlayerKick(final PlayerKickEvent event) throws SQLException {
-        plugin.blindPlayers.remove(event.getPlayer());
-        event.getPlayer().getInventory().remove(Material.ENDER_PEARL);
-        plugin.deafPlayers.remove(event.getPlayer());
-        plugin.playerCheckpoints.remove(event.getPlayer());
-        plugin.guildChat.remove(event.getPlayer());
-        plugin.completedCourseTracker.remove(event.getPlayer());
         if (plugin.playerCourseTracker.containsKey(event.getPlayer())) {
             plugin.playerCourseTracker.remove(event.getPlayer()).leave(event.getPlayer());
         }

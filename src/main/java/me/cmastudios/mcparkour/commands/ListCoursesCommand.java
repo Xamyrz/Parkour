@@ -41,7 +41,7 @@ public class ListCoursesCommand implements CommandExecutor {
         StringBuilder courses = new StringBuilder(
                 Parkour.getString("course.list"));
         try (PreparedStatement stmt = plugin.getCourseDatabase()
-                .prepareStatement("SELECT * FROM courses ORDER BY id")) {
+                .prepareStatement("SELECT * FROM courses WHERE `mode`!='hidden' ORDER BY id")) {
             try (ResultSet result = stmt.executeQuery()) {
                 while (result.next()) {
                     courses.append(' ').append(result.getInt("id"));

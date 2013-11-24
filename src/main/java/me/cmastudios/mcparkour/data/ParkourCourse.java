@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package me.cmastudios.mcparkour.data;
 
 import me.cmastudios.mcparkour.Parkour;
@@ -30,6 +29,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 
 /**
  * Playable parkour course.
@@ -101,6 +102,20 @@ public class ParkourCourse {
         try (PreparedStatement stmt = plugin.getCourseDatabase().prepareStatement(
                 "DELETE FROM courseheads WHERE course_id = ?")) {
             stmt.setInt(1, id);
+            stmt.executeUpdate();
+        }
+    }
+
+    public void resetScores(Connection conn, OfflinePlayer player) throws SQLException {
+        String pl;
+        if (!player.hasPlayedBefore()) {
+            pl = "%";
+        } else {
+            pl = player.getName();
+        }
+        try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM `highscores` WHERE `course`=? AND `player` LIKE ?")) {
+            stmt.setInt(1, id);
+            stmt.setString(2, pl);
             stmt.executeUpdate();
         }
     }
@@ -181,10 +196,12 @@ public class ParkourCourse {
     }
 
     public static enum CourseMode {
-        NORMAL, GUILDWAR, ADVENTURE, VIP
+
+        NORMAL, GUILDWAR, ADVENTURE, VIP, HIDDEN
     }
 
     public static enum CourseDifficulty {
+
         EASY, MEDIUM, HARD, VERYHARD
     }
 

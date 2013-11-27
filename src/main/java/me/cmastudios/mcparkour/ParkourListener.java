@@ -366,7 +366,7 @@ public class ParkourListener implements Listener {
             } else if (event.getPlayer().getItemInHand().getType() == Material.NETHER_STAR) {
                 event.getPlayer().teleport(plugin.getSpawn(), TeleportCause.COMMAND);
             } else if (event.getPlayer().getItemInHand().getType() == Material.STICK) {
-                event.getPlayer().chat("/cp");
+                event.getPlayer().performCommand("cp");
             }
         }
         if ((event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK)

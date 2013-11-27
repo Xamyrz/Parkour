@@ -52,9 +52,9 @@ commands:
   duel:
     description: Start or accept request to begin a parkour duel.
     usage: |
-      /<command> <nazwa gracza> <numer parkourar> <stawka> - wyzywa przeciwnika na duel.
-      /<command> accept <stawka> - akceptuje wyzwanie na duel
-      /<command> decline - odrzuca wyzwanie.
+      /<command> <player name> <parkour number> <bounty> - Sends duel invitation to opponent.
+      /<command> accept <bounty> - Accepts duel invitation
+      /<command> decline - Declines the invitation
     permission: parkour.play
   lvl:
     description: View player level and experience.
@@ -75,17 +75,17 @@ commands:
   guild:
     description: Guild management
     usage: |
-      /<command> create <tag> <nazwa> - Tworzy gildie
-      /<command> invite <nazwa gracza> - zaprasza do gildii
-      /<command> accept <tag> - akceptuje zaproszenie
-      /<command> decline - odrzuca zaproszenie
-      /<command> leave - odchodzi z gildii. jesli gildia jest pusta zostaje ona usunieta.
-      /<command> kick <nazwa gracza> - wyrzuca gracza z gildii
-      /<command> rank <nazwa gracza> <ranga> - zmienia range danego gracza
-      /<command> chat - Wlacza/wylacza chat gildyjny
-      /<command> war <tag> <course> - Wyzywa gildie na danej mapie
-      /<command> war <tag> - Akceptuje wyzwanie do walki
-      /<command> war decline - Odrzuca wyzwanie do walki.
+      /<command> create <tag> <name> - Creates a guild
+      /<command> invite <player name> - Invites a player to guild
+      /<command> accept <tag> - Accepts guild invitation
+      /<command> decline - Declines the invitation
+      /<command> leave - Leaves guild, if you are the only member and you leave the guild gets removed.
+      /<command> kick <player name> - Kick player the from guild
+      /<command> rank <player name> <rank> - Changes players guild rank.
+      /<command> chat - Toggles guild chat
+      /<command> war <tag> <course> - Sends war invitation.
+      /<command> war <tag> - Accepts war invitation
+      /<command> war decline - Declines the war invitation
   adventure:
     description: Manage adventure parkour courses
     permission: parkour.play

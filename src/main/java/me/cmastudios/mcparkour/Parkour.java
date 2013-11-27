@@ -41,6 +41,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
 import me.cmastudios.mcparkour.data.PlayerExperience;
+import org.bukkit.FireworkEffect.Type;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Firework;
+import org.bukkit.inventory.meta.FireworkMeta;
 
 /**
  * Main class for mcparkour Bukkit plugin.
@@ -58,12 +63,18 @@ public class Parkour extends JavaPlugin {
     public Map<Player, PlayerCourseData> completedCourseTracker = new HashMap<>();
     public Map<Player, GuildPlayer> guildChat = new HashMap<>();
     public Map<Player, List<Player>> blindPlayerExempts = new HashMap<>();
+    public Map<String, Long> fireworkCooldown = new HashMap<>();
     public List<Duel> activeDuels = new ArrayList<>();
     public List<GuildWar> activeWars = new ArrayList<>();
     public final ItemStack VISION = new ItemStack(Material.EYE_OF_ENDER);
     public final ItemStack CHAT = new ItemStack(Material.PAPER);
     public final ItemStack SPAWN = new ItemStack(Material.NETHER_STAR);
     public final ItemStack POINT = new ItemStack(Material.STICK);
+    public final ItemStack HELMET = new ItemStack(Material.GOLD_HELMET);
+    public final ItemStack CHESTPLATE = new ItemStack(Material.GOLD_CHESTPLATE);
+    public final ItemStack LEGGINGS = new ItemStack(Material.GOLD_LEGGINGS);
+    public final ItemStack BOOTS = new ItemStack(Material.GOLD_BOOTS);
+    public final ItemStack FIREWORK_SPAWNER = new ItemStack(Material.FIREWORK);
 
     @Override
     public void onEnable() {
@@ -85,6 +96,9 @@ public class Parkour extends JavaPlugin {
         ItemMeta meta = VISION.getItemMeta();
         meta.setDisplayName(Parkour.getString("item.vision"));
         VISION.setItemMeta(meta);
+        meta = FIREWORK_SPAWNER.getItemMeta();
+        meta.setDisplayName(Parkour.getString("item.firework"));
+        FIREWORK_SPAWNER.setItemMeta(meta);
         meta = CHAT.getItemMeta();
         meta.setDisplayName(Parkour.getString("item.chat"));
         CHAT.setItemMeta(meta);
@@ -99,6 +113,10 @@ public class Parkour extends JavaPlugin {
             Parkour.getString("item.point.description.2")};
         meta.setLore(Arrays.asList(lore));
         POINT.setItemMeta(meta);
+        HELMET.addEnchantment(Enchantment.DURABILITY, 3);
+        CHESTPLATE.addEnchantment(Enchantment.DURABILITY, 3);
+        LEGGINGS.addEnchantment(Enchantment.DURABILITY, 3);
+        BOOTS.addEnchantment(Enchantment.DURABILITY, 3);
         try {
             this.rebuildHeads();
         } catch (SQLException e) {
@@ -220,8 +238,8 @@ public class Parkour extends JavaPlugin {
         boolean isBlind = blindPlayers.contains(player);
         for (Player onlinePlayer : player.getServer().getOnlinePlayers()) {
             if (player != onlinePlayer && isBlind) {
-                if(blindPlayerExempts.containsKey(player)) {
-                    if(blindPlayerExempts.get(player).contains(onlinePlayer)) {
+                if (blindPlayerExempts.containsKey(player)) {
+                    if (blindPlayerExempts.get(player).contains(onlinePlayer)) {
                         player.showPlayer(onlinePlayer);
                         continue;
                     }
@@ -292,7 +310,7 @@ public class Parkour extends JavaPlugin {
     public boolean canPlay(int exp, CourseDifficulty diff) {
         return this.getLevel(exp) >= getLevelRequiredToPlay(diff);
     }
-    
+
     public int getLevelRequiredToPlay(CourseDifficulty diff) {
         return this.getConfig().getInt("restriction." + diff.name().toLowerCase());
     }
@@ -303,16 +321,23 @@ public class Parkour extends JavaPlugin {
             if (tpCourse == null) {
                 player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
             } else {
-                if(tpCourse.getMode()==CourseMode.HIDDEN&&isCommand) {
+
+                if (tpCourse.getMode() == CourseMode.HIDDEN && isCommand) {
                     player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
                     return false;
-                } 
+                }
+                if ((tpCourse.getMode() == CourseMode.VIP || tpCourse.getMode() == CourseMode.ADVENTURE) && !player.hasPermission("parkour.vip")) {
+                    player.sendMessage(Parkour.getString("vip.notbought", new Object[]{}));
+                    return false;
+                }
                 PlayerExperience pcd = PlayerExperience.loadExperience(this.getCourseDatabase(), player);
                 if (!this.canPlay(pcd.getExperience(), tpCourse.getDifficulty())) {
                     player.sendMessage(Parkour.getString("xp.insufficient"));
                 } else {
                     player.teleport(tpCourse.getTeleport());
-                    player.sendMessage(Parkour.getString("course.teleport", new Object[]{tpCourse.getId()}));
+                    if (tpCourse.getMode() != CourseMode.ADVENTURE) {
+                        player.sendMessage(Parkour.getString("course.teleport", new Object[]{tpCourse.getId()}));
+                    }
                     return true;
                 }
             }
@@ -338,6 +363,98 @@ public class Parkour extends JavaPlugin {
         for (EffectHead head : EffectHead.loadHeads(this.getCourseDatabase(), course)) {
             head.setBlock(this);
         }
+    }
+
+    public void spawnRandomFirework(Location loc) {
+        Firework fw = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
+        FireworkMeta fwm = fw.getFireworkMeta();
+
+        Random r = new Random();
+
+        int rt = r.nextInt(5) + 1;
+        Type type = Type.BALL;
+        switch (rt) {
+            case 1:
+                type = Type.BALL;
+                break;
+            case 2:
+                type = Type.BURST;
+                break;
+            case 3:
+                type = Type.CREEPER;
+                break;
+            case 4:
+                type = Type.STAR;
+                break;
+            case 5:
+                type = Type.BALL_LARGE;
+                break;
+        }
+
+        FireworkEffect effect = FireworkEffect.builder().flicker(r.nextBoolean()).withColor(getRandomColor()).withFade(getRandomColor()).with(type).trail(r.nextBoolean()).build();
+        fwm.addEffect(effect);
+        fwm.setPower(0);
+        fw.setFireworkMeta(fwm);
+    }
+
+    private Color getRandomColor() {
+        Color c = null;
+        Random r = new Random();
+        int i = r.nextInt(17) + 1;
+        switch (i) {
+            case 1:
+                c = Color.AQUA;
+                break;
+            case 2:
+                c = Color.BLACK;
+                break;
+            case 3:
+                c = Color.BLUE;
+                break;
+            case 4:
+                c = Color.FUCHSIA;
+                break;
+            case 5:
+                c = Color.GRAY;
+                break;
+            case 6:
+                c = Color.GREEN;
+                break;
+            case 7:
+                c = Color.LIME;
+                break;
+            case 8:
+                c = Color.MAROON;
+                break;
+            case 9:
+                c = Color.NAVY;
+                break;
+            case 10:
+                c = Color.OLIVE;
+                break;
+            case 11:
+                c = Color.ORANGE;
+                break;
+            case 12:
+                c = Color.PURPLE;
+                break;
+            case 13:
+                c = Color.RED;
+                break;
+            case 14:
+                c = Color.SILVER;
+                break;
+            case 15:
+                c = Color.TEAL;
+                break;
+            case 16:
+                c = Color.WHITE;
+                break;
+            case 17:
+                c = Color.YELLOW;
+                break;
+        }
+        return c;
     }
 
     public SkullType getSkullFromDurability(short durability) {

@@ -75,6 +75,7 @@ public class Parkour extends JavaPlugin {
     public final ItemStack LEGGINGS = new ItemStack(Material.GOLD_LEGGINGS);
     public final ItemStack BOOTS = new ItemStack(Material.GOLD_BOOTS);
     public final ItemStack FIREWORK_SPAWNER = new ItemStack(Material.FIREWORK);
+    private final Random random = new Random();
 
     @Override
     public void onEnable() {
@@ -368,10 +369,7 @@ public class Parkour extends JavaPlugin {
     public void spawnRandomFirework(Location loc) {
         Firework fw = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
         FireworkMeta fwm = fw.getFireworkMeta();
-
-        Random r = new Random();
-
-        int rt = r.nextInt(5) + 1;
+        int rt = random.nextInt(5) + 1;
         Type type = Type.BALL;
         switch (rt) {
             case 1:
@@ -390,8 +388,7 @@ public class Parkour extends JavaPlugin {
                 type = Type.BALL_LARGE;
                 break;
         }
-
-        FireworkEffect effect = FireworkEffect.builder().flicker(r.nextBoolean()).withColor(getRandomColor()).withFade(getRandomColor()).with(type).trail(r.nextBoolean()).build();
+        FireworkEffect effect = FireworkEffect.builder().flicker(random.nextBoolean()).withColor(getRandomColor()).withFade(getRandomColor()).with(type).trail(random.nextBoolean()).build();
         fwm.addEffect(effect);
         fwm.setPower(0);
         fw.setFireworkMeta(fwm);

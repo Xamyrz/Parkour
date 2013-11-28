@@ -226,7 +226,26 @@ public class ParkourListener implements Listener {
                             return; // Prevent console spam
                         }
                         if (!plugin.teleportToCourse(player, tpParkourId, false)) {
-                            event.setTo(player.getLocation().add(2, 0, 0)); // Prevent console spam
+                            double xDiff = event.getFrom().getX()-event.getTo().getX();
+                            double zDiff = event.getFrom().getZ()-event.getTo().getZ();
+                            if(Math.abs(xDiff)>=Math.abs(zDiff)) {
+                                if(xDiff<0) {
+                                    xDiff -= 1;
+                                }
+                                else {
+                                    xDiff += 1;
+                                }
+                                event.setTo(event.getPlayer().getLocation().add(xDiff, 0, 0)); // Prevent console spam
+                            } else {
+                                if(zDiff<0) {
+                                    zDiff -= 1;
+                                }
+                                else {
+                                    zDiff += 1;
+                                }
+                                event.setTo(event.getPlayer().getLocation().add(0, 0, zDiff)); // Prevent console spam
+                            }
+                            
                             return;
                         }
                         break;

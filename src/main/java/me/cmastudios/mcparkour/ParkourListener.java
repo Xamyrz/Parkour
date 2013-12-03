@@ -357,7 +357,8 @@ public class ParkourListener implements Listener {
             } else {
                 favs = new FavoritesList((Player) event.getWhoClicked(), plugin);
             }
-            favs.handleSelection(favs.getCurrentPage(), event.getRawSlot(), event.getClick(), event.getInventory());
+            if(event.getCurrentItem().getType()!=Material.AIR)
+            favs.handleSelection(favs.getCurrentPage(), event.getSlot(), event.getClick(), event.getInventory());
         }
     }
 

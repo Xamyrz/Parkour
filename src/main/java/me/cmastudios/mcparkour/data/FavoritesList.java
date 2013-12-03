@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import me.cmastudios.mcparkour.Parkour;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -45,7 +46,7 @@ public class FavoritesList {
     private List<Integer> favorites = new ArrayList<>();
     private Connection conn;
     private Parkour plugin;
-    private int page;
+    private int page=1;
 
     public FavoritesList(Player player, Parkour plugin) throws SQLException {
         this.player = player;
@@ -89,17 +90,17 @@ public class FavoritesList {
                 inv.setItem(53, next);
             }
         }
-        ParkourCourse current;
-        ItemStack item = null;
-        ItemMeta meta;
+
         int target = favorites.size();
         if (favorites.size() > 45) {
             target = 45;
         }
         for (int i = 0; i < target; i++) {
             try {
+                ItemStack item = null;
+                ItemMeta meta;
                 int courseId = favorites.get(i * page);
-                current = ParkourCourse.loadCourse(conn, courseId);
+                ParkourCourse current = ParkourCourse.loadCourse(conn, courseId);
 
                 switch (current.getMode()) {
                     case NORMAL:
@@ -148,12 +149,13 @@ public class FavoritesList {
                         meta.setDisplayName(Parkour.getString("favorites.item.thematic", current.getId()));
                         item.setItemMeta(meta);
                         break;
+                        
                 }
                 if (item != null) {
                     meta = item.getItemMeta();
                     String[] lore = {
                         Parkour.getString("favorites.item.diffs.lore0"),
-                        Parkour.getString("favorites.item.diffs.lore1",current.getId()),
+                        Parkour.getString("favorites.item.diffs.lore1", current.getId()),
                         Parkour.getString("favorites.item.diffs.lore2")};
                     meta.setLore(Arrays.asList(lore));
                     item.setItemMeta(meta);

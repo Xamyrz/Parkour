@@ -189,6 +189,7 @@ public class FavoritesList {
             if (pkID != null) {
                 favorites.remove(pos);
                 inv.setItem(slot, null);
+                save();
             }
         }
     }

@@ -125,10 +125,6 @@ public class Parkour extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        for (Entry<Player, FavoritesList> set : pendingFavs.entrySet()) {
-            set.getValue().save();
-            pendingFavs.remove(set.getKey());
-        }
         if (this.courseDatabase != null) {
             try {
                 this.courseDatabase.close();

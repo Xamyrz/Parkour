@@ -395,7 +395,7 @@ public class ParkourListener implements Listener {
                             plugin.pendingFavs.put(event.getPlayer(), favs);
                         }
                         favs.addParkour(parkID);
-
+                        favs.save();
                         event.setCancelled(true);
                     } catch (IndexOutOfBoundsException | NumberFormatException | NullPointerException ignored) {
                     }

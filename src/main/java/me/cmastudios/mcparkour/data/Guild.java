@@ -430,7 +430,7 @@ public class Guild {
                     longComp = time;
                 }
             }
-            if (getWarriors(initiator).size() == 0 && getWarriors(competitor).size() == 0) {
+            if (getWarriors(initiator).isEmpty() && getWarriors(competitor).isEmpty()) {
                 Guild winner = getWinner();
                 win(winner, plugin);
             } else {

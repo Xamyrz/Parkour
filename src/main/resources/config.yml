@@ -27,4 +27,32 @@ restriction:
   hard: 16
   veryhard: 24
   levelRequiredToUsePkCommand: 8
-
+pkrooms:
+  easy:
+    x: 607
+    y: 83
+    z: 565
+    pitch: 4.65
+    yaw: -180
+    world: pk
+  medium:
+    x: 607 
+    y: 83
+    z: 564
+    pitch: 4.65
+    yaw: -180
+    world: pk
+  hard:
+    x: 607 
+    y: 83
+    z: 564
+    pitch: 4.65
+    yaw: -180
+    world: pk
+  veryhard:
+    x: 607 
+    y: 83
+    z: 564
+    pitch: 4.65
+    yaw: -180
+    world: pk

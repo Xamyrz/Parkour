@@ -27,6 +27,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 
 public class AdventureCommand implements CommandExecutor {
 
@@ -89,7 +90,7 @@ public class AdventureCommand implements CommandExecutor {
                     sender.sendMessage(Parkour.getString("adv.tp", chapter, course.getName()));
                 }
             } else {
-                plugin.teleportToCourse(((Player) sender),course.getCourses().get(0).getId(),true);
+                plugin.teleportToCourse(((Player) sender),course.getCourses().get(0).getId(),TeleportCause.COMMAND);
                 sender.sendMessage(Parkour.getString("adv.tp", 1, course.getName()));
             }
         } catch (SQLException e) {

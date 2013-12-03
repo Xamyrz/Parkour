@@ -63,6 +63,15 @@ commands:
       /<command> <nick-gracza> - Wyswietla statystyki innego gracza
     aliases: [level, poziom]
     permission: parkour.play
+  pkroom:
+    description: Parkour rooms
+    usage: /<command> <room>
+    aliases: [easy,normal,medium,hard,veryhard,adventure,thematic,tematyczne,przygodowe]
+    permission: parkour.play
+  chat:
+    description: Toggle global chat
+    usage: /<command> <state>
+    permission: parkour.chat.toggle
   guild:
     description: Guild management
     usage: |
@@ -96,4 +105,8 @@ permissions:
     description: Power to create a guild
   parkour.vip:
     description: Permission to play on VIP maps
+  parkour.bypasslevel:
+    description: Permission to bypass 
+  parkour.chat.write:
+    description: Permission to chat when chat is disabled
 

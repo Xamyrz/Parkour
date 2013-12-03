@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Connor Monahan
+ * Copyright (C) 2013 maciekmm
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -90,9 +90,9 @@ public class HighscoresCommand implements CommandExecutor {
                             }
                             if (args.length > 2) {
                                 target = Bukkit.getOfflinePlayer(args[2]);
-
+                                pc.resetScores(plugin.getCourseDatabase(), target);
                             }
-                            pc.resetScores(plugin.getCourseDatabase(), target);
+                            
                             sender.sendMessage(Parkour.getString("highscores.reset.success", parkId));
                             return true;
                         } catch (SQLException ex) {

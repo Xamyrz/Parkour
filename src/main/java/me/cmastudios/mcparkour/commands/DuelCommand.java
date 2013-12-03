@@ -130,7 +130,7 @@ public class DuelCommand implements CommandExecutor {
                 plugin.activeDuels.add(duel);
                 duel.startTimeoutTimer(plugin);
                 sender.sendMessage(Parkour.getString("duel.sent"));
-                competitor.sendMessage(Parkour.getString("duel.notice", player.getName(), bounty));
+                competitor.sendMessage(Parkour.getString("duel.notice", player.getName(), bounty, course.getId()));
             } catch (NumberFormatException e) {
                 sender.sendMessage(Parkour.getString("error.invalidint"));
             } catch (SQLException e) {

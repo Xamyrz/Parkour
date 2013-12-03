@@ -16,6 +16,7 @@
  */
 package me.cmastudios.mcparkour;
 
+import com.google.common.collect.Lists;
 import me.cmastudios.mcparkour.commands.*;
 import me.cmastudios.mcparkour.data.EffectHead;
 import me.cmastudios.mcparkour.data.Guild;
@@ -39,12 +40,15 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import me.cmastudios.mcparkour.data.FavoritesList;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
 import me.cmastudios.mcparkour.data.PlayerExperience;
 import org.bukkit.FireworkEffect.Type;
+import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.meta.FireworkMeta;
 
 /**
@@ -56,6 +60,7 @@ public class Parkour extends JavaPlugin {
 
     private static ResourceBundle messages = ResourceBundle.getBundle("messages");
     private Connection courseDatabase;
+    private boolean chat = true;
     public List<Player> blindPlayers = new ArrayList<>();
     public final List<Player> deafPlayers = new ArrayList<>();
     public Map<Player, Checkpoint> playerCheckpoints = new HashMap<>();
@@ -64,6 +69,9 @@ public class Parkour extends JavaPlugin {
     public Map<Player, GuildPlayer> guildChat = new HashMap<>();
     public Map<Player, List<Player>> blindPlayerExempts = new HashMap<>();
     public Map<String, Long> fireworkCooldown = new HashMap<>();
+    public Map<String, Long> favoritesCooldown = new HashMap<>();
+    public Map<Player, FavoritesList> pendingFavs = new HashMap<>();
+    public List<Player> disabledScoreboards = new ArrayList<>();
     public List<Duel> activeDuels = new ArrayList<>();
     public List<GuildWar> activeWars = new ArrayList<>();
     public final ItemStack VISION = new ItemStack(Material.EYE_OF_ENDER);
@@ -75,6 +83,17 @@ public class Parkour extends JavaPlugin {
     public final ItemStack LEGGINGS = new ItemStack(Material.GOLD_LEGGINGS);
     public final ItemStack BOOTS = new ItemStack(Material.GOLD_BOOTS);
     public final ItemStack FIREWORK_SPAWNER = new ItemStack(Material.FIREWORK);
+    public final ItemStack SCOREBOARD = new ItemStack(Material.BOOK);
+    public final ItemStack FAVORITES = new ItemStack(Material.EMERALD);
+    public final ItemStack NEXT_PAGE = new ItemStack(Material.ACTIVATOR_RAIL);
+    public final ItemStack PREV_PAGE = new ItemStack(Material.RAILS);
+    public final ItemStack EASY = new ItemStack(Material.MINECART);
+    public final ItemStack MEDIUM = new ItemStack(Material.STORAGE_MINECART);
+    public final ItemStack HARD = new ItemStack(Material.POWERED_MINECART);
+    public final ItemStack HIDDEN = new ItemStack(Material.HOPPER_MINECART);
+    public final ItemStack V_HARD = new ItemStack(Material.EXPLOSIVE_MINECART);
+    public final ItemStack THEMATIC = new ItemStack(Material.BOAT);
+    public final ItemStack ADVENTURE = new ItemStack(Material.RAILS);
     private final Random random = new Random();
 
     @Override
@@ -91,33 +110,12 @@ public class Parkour extends JavaPlugin {
         this.getCommand("adventure").setExecutor(new AdventureCommand(this));
         this.getCommand("see").setExecutor(new BlindCommand(this));
         this.getCommand("highscores").setExecutor(new HighscoresCommand(this));
+        this.getCommand("chat").setExecutor(new ChatCommand(this));
+        this.getCommand("pkroom").setExecutor(new PkRoomCommand(this));
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.saveDefaultConfig();
         this.connectDatabase();
-        ItemMeta meta = VISION.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.vision"));
-        VISION.setItemMeta(meta);
-        meta = FIREWORK_SPAWNER.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.firework"));
-        FIREWORK_SPAWNER.setItemMeta(meta);
-        meta = CHAT.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.chat"));
-        CHAT.setItemMeta(meta);
-        meta = SPAWN.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.spawn"));
-        SPAWN.setItemMeta(meta);
-        meta = POINT.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.point"));
-        String[] lore = {
-            Parkour.getString("item.point.description.0"),
-            Parkour.getString("item.point.description.1"),
-            Parkour.getString("item.point.description.2")};
-        meta.setLore(Arrays.asList(lore));
-        POINT.setItemMeta(meta);
-        HELMET.addEnchantment(Enchantment.DURABILITY, 3);
-        CHESTPLATE.addEnchantment(Enchantment.DURABILITY, 3);
-        LEGGINGS.addEnchantment(Enchantment.DURABILITY, 3);
-        BOOTS.addEnchantment(Enchantment.DURABILITY, 3);
+        setupItems();
         try {
             this.rebuildHeads();
         } catch (SQLException e) {
@@ -127,6 +125,10 @@ public class Parkour extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        for (Entry<Player, FavoritesList> set : pendingFavs.entrySet()) {
+            set.getValue().save();
+            pendingFavs.remove(set.getKey());
+        }
         if (this.courseDatabase != null) {
             try {
                 this.courseDatabase.close();
@@ -153,6 +155,58 @@ public class Parkour extends JavaPlugin {
         }
         completedCourseTracker.clear();
         blindPlayerExempts.clear();
+
+    }
+
+    private void setupItems() {
+        ItemMeta meta = VISION.getItemMeta();
+        meta.setDisplayName(Parkour.getString("item.vision"));
+        VISION.setItemMeta(meta);
+
+        meta = FIREWORK_SPAWNER.getItemMeta();
+        meta.setDisplayName(Parkour.getString("item.firework"));
+        FIREWORK_SPAWNER.setItemMeta(meta);
+
+        meta = CHAT.getItemMeta();
+        meta.setDisplayName(Parkour.getString("item.chat"));
+        CHAT.setItemMeta(meta);
+
+        meta = SPAWN.getItemMeta();
+        meta.setDisplayName(Parkour.getString("item.spawn"));
+        SPAWN.setItemMeta(meta);
+
+        meta = POINT.getItemMeta();
+        meta.setDisplayName(Parkour.getString("item.point"));
+        String[] lore = {
+            Parkour.getString("item.point.description.0"),
+            Parkour.getString("item.point.description.1"),
+            Parkour.getString("item.point.description.2")};
+        meta.setLore(Arrays.asList(lore));
+        POINT.setItemMeta(meta);
+
+        meta = SCOREBOARD.getItemMeta();
+        meta.setDisplayName(Parkour.getString("item.scoreboard"));
+        SCOREBOARD.setItemMeta(meta);
+
+        meta = NEXT_PAGE.getItemMeta();
+        meta.setDisplayName(Parkour.getString("favorites.item.next"));
+        NEXT_PAGE.setItemMeta(meta);
+
+        meta = PREV_PAGE.getItemMeta();
+        meta.setDisplayName(Parkour.getString("favorites.item.prev"));
+        PREV_PAGE.setItemMeta(meta);
+
+        meta = FAVORITES.getItemMeta();
+        meta.setDisplayName(Parkour.getString("favorites.item.base"));
+        String[] favlore = {
+            Parkour.getString("favorites.item.base.lore0")};
+        meta.setLore(Arrays.asList(favlore));
+        FAVORITES.setItemMeta(meta);
+
+        HELMET.addEnchantment(Enchantment.DURABILITY, 3);
+        CHESTPLATE.addEnchantment(Enchantment.DURABILITY, 3);
+        LEGGINGS.addEnchantment(Enchantment.DURABILITY, 3);
+        BOOTS.addEnchantment(Enchantment.DURABILITY, 3);
     }
 
     public static String getString(String key, Object... args) {
@@ -181,6 +235,7 @@ public class Parkour extends JavaPlugin {
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS adventures (name varchar(32), course INTEGER)");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courseheads (world_name varchar(32), x INTEGER, y INTEGER, z INTEGER, course_id INTEGER, skull_type_name varchar(32))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS gameresults (time TIMESTAMP, type enum('duel','guildwar'), winner varchar(16), loser varchar(16))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS favorites (`player` varchar(16) NOT NULL,`favorites` text NOT NULL, PRIMARY KEY (`player`))");
             }
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load database driver", ex);
@@ -222,7 +277,7 @@ public class Parkour extends JavaPlugin {
         int base = this.getConfig().getInt("levels.base");
         int addt = this.getConfig().getInt("levels.addition");
         if (experience < base) {
-            return 1;
+            return base - experience;
         }
         int xplast = 0;
         for (int x = 2; x < Integer.MAX_VALUE; x++) {
@@ -316,14 +371,14 @@ public class Parkour extends JavaPlugin {
         return this.getConfig().getInt("restriction." + diff.name().toLowerCase());
     }
 
-    public boolean teleportToCourse(Player player, int tpParkourId, boolean isCommand) {
+    public boolean teleportToCourse(Player player, int tpParkourId, TeleportCause teleport) {
         try {
             ParkourCourse tpCourse = ParkourCourse.loadCourse(this.getCourseDatabase(), tpParkourId);
             if (tpCourse == null) {
                 player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
             } else {
 
-                if (tpCourse.getMode() == CourseMode.HIDDEN && isCommand) {
+                if (tpCourse.getMode() == CourseMode.HIDDEN && teleport == TeleportCause.COMMAND && !player.hasPermission("parkour.vip")) {
                     player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
                     return false;
                 }
@@ -332,7 +387,7 @@ public class Parkour extends JavaPlugin {
                     return false;
                 }
                 PlayerExperience pcd = PlayerExperience.loadExperience(this.getCourseDatabase(), player);
-                if (!this.canPlay(pcd.getExperience(), tpCourse.getDifficulty())) {
+                if (!this.canPlay(pcd.getExperience(), tpCourse.getDifficulty()) && !player.hasPermission("parkour.bypasslevel")) {
                     player.sendMessage(Parkour.getString("xp.insufficient"));
                 } else {
                     player.teleport(tpCourse.getTeleport());
@@ -465,6 +520,14 @@ public class Parkour extends JavaPlugin {
         }
     }
 
+    public boolean isChatEnabled() {
+        return chat;
+    }
+
+    public void setChat(boolean state) {
+        chat = state;
+    }
+
     public static class PlayerCourseData {
 
         public final ParkourCourse course;
@@ -485,9 +548,9 @@ public class Parkour extends JavaPlugin {
             player.teleport(((Parkour) player.getServer().getPluginManager().getPlugin("Parkour")).getSpawn());
         }
 
-        public PlayerCourseData(ParkourCourse course, Player player) {
+        public PlayerCourseData(ParkourCourse course, Player player, long time) {
             this.course = course;
-            this.startTime = System.currentTimeMillis();
+            this.startTime = time;
             this.previousLevel = player.getLevel();
             player.setExp(0.0F);
             player.setLevel(0);

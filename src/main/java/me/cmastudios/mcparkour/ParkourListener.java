@@ -66,10 +66,15 @@ public class ParkourListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerMove(final PlayerMoveEvent event) throws SQLException {
         final long now = System.currentTimeMillis();
+        if (event.getFrom().getBlockX() == event.getTo().getBlockX()
+                && event.getFrom().getBlockY() == event.getTo().getBlockY()
+                && event.getFrom().getBlockZ() == event.getTo().getBlockZ()) {
+            return;
+        }
         Player player = event.getPlayer();
-        Block below = this.detectBlocks(player.getLocation(), Material.SIGN_POST, DETECTION_MIN, SIGN_DETECTION_MAX)
-                ? this.getBlockInDepthRange(player.getLocation(), Material.SIGN_POST, DETECTION_MIN, SIGN_DETECTION_MAX)
-                : this.getBlockInDepthRange(player.getLocation(), Material.WALL_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX);
+        Block below = this.detectBlocks(event.getTo(), Material.SIGN_POST, DETECTION_MIN, SIGN_DETECTION_MAX)
+                ? this.getBlockInDepthRange(event.getTo(), Material.SIGN_POST, DETECTION_MIN, SIGN_DETECTION_MAX)
+                : this.getBlockInDepthRange(event.getTo(), Material.WALL_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX);
         if (below != null) {
             if (below.getType() == Material.SIGN_POST
                     || below.getType() == Material.WALL_SIGN) {
@@ -203,17 +208,17 @@ public class ParkourListener implements Listener {
                         break;
                     case "[vwall]":
                         if (!plugin.playerCourseTracker.containsKey(player)) {
-                            Location signFaceBlockV = player.getLocation().getBlock().getRelative(((org.bukkit.material.Sign) sign.getData()).getFacing()).getLocation();
-                            signFaceBlockV.setPitch(player.getLocation().getPitch());
-                            signFaceBlockV.setYaw(player.getLocation().getYaw());
+                            Location signFaceBlockV = event.getTo().getBlock().getRelative(((org.bukkit.material.Sign) sign.getData()).getFacing()).getLocation();
+                            signFaceBlockV.setPitch(event.getTo().getPitch());
+                            signFaceBlockV.setYaw(event.getTo().getYaw());
                             signFaceBlockV.add(0.5, 0, 0.5);
                             event.setTo(signFaceBlockV);
                         }
                         break;
                     case "[avwall]":
-                        Location signFaceBlockA = player.getLocation().getBlock().getRelative(((org.bukkit.material.Sign) sign.getData()).getFacing()).getLocation();
-                        signFaceBlockA.setPitch(player.getLocation().getPitch());
-                        signFaceBlockA.setYaw(player.getLocation().getYaw());
+                        Location signFaceBlockA = event.getTo().getBlock().getRelative(((org.bukkit.material.Sign) sign.getData()).getFacing()).getLocation();
+                        signFaceBlockA.setPitch(event.getTo().getPitch());
+                        signFaceBlockA.setYaw(event.getTo().getYaw());
                         signFaceBlockA.add(0.5, 0, 0.5);
                         event.setTo(signFaceBlockA);
                         break;
@@ -275,7 +280,7 @@ public class ParkourListener implements Listener {
         }
         if (plugin.playerCourseTracker.containsKey(player)) {
             int detection = plugin.playerCourseTracker.get(player).course.getDetection();
-            if (detectBlocks(player.getLocation(), Material.BEDROCK, DETECTION_MIN, detection)) {
+            if (detectBlocks(event.getTo(), Material.BEDROCK, DETECTION_MIN, detection)) {
                 PlayerCourseData data = plugin.playerCourseTracker.get(player);
                 player.setFallDistance(0.0F);
                 Checkpoint cp = plugin.playerCheckpoints.get(event.getPlayer());
@@ -290,7 +295,7 @@ public class ParkourListener implements Listener {
             }
         } else if (plugin.completedCourseTracker.containsKey(player)) {
             int detection = plugin.completedCourseTracker.get(player).course.getDetection();
-            if (detectBlocks(player.getLocation(), Material.BEDROCK, DETECTION_MIN, detection)) {
+            if (detectBlocks(event.getTo(), Material.BEDROCK, DETECTION_MIN, detection)) {
                 player.setFallDistance(0.0F);
                 event.setTo(plugin.completedCourseTracker.remove(player).course.getTeleport());
             }
@@ -301,7 +306,7 @@ public class ParkourListener implements Listener {
         }
         GuildWar war = plugin.getWar(player);
         if (war != null && war.hasStarted()) {
-            Block potentialHead = this.getBlockInDepthRange(player.getLocation(), Material.SKULL, 0, 1);
+            Block potentialHead = this.getBlockInDepthRange(event.getTo(), Material.SKULL, 0, 1);
             if (potentialHead != null && potentialHead.hasMetadata("mcparkour-head")) {
                 List<MetadataValue> metadata = potentialHead.getMetadata("mcparkour-head");
                 Validate.notEmpty(metadata); // assert

@@ -562,16 +562,16 @@ public class ParkourListener implements Listener {
             event.getPlayer().getInventory().addItem(plugin.FAVORITES);
         }
         if (event.getPlayer().hasPermission("parkour.vip")) {
-            if (event.getPlayer().getInventory().contains(Material.GOLD_HELMET)) {
+            if (!event.getPlayer().getInventory().contains(Material.GOLD_HELMET)) {
                 event.getPlayer().getInventory().setHelmet(plugin.HELMET);
             }
-            if (event.getPlayer().getInventory().contains(Material.GOLD_CHESTPLATE)) {
+            if (!event.getPlayer().getInventory().contains(Material.GOLD_CHESTPLATE)) {
                 event.getPlayer().getInventory().setChestplate(plugin.CHESTPLATE);
             }
-            if (event.getPlayer().getInventory().contains(Material.GOLD_LEGGINGS)) {
+            if (!event.getPlayer().getInventory().contains(Material.GOLD_LEGGINGS)) {
                 event.getPlayer().getInventory().setLeggings(plugin.LEGGINGS);
             }
-            if (event.getPlayer().getInventory().contains(Material.GOLD_BOOTS)) {
+            if (!event.getPlayer().getInventory().contains(Material.GOLD_BOOTS)) {
                 event.getPlayer().getInventory().setBoots(plugin.BOOTS);
             }
             if (!event.getPlayer().getInventory().contains(Material.FIREWORK)) {

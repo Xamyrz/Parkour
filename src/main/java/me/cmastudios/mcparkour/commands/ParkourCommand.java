@@ -28,6 +28,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 
 public class ParkourCommand implements CommandExecutor {
 
@@ -50,7 +52,7 @@ public class ParkourCommand implements CommandExecutor {
         try {
             pcd = PlayerExperience.loadExperience(plugin.getCourseDatabase(), (Player)sender);
             
-            if(plugin.getLevel(pcd.getExperience())<plugin.getConfig().getInt("restriction.levelRequiredToUsePkCommand")) {
+            if((plugin.getLevel(pcd.getExperience())<plugin.getConfig().getInt("restriction.levelRequiredToUsePkCommand"))&&!sender.hasPermission("parkour.bypasslevel")) {
                 sender.sendMessage(Parkour.getString("xp.insufficient.command", new Object[]{}));
                 return true;
             }
@@ -60,7 +62,7 @@ public class ParkourCommand implements CommandExecutor {
         
         try {
             int id = Integer.parseInt(args[0]);
-            plugin.teleportToCourse((Player)sender, id,true);
+            plugin.teleportToCourse((Player)sender, id,TeleportCause.COMMAND);
         } catch (NumberFormatException ex) {
             sender.sendMessage(Parkour.getString("error.invalidint", new Object[]{}));
         }

@@ -30,7 +30,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 
 /**
  * Playable parkour course.
@@ -107,17 +106,24 @@ public class ParkourCourse {
     }
 
     public void resetScores(Connection conn, OfflinePlayer player) throws SQLException {
-        String pl;
-        if (!player.hasPlayedBefore()) {
-            pl = "%";
+        if (player != null) {
+            String pl = player.getName();
+            try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM `highscores` WHERE `course`=? AND `player` LIKE ?")) {
+                stmt.setInt(1, id);
+                stmt.setString(2, pl);
+                stmt.executeUpdate();
+            }
         } else {
-            pl = player.getName();
+            try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM `highscores` WHERE `course`=?")) {
+                stmt.setInt(1, id);
+                stmt.executeUpdate();
+            }
+
         }
-        try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM `highscores` WHERE `course`=? AND `player` LIKE ?")) {
-            stmt.setInt(1, id);
-            stmt.setString(2, pl);
-            stmt.executeUpdate();
-        }
+    }
+
+    public void resetScores(Connection conn) throws SQLException {
+        resetScores(conn, null);
     }
 
     public void delete(Connection conn) throws SQLException {

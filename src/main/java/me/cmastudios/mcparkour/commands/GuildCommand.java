@@ -171,6 +171,9 @@ public class GuildCommand implements CommandExecutor {
         case "accept":
             Player acplr = Bukkit.getPlayerExact(sender.getName());
             Guild acreq = invites.get(acplr);
+            if(args.length<2) {
+                sender.sendMessage(Parkour.getString("guild.putname"));
+            }
             if (acreq == null) {
                 sender.sendMessage(Parkour.getString("guild.invite.404"));
                 return true;

@@ -16,6 +16,7 @@
  */
 package me.cmastudios.mcparkour;
 
+import com.google.common.collect.Lists;
 import me.cmastudios.mcparkour.commands.*;
 import me.cmastudios.mcparkour.data.EffectHead;
 import me.cmastudios.mcparkour.data.Guild;
@@ -39,8 +40,16 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import me.cmastudios.mcparkour.data.FavoritesList;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
 import me.cmastudios.mcparkour.data.PlayerExperience;
+import org.bukkit.FireworkEffect.Type;
+import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Firework;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.inventory.meta.FireworkMeta;
 
 /**
  * Main class for mcparkour Bukkit plugin.
@@ -51,6 +60,7 @@ public class Parkour extends JavaPlugin {
 
     private static ResourceBundle messages = ResourceBundle.getBundle("messages");
     private Connection courseDatabase;
+    private boolean chat = true;
     public List<Player> blindPlayers = new ArrayList<>();
     public final List<Player> deafPlayers = new ArrayList<>();
     public Map<Player, Checkpoint> playerCheckpoints = new HashMap<>();
@@ -58,12 +68,33 @@ public class Parkour extends JavaPlugin {
     public Map<Player, PlayerCourseData> completedCourseTracker = new HashMap<>();
     public Map<Player, GuildPlayer> guildChat = new HashMap<>();
     public Map<Player, List<Player>> blindPlayerExempts = new HashMap<>();
+    public Map<String, Long> fireworkCooldown = new HashMap<>();
+    public Map<String, Long> favoritesCooldown = new HashMap<>();
+    public Map<Player, FavoritesList> pendingFavs = new HashMap<>();
+    public List<Player> disabledScoreboards = new ArrayList<>();
     public List<Duel> activeDuels = new ArrayList<>();
     public List<GuildWar> activeWars = new ArrayList<>();
     public final ItemStack VISION = new ItemStack(Material.EYE_OF_ENDER);
     public final ItemStack CHAT = new ItemStack(Material.PAPER);
     public final ItemStack SPAWN = new ItemStack(Material.NETHER_STAR);
     public final ItemStack POINT = new ItemStack(Material.STICK);
+    public final ItemStack HELMET = new ItemStack(Material.GOLD_HELMET);
+    public final ItemStack CHESTPLATE = new ItemStack(Material.GOLD_CHESTPLATE);
+    public final ItemStack LEGGINGS = new ItemStack(Material.GOLD_LEGGINGS);
+    public final ItemStack BOOTS = new ItemStack(Material.GOLD_BOOTS);
+    public final ItemStack FIREWORK_SPAWNER = new ItemStack(Material.FIREWORK);
+    public final ItemStack SCOREBOARD = new ItemStack(Material.BOOK);
+    public final ItemStack FAVORITES = new ItemStack(Material.EMERALD);
+    public final ItemStack NEXT_PAGE = new ItemStack(Material.ACTIVATOR_RAIL);
+    public final ItemStack PREV_PAGE = new ItemStack(Material.RAILS);
+    public final ItemStack EASY = new ItemStack(Material.MINECART);
+    public final ItemStack MEDIUM = new ItemStack(Material.STORAGE_MINECART);
+    public final ItemStack HARD = new ItemStack(Material.POWERED_MINECART);
+    public final ItemStack HIDDEN = new ItemStack(Material.HOPPER_MINECART);
+    public final ItemStack V_HARD = new ItemStack(Material.EXPLOSIVE_MINECART);
+    public final ItemStack THEMATIC = new ItemStack(Material.BOAT);
+    public final ItemStack ADVENTURE = new ItemStack(Material.SADDLE);
+    private final Random random = new Random();
 
     @Override
     public void onEnable() {
@@ -79,26 +110,12 @@ public class Parkour extends JavaPlugin {
         this.getCommand("adventure").setExecutor(new AdventureCommand(this));
         this.getCommand("see").setExecutor(new BlindCommand(this));
         this.getCommand("highscores").setExecutor(new HighscoresCommand(this));
+        this.getCommand("chat").setExecutor(new ChatCommand(this));
+        this.getCommand("pkroom").setExecutor(new PkRoomCommand(this));
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.saveDefaultConfig();
         this.connectDatabase();
-        ItemMeta meta = VISION.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.vision"));
-        VISION.setItemMeta(meta);
-        meta = CHAT.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.chat"));
-        CHAT.setItemMeta(meta);
-        meta = SPAWN.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.spawn"));
-        SPAWN.setItemMeta(meta);
-        meta = POINT.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.point"));
-        String[] lore = {
-            Parkour.getString("item.point.description.0"),
-            Parkour.getString("item.point.description.1"),
-            Parkour.getString("item.point.description.2")};
-        meta.setLore(Arrays.asList(lore));
-        POINT.setItemMeta(meta);
+        setupItems();
         try {
             this.rebuildHeads();
         } catch (SQLException e) {
@@ -134,6 +151,59 @@ public class Parkour extends JavaPlugin {
         }
         completedCourseTracker.clear();
         blindPlayerExempts.clear();
+        pendingFavs.clear();
+
+    }
+
+    private void setupItems() {
+        ItemMeta meta = VISION.getItemMeta();
+        meta.setDisplayName(Parkour.getString("item.vision"));
+        VISION.setItemMeta(meta);
+
+        meta = FIREWORK_SPAWNER.getItemMeta();
+        meta.setDisplayName(Parkour.getString("item.firework"));
+        FIREWORK_SPAWNER.setItemMeta(meta);
+
+        meta = CHAT.getItemMeta();
+        meta.setDisplayName(Parkour.getString("item.chat"));
+        CHAT.setItemMeta(meta);
+
+        meta = SPAWN.getItemMeta();
+        meta.setDisplayName(Parkour.getString("item.spawn"));
+        SPAWN.setItemMeta(meta);
+
+        meta = POINT.getItemMeta();
+        meta.setDisplayName(Parkour.getString("item.point"));
+        String[] lore = {
+            Parkour.getString("item.point.description.0"),
+            Parkour.getString("item.point.description.1"),
+            Parkour.getString("item.point.description.2")};
+        meta.setLore(Arrays.asList(lore));
+        POINT.setItemMeta(meta);
+
+        meta = SCOREBOARD.getItemMeta();
+        meta.setDisplayName(Parkour.getString("item.scoreboard"));
+        SCOREBOARD.setItemMeta(meta);
+
+        meta = NEXT_PAGE.getItemMeta();
+        meta.setDisplayName(Parkour.getString("favorites.item.next"));
+        NEXT_PAGE.setItemMeta(meta);
+
+        meta = PREV_PAGE.getItemMeta();
+        meta.setDisplayName(Parkour.getString("favorites.item.prev"));
+        PREV_PAGE.setItemMeta(meta);
+
+        meta = FAVORITES.getItemMeta();
+        meta.setDisplayName(Parkour.getString("favorites.item.base"));
+        String[] favlore = {
+            Parkour.getString("favorites.item.base.lore0")};
+        meta.setLore(Arrays.asList(favlore));
+        FAVORITES.setItemMeta(meta);
+
+        HELMET.addEnchantment(Enchantment.DURABILITY, 3);
+        CHESTPLATE.addEnchantment(Enchantment.DURABILITY, 3);
+        LEGGINGS.addEnchantment(Enchantment.DURABILITY, 3);
+        BOOTS.addEnchantment(Enchantment.DURABILITY, 3);
     }
 
     public static String getString(String key, Object... args) {
@@ -162,6 +232,7 @@ public class Parkour extends JavaPlugin {
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS adventures (name varchar(32), course INTEGER)");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courseheads (world_name varchar(32), x INTEGER, y INTEGER, z INTEGER, course_id INTEGER, skull_type_name varchar(32))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS gameresults (time TIMESTAMP, type enum('duel','guildwar'), winner varchar(16), loser varchar(16))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS favorites (`player` varchar(16) NOT NULL,`favorites` text NOT NULL, PRIMARY KEY (`player`))");
             }
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load database driver", ex);
@@ -203,7 +274,7 @@ public class Parkour extends JavaPlugin {
         int base = this.getConfig().getInt("levels.base");
         int addt = this.getConfig().getInt("levels.addition");
         if (experience < base) {
-            return 1;
+            return base - experience;
         }
         int xplast = 0;
         for (int x = 2; x < Integer.MAX_VALUE; x++) {
@@ -220,8 +291,8 @@ public class Parkour extends JavaPlugin {
         boolean isBlind = blindPlayers.contains(player);
         for (Player onlinePlayer : player.getServer().getOnlinePlayers()) {
             if (player != onlinePlayer && isBlind) {
-                if(blindPlayerExempts.containsKey(player)) {
-                    if(blindPlayerExempts.get(player).contains(onlinePlayer)) {
+                if (blindPlayerExempts.containsKey(player)) {
+                    if (blindPlayerExempts.get(player).contains(onlinePlayer)) {
                         player.showPlayer(onlinePlayer);
                         continue;
                     }
@@ -292,27 +363,34 @@ public class Parkour extends JavaPlugin {
     public boolean canPlay(int exp, CourseDifficulty diff) {
         return this.getLevel(exp) >= getLevelRequiredToPlay(diff);
     }
-    
+
     public int getLevelRequiredToPlay(CourseDifficulty diff) {
         return this.getConfig().getInt("restriction." + diff.name().toLowerCase());
     }
 
-    public boolean teleportToCourse(Player player, int tpParkourId, boolean isCommand) {
+    public boolean teleportToCourse(Player player, int tpParkourId, TeleportCause teleport) {
         try {
             ParkourCourse tpCourse = ParkourCourse.loadCourse(this.getCourseDatabase(), tpParkourId);
             if (tpCourse == null) {
                 player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
             } else {
-                if(tpCourse.getMode()==CourseMode.HIDDEN&&isCommand) {
+
+                if (tpCourse.getMode() == CourseMode.HIDDEN && teleport == TeleportCause.COMMAND && !player.hasPermission("parkour.vip")) {
                     player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
                     return false;
-                } 
+                }
+                if ((tpCourse.getMode() == CourseMode.VIP || tpCourse.getMode() == CourseMode.ADVENTURE) && !player.hasPermission("parkour.vip")) {
+                    player.sendMessage(Parkour.getString("vip.notbought", new Object[]{}));
+                    return false;
+                }
                 PlayerExperience pcd = PlayerExperience.loadExperience(this.getCourseDatabase(), player);
-                if (!this.canPlay(pcd.getExperience(), tpCourse.getDifficulty())) {
+                if (!this.canPlay(pcd.getExperience(), tpCourse.getDifficulty()) && !player.hasPermission("parkour.bypasslevel")) {
                     player.sendMessage(Parkour.getString("xp.insufficient"));
                 } else {
                     player.teleport(tpCourse.getTeleport());
-                    player.sendMessage(Parkour.getString("course.teleport", new Object[]{tpCourse.getId()}));
+                    if (tpCourse.getMode() != CourseMode.ADVENTURE) {
+                        player.sendMessage(Parkour.getString("course.teleport", new Object[]{tpCourse.getId()}));
+                    }
                     return true;
                 }
             }
@@ -340,6 +418,94 @@ public class Parkour extends JavaPlugin {
         }
     }
 
+    public void spawnRandomFirework(Location loc) {
+        Firework fw = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
+        FireworkMeta fwm = fw.getFireworkMeta();
+        int rt = random.nextInt(5) + 1;
+        Type type = Type.BALL;
+        switch (rt) {
+            case 1:
+                type = Type.BALL;
+                break;
+            case 2:
+                type = Type.BURST;
+                break;
+            case 3:
+                type = Type.CREEPER;
+                break;
+            case 4:
+                type = Type.STAR;
+                break;
+            case 5:
+                type = Type.BALL_LARGE;
+                break;
+        }
+        FireworkEffect effect = FireworkEffect.builder().flicker(random.nextBoolean()).withColor(getRandomColor()).withFade(getRandomColor()).with(type).trail(random.nextBoolean()).build();
+        fwm.addEffect(effect);
+        fwm.setPower(0);
+        fw.setFireworkMeta(fwm);
+    }
+
+    private Color getRandomColor() {
+        Color c = null;
+        Random r = new Random();
+        int i = r.nextInt(17) + 1;
+        switch (i) {
+            case 1:
+                c = Color.AQUA;
+                break;
+            case 2:
+                c = Color.BLACK;
+                break;
+            case 3:
+                c = Color.BLUE;
+                break;
+            case 4:
+                c = Color.FUCHSIA;
+                break;
+            case 5:
+                c = Color.GRAY;
+                break;
+            case 6:
+                c = Color.GREEN;
+                break;
+            case 7:
+                c = Color.LIME;
+                break;
+            case 8:
+                c = Color.MAROON;
+                break;
+            case 9:
+                c = Color.NAVY;
+                break;
+            case 10:
+                c = Color.OLIVE;
+                break;
+            case 11:
+                c = Color.ORANGE;
+                break;
+            case 12:
+                c = Color.PURPLE;
+                break;
+            case 13:
+                c = Color.RED;
+                break;
+            case 14:
+                c = Color.SILVER;
+                break;
+            case 15:
+                c = Color.TEAL;
+                break;
+            case 16:
+                c = Color.WHITE;
+                break;
+            case 17:
+                c = Color.YELLOW;
+                break;
+        }
+        return c;
+    }
+
     public SkullType getSkullFromDurability(short durability) {
         switch (durability) {
             case 1:
@@ -349,6 +515,14 @@ public class Parkour extends JavaPlugin {
             default:
                 return SkullType.SKELETON;
         }
+    }
+
+    public boolean isChatEnabled() {
+        return chat;
+    }
+
+    public void setChat(boolean state) {
+        chat = state;
     }
 
     public static class PlayerCourseData {
@@ -371,9 +545,9 @@ public class Parkour extends JavaPlugin {
             player.teleport(((Parkour) player.getServer().getPluginManager().getPlugin("Parkour")).getSpawn());
         }
 
-        public PlayerCourseData(ParkourCourse course, Player player) {
+        public PlayerCourseData(ParkourCourse course, Player player, long time) {
             this.course = course;
-            this.startTime = System.currentTimeMillis();
+            this.startTime = time;
             this.previousLevel = player.getLevel();
             player.setExp(0.0F);
             player.setLevel(0);

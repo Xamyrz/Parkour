@@ -126,11 +126,15 @@ public class DuelCommand implements CommandExecutor {
                     player.sendMessage(Parkour.getString("duel.badcourse"));
                     return true;
                 }
+				if (!plugin.canPlay(selfXp.getExperience(), course.getDifficulty()) && !player.hasPermission("parkour.bypasslevel")) {
+					player.sendMessage(Parkour.getString("xp.insufficient"));
+					return true;
+				}
                 Duel duel = new Duel(player, competitor, course, bounty);
                 plugin.activeDuels.add(duel);
                 duel.startTimeoutTimer(plugin);
                 sender.sendMessage(Parkour.getString("duel.sent"));
-                competitor.sendMessage(Parkour.getString("duel.notice", player.getName(), bounty));
+                competitor.sendMessage(Parkour.getString("duel.notice", player.getName(), bounty, course.getId()));
             } catch (NumberFormatException e) {
                 sender.sendMessage(Parkour.getString("error.invalidint"));
             } catch (SQLException e) {

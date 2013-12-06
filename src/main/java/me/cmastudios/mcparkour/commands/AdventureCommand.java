@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package me.cmastudios.mcparkour.commands;
 
 import java.sql.SQLException;
@@ -28,6 +27,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 
 public class AdventureCommand implements CommandExecutor {
 
@@ -40,30 +40,32 @@ public class AdventureCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command,
             String label, String[] args) {
-        if (args.length < 1) return false;
+        if (args.length < 1) {
+            return false;
+        }
         String advName = args[0];
         try {
             AdventureCourse course = AdventureCourse.loadAdventure(plugin.getCourseDatabase(), advName);
             if (args.length == 3) {
                 switch (args[1]) {
-                case "add":
-                    if (sender.hasPermission("parkour.set")) {
-                        ParkourCourse chap = ParkourCourse.loadCourse(plugin.getCourseDatabase(), Integer.parseInt(args[2]));
-                        if (chap == null) {
-                            sender.sendMessage(Parkour.getString("error.course404"));
-                        } else {
-                            if (course == null) {
-                                course = new AdventureCourse(advName);
+                    case "add":
+                        if (sender.hasPermission("parkour.set")) {
+                            ParkourCourse chap = ParkourCourse.loadCourse(plugin.getCourseDatabase(), Integer.parseInt(args[2]));
+                            if (chap == null) {
+                                sender.sendMessage(Parkour.getString("error.course404"));
+                            } else {
+                                if (course == null) {
+                                    course = new AdventureCourse(advName);
+                                }
+                                course.addCourse(chap);
+                                course.save(plugin.getCourseDatabase());
+                                int pos = course.getCourses().indexOf(chap) + 1;
+                                sender.sendMessage(Parkour.getString("adv.add", chap.getId(), course.getName(), pos));
                             }
-                            course.addCourse(chap);
-                            course.save(plugin.getCourseDatabase());
-                            int pos = course.getCourses().indexOf(chap) + 1;
-                            sender.sendMessage(Parkour.getString("adv.add", chap.getId(), course.getName(), pos));
+                        } else {
+                            sender.sendMessage(Parkour.getString("error.permission"));
                         }
-                    } else {
-                        sender.sendMessage(Parkour.getString("error.permission"));
-                    }
-                    break;
+                        break;
                 }
             } else if (course == null) {
                 sender.sendMessage(Parkour.getString("error.course404"));
@@ -88,7 +90,7 @@ public class AdventureCommand implements CommandExecutor {
                     sender.sendMessage(Parkour.getString("adv.tp", chapter, course.getName()));
                 }
             } else {
-                ((Player) sender).teleport(course.getCourses().get(0).getTeleport());
+                plugin.teleportToCourse(((Player) sender),course.getCourses().get(0).getId(),TeleportCause.COMMAND);
                 sender.sendMessage(Parkour.getString("adv.tp", 1, course.getName()));
             }
         } catch (SQLException e) {

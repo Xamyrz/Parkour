@@ -93,7 +93,7 @@ public class Parkour extends JavaPlugin {
     public final ItemStack HIDDEN = new ItemStack(Material.HOPPER_MINECART);
     public final ItemStack V_HARD = new ItemStack(Material.EXPLOSIVE_MINECART);
     public final ItemStack THEMATIC = new ItemStack(Material.BOAT);
-    public final ItemStack ADVENTURE = new ItemStack(Material.RAILS);
+    public final ItemStack ADVENTURE = new ItemStack(Material.SADDLE);
     private final Random random = new Random();
 
     @Override
@@ -151,6 +151,7 @@ public class Parkour extends JavaPlugin {
         }
         completedCourseTracker.clear();
         blindPlayerExempts.clear();
+        pendingFavs.clear();
 
     }
 

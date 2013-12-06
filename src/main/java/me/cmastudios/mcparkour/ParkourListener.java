@@ -45,7 +45,6 @@ import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.Iterator;
 import java.util.List;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
 /**
@@ -351,14 +350,16 @@ public class ParkourListener implements Listener {
             return;
         }
         if (event.getInventory().getName().equalsIgnoreCase(Parkour.getString("favorites.inventory.name"))) {
+            event.setCancelled(true);
             FavoritesList favs;
             if (plugin.pendingFavs.containsKey((Player) event.getWhoClicked())) {
                 favs = plugin.pendingFavs.get((Player) event.getWhoClicked());
             } else {
                 favs = new FavoritesList((Player) event.getWhoClicked(), plugin);
             }
-            if(event.getCurrentItem().getType()!=Material.AIR)
-            favs.handleSelection(favs.getCurrentPage(), event.getSlot(), event.getClick(), event.getInventory());
+            if (event.getCurrentItem() != null && event.getCurrentItem().getType() != Material.AIR) {
+                favs.handleSelection(favs.getCurrentPage(), event.getSlot(), event.getClick(), event.getInventory());
+            }
         }
     }
 
@@ -381,7 +382,7 @@ public class ParkourListener implements Listener {
                 }
             }
 
-            if (event.hasBlock() && event.getClickedBlock()!=null && event.getClickedBlock().getType() == Material.GOLD_BLOCK && event.getItem().getType() == Material.EMERALD) {
+            if (event.hasBlock() && event.getClickedBlock() != null && event.getClickedBlock().getType() == Material.GOLD_BLOCK) {
                 Block op = event.getClickedBlock().getRelative(event.getBlockFace().getOppositeFace(), 1);
                 if (op.getType() == Material.WALL_SIGN || op.getType() == Material.SIGN_POST) {
                     Sign favsign = (Sign) op.getState();

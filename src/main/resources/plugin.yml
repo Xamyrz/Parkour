@@ -17,7 +17,7 @@ commands:
     permission: parkour.set
   listcourses:
     description: List all valid parkour courses
-    usage: /<command>
+    usage: /<command> [adventure]
     aliases: [pklist]
     permission: parkour.play
   deletecourse:

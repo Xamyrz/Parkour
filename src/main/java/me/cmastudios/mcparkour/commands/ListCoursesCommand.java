@@ -40,6 +40,20 @@ public class ListCoursesCommand implements CommandExecutor {
             String[] arg3) {
         StringBuilder courses = new StringBuilder(
                 Parkour.getString("course.list"));
+		if (arg3.length >= 1 && arg3[0].toLowerCase().startsWith("adv")) {
+			try (PreparedStatement stmt = plugin.getCourseDatabase()
+					.prepareStatement("SELECT DISTINCT name FROM adventures")) {
+				try (ResultSet result = stmt.executeQuery()) {
+					while (result.next()) {
+						courses.append(' ').append(result.getString("name"));
+					}
+				}
+			} catch (SQLException e) {
+				throw new RuntimeException(e);
+			}
+			sender.sendMessage(courses.toString());
+			return true;
+		}
         try (PreparedStatement stmt = plugin.getCourseDatabase()
                 .prepareStatement("SELECT * FROM courses WHERE `mode`!='hidden' ORDER BY id")) {
             try (ResultSet result = stmt.executeQuery()) {

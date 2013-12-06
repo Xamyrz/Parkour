@@ -16,6 +16,7 @@
  */
 package me.cmastudios.mcparkour;
 
+import com.google.common.collect.Lists;
 import me.cmastudios.mcparkour.commands.*;
 import me.cmastudios.mcparkour.data.EffectHead;
 import me.cmastudios.mcparkour.data.Guild;
@@ -43,6 +44,7 @@ import me.cmastudios.mcparkour.data.FavoritesList;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
 import me.cmastudios.mcparkour.data.PlayerExperience;
 import org.bukkit.FireworkEffect.Type;
+import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
@@ -56,7 +58,7 @@ import org.bukkit.inventory.meta.FireworkMeta;
  */
 public class Parkour extends JavaPlugin {
 
-    private static ResourceBundle messages = ResourceBundle.getBundle("messages_pl");
+    private static ResourceBundle messages = ResourceBundle.getBundle("messages");
     private Connection courseDatabase;
     private boolean chat = true;
     public List<Player> blindPlayers = new ArrayList<>();

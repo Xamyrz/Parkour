@@ -46,7 +46,7 @@ public class FavoritesList {
     private List<Integer> favorites = new ArrayList<>();
     private Connection conn;
     private Parkour plugin;
-    private int page = 1;
+    private int page=1;
 
     public FavoritesList(Player player, Parkour plugin) throws SQLException {
         this.player = player;
@@ -99,7 +99,7 @@ public class FavoritesList {
             try {
                 ItemStack item = null;
                 ItemMeta meta;
-                int courseId = favorites.get(45 * (page - 1) + i);
+                int courseId = favorites.get(i * page);
                 ParkourCourse current = ParkourCourse.loadCourse(conn, courseId);
 
                 switch (current.getMode()) {
@@ -149,7 +149,7 @@ public class FavoritesList {
                         meta.setDisplayName(Parkour.getString("favorites.item.thematic", current.getId()));
                         item.setItemMeta(meta);
                         break;
-
+                        
                 }
                 if (item != null) {
                     meta = item.getItemMeta();
@@ -182,10 +182,8 @@ public class FavoritesList {
                 openMenu();
                 return;
             }
-            if (favorites.get(pos) != null) {
-                plugin.teleportToCourse(player, favorites.get(pos), PlayerTeleportEvent.TeleportCause.PLUGIN);
-                destroyInv();
-            }
+            plugin.teleportToCourse(player, favorites.get(pos), PlayerTeleportEvent.TeleportCause.PLUGIN);
+            destroyInv();
         } else if (click.isShiftClick() && click.isRightClick()) {
             Integer pkID = favorites.get(pos);
             if (pkID != null) {

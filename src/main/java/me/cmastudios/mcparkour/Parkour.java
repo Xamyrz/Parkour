@@ -58,7 +58,7 @@ import org.bukkit.inventory.meta.FireworkMeta;
  */
 public class Parkour extends JavaPlugin {
 
-    private static ResourceBundle messages = ResourceBundle.getBundle("messages_pl");
+    private static ResourceBundle messages = ResourceBundle.getBundle("messages");
     private Connection courseDatabase;
     private boolean chat = true;
     public List<Player> blindPlayers = new ArrayList<>();
@@ -93,7 +93,7 @@ public class Parkour extends JavaPlugin {
     public final ItemStack HIDDEN = new ItemStack(Material.HOPPER_MINECART);
     public final ItemStack V_HARD = new ItemStack(Material.EXPLOSIVE_MINECART);
     public final ItemStack THEMATIC = new ItemStack(Material.BOAT);
-    public final ItemStack ADVENTURE = new ItemStack(Material.SADDLE);
+    public final ItemStack ADVENTURE = new ItemStack(Material.RAILS);
     private final Random random = new Random();
 
     @Override
@@ -151,7 +151,6 @@ public class Parkour extends JavaPlugin {
         }
         completedCourseTracker.clear();
         blindPlayerExempts.clear();
-        pendingFavs.clear();
 
     }
 

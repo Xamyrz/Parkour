@@ -28,7 +28,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import me.cmastudios.mcparkour.Parkour;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -40,7 +39,7 @@ import org.bukkit.inventory.meta.ItemMeta;
  *
  * @author maciekmm
  */
-public class FavoritesList {
+public class FavoritesList implements ItemMenu {
 
     private Player player;
     private List<Integer> favorites = new ArrayList<>();
@@ -67,6 +66,7 @@ public class FavoritesList {
         }
     }
 
+    @Override
     public void openMenu() {
         openMenu(page);
     }
@@ -149,7 +149,7 @@ public class FavoritesList {
                         meta.setDisplayName(Parkour.getString("favorites.item.thematic", current.getId()));
                         item.setItemMeta(meta);
                         break;
-                        
+
                 }
                 if (item != null) {
                     meta = item.getItemMeta();
@@ -173,18 +173,18 @@ public class FavoritesList {
         if (click.isLeftClick()) {
             if (slot == 46 && inv.getItem(46) != null) {
                 setPage(page--);
-                destroyInv();
+                destroyMenu();
                 openMenu();
                 return;
             } else if (slot == 53 && inv.getItem(53) != null) {
                 setPage(page++);
-                destroyInv();
+                destroyMenu();
                 openMenu();
                 return;
             }
             if (favorites.get(pos) != null) {
                 plugin.teleportToCourse(player, favorites.get(pos), PlayerTeleportEvent.TeleportCause.PLUGIN);
-                destroyInv();
+                destroyMenu();
             }
         } else if (click.isShiftClick() && click.isRightClick()) {
             Integer pkID = favorites.get(pos);
@@ -196,7 +196,8 @@ public class FavoritesList {
         }
     }
 
-    public void destroyInv() {
+    @Override
+    public void destroyMenu() {
         plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
             @Override
             public void run() {
@@ -214,6 +215,7 @@ public class FavoritesList {
         favorites.add(i);
     }
 
+    @Override
     public void save() {
         try {
             PreparedStatement statement = conn.prepareStatement("INSERT INTO favorites (`player`,`favorites`) VALUES (?,?) ON DUPLICATE KEY UPDATE favorites = ?");

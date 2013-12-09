@@ -640,7 +640,7 @@ public class ParkourListener implements Listener {
             event.getPlayer().setScoreboard(plugin.getServer().getScoreboardManager().getMainScoreboard());
         }
         if (event.getTo().getWorld() != event.getFrom().getWorld()
-                || event.getTo().distance(event.getFrom()) >= 4 && !ignoreTeleport) {
+                || event.getTo().distance(event.getFrom()) >= 10 && !ignoreTeleport) {
             Duel duel = plugin.getDuel(event.getPlayer());
             if (duel != null && duel.isAccepted() && duel.getCourse() != null) { //stopgap
                 event.setTo(duel.getCourse().getTeleport());

@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package me.cmastudios.mcparkour.data;
 
 import me.cmastudios.mcparkour.Parkour;
@@ -38,8 +37,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import org.bukkit.potion.Potion;
+import org.bukkit.potion.PotionType;
 
 public class EffectHead {
+
     private String worldName;
     private int x;
     private int y;
@@ -138,6 +140,7 @@ public class EffectHead {
             BlockFace.SOUTH, BlockFace.SOUTH_EAST, BlockFace.SOUTH_WEST,
             BlockFace.WEST
     );
+
     public void setBlock(Parkour plugin) {
         Random rotator = new Random();
         Block block = this.getLocation().getBlock();
@@ -174,6 +177,7 @@ public class EffectHead {
             new PotionEffect(PotionEffectType.SPEED, 60, 1),
             new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 1)
     );
+    
     private static final List<PotionEffect> witherEffects = Arrays.asList(
             new PotionEffect(PotionEffectType.SLOW, 80, 1),
             new PotionEffect(PotionEffectType.BLINDNESS, 60, 1),
@@ -185,20 +189,31 @@ public class EffectHead {
 
     public ItemStack getPotion() {
         ItemStack potion = new ItemStack(Material.POTION);
+
         Validate.isTrue(potion.getItemMeta() instanceof PotionMeta);
         PotionMeta itemMeta = (PotionMeta) potion.getItemMeta();
+        PotionEffect pe = null;
         switch (this.getSkullType()) {
             case PLAYER:
-                itemMeta.addCustomEffect(playerEffects.get(potionTypeRNG.nextInt(playerEffects.size())), true);
+                pe = playerEffects.get(potionTypeRNG.nextInt(playerEffects.size()));
+                itemMeta.addCustomEffect(pe, true);
                 break;
             case WITHER:
-                itemMeta.addCustomEffect(witherEffects.get(potionTypeRNG.nextInt(witherEffects.size())), true);
+                pe = witherEffects.get(potionTypeRNG.nextInt(witherEffects.size()));
+                itemMeta.addCustomEffect(pe, true);
+
                 break;
             default:
                 itemMeta.setDisplayName("Error");
                 break;
         }
-        potion.setItemMeta(itemMeta); // Stupid bukkit cloning
+        if (pe != null) {
+            Potion pot = Potion.fromItemStack(potion);
+            pot.setSplash(true);
+            pot.setType(PotionType.getByEffect(pe.getType()));
+            pot.apply(potion);
+        }
+        potion.setItemMeta(itemMeta);
         return potion;
     }
 }

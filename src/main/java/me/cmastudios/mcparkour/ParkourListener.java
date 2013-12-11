@@ -45,7 +45,9 @@ import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.Iterator;
 import java.util.List;
+import me.cmastudios.mcparkour.data.SimpleAchievement.AchievementCriteria;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.metadata.FixedMetadataValue;
 
 /**
  * Responds to Bukkit events for the Parkour plugin.
@@ -80,6 +82,7 @@ public class ParkourListener implements Listener {
                     || below.getType() == Material.WALL_SIGN) {
                 final Sign sign = (Sign) below.getState();
                 final String controlLine = sign.getLine(0);
+                
                 switch (controlLine) {
                     case "[start]":
                         plugin.completedCourseTracker.remove(player);
@@ -158,8 +161,13 @@ public class ParkourListener implements Listener {
                             if (highScore.getTime() > completionTime) {
                                 highScore.setTime(completionTime);
                                 player.sendMessage(Parkour.getString("course.end.personalbest", new Object[]{endData.course.getId()}));
+                                plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.BEAT_PREVIOUS_SCORE));
                             }
                             highScore.setPlays(highScore.getPlays() + 1);
+                           
+                            plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PLAYS_ON_CERTAIN_PARKOUR, highScore.getCourse(), highScore.getPlays()));
+                            plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PARKOUR_COMPLETE, highScore.getCourse()));
+                            plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PARKOURS_COMPLETED, endData.course.getId()));
                             highScore.save(plugin.getCourseDatabase());
                             DecimalFormat df = new DecimalFormat("#.###");
                             double completionTimeSeconds = ((double) completionTime) / 1000;
@@ -168,9 +176,12 @@ public class ParkourListener implements Listener {
                             PlayerHighScore bestScore = scores.get(0);
                             if (highScore.equals(bestScore) && highScore.getTime() == completionTime) {
                                 plugin.getServer().broadcastMessage(Parkour.getString("course.end.best", player.getDisplayName() + ChatColor.RESET, endData.course.getId(), df.format(completionTimeSeconds)));
+                                plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.BEST_HIGHSCORE));
                             }
+                            
                             Duel duel = plugin.getDuel(player);
                             PlayerExperience playerXp = PlayerExperience.loadExperience(plugin.getCourseDatabase(), player);
+                            int prevLevel = plugin.getLevel(playerXp.getExperience());
                             try {
                                 int courseXp = Integer.parseInt(sign.getLine(1));
                                 Checkpoint cp = plugin.playerCheckpoints.get(player);
@@ -188,6 +199,10 @@ public class ParkourListener implements Listener {
                                 playerXp.save(plugin.getCourseDatabase());
                                 player.sendMessage(Parkour.getString("xp.gain", new Object[]{courseXp, playerXp.getExperience()}));
                             } catch (NumberFormatException | IndexOutOfBoundsException e) { // No XP gain for this course
+                            }
+                            int afterLevel = plugin.getLevel(playerXp.getExperience());
+                            if (prevLevel < afterLevel) {
+                                plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.LEVEL_ACQUIRE, afterLevel));
                             }
                             plugin.playerCheckpoints.remove(player);
                             plugin.completedCourseTracker.put(player, endData);
@@ -366,6 +381,9 @@ public class ParkourListener implements Listener {
                 favs.handleSelection(favs.getCurrentPage(), event.getSlot(), event.getClick(), event.getInventory());
             }
         }
+        if (event.getInventory().getName().equalsIgnoreCase(Parkour.getString("achievement.inventory.name"))) {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler
@@ -401,6 +419,7 @@ public class ParkourListener implements Listener {
                             plugin.pendingFavs.put(event.getPlayer(), favs);
                         }
                         favs.addParkour(parkID);
+                        plugin.getPlayerAchievements(event.getPlayer()).awardAchievement(new SimpleAchievement(AchievementCriteria.FAVORITES_NUMBER,favs.size()));
                         favs.save();
                         event.setCancelled(true);
                     } catch (IndexOutOfBoundsException | NumberFormatException | NullPointerException ignored) {
@@ -437,6 +456,13 @@ public class ParkourListener implements Listener {
                 }
             } else if (event.getPlayer().getItemInHand().getType() == Material.NETHER_STAR) {
                 event.getPlayer().teleport(plugin.getSpawn(), TeleportCause.COMMAND);
+            } else if (event.getPlayer().getItemInHand().getType() == Material.EXP_BOTTLE) {
+                event.setCancelled(true);
+                PlayerAchievements ach;
+                if (event.getPlayer().hasMetadata("achievements")) {
+                    ach = (PlayerAchievements) event.getPlayer().getMetadata("achievements").get(0).value();
+                    ach.openMenu();
+                }
             } else if (event.getPlayer().getItemInHand().getType() == Material.EMERALD) {
                 event.setCancelled(true);
                 if (!plugin.favoritesCooldown.containsKey(event.getPlayer().getName())) {
@@ -561,6 +587,9 @@ public class ParkourListener implements Listener {
         if (!event.getPlayer().getInventory().contains(Material.EMERALD)) {
             event.getPlayer().getInventory().addItem(plugin.FAVORITES);
         }
+        if (!event.getPlayer().getInventory().contains(Material.EXP_BOTTLE)) {
+            event.getPlayer().getInventory().addItem(plugin.ACHIEVEMENTS_MENU);
+        }
         if (event.getPlayer().hasPermission("parkour.vip")) {
             if (!event.getPlayer().getInventory().contains(Material.GOLD_HELMET)) {
                 event.getPlayer().getInventory().setHelmet(plugin.HELMET);
@@ -578,6 +607,10 @@ public class ParkourListener implements Listener {
                 event.getPlayer().getInventory().addItem(plugin.FIREWORK_SPAWNER);
             }
         }
+        if (event.getPlayer().hasMetadata("achievements")) {
+            event.getPlayer().removeMetadata("achievement", plugin);
+        }
+        event.getPlayer().setMetadata("achievements", new FixedMetadataValue(plugin, new PlayerAchievements(event.getPlayer(), plugin)));
         GuildPlayer gp = GuildPlayer.loadGuildPlayer(plugin.getCourseDatabase(), event.getPlayer());
         GuildWar war = plugin.getWar(gp.getGuild());
         if (war != null) {
@@ -624,6 +657,16 @@ public class ParkourListener implements Listener {
         if (war != null) {
             GuildPlayer gp = war.getPlayer(event.getPlayer());
             war.handleDisconnect(gp, plugin);
+        }
+        if (event.getPlayer().hasMetadata("achievements")) {
+            MetadataValue val = event.getPlayer().getMetadata("achievements").get(0);
+            if (val != null) {
+                if (val.value() instanceof PlayerAchievements) {
+                    PlayerAchievements achievements = (PlayerAchievements) val.value();
+                    achievements.save();
+                    event.getPlayer().removeMetadata("achievements", plugin);
+                }
+            }
         }
     }
 

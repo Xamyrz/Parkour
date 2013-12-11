@@ -16,7 +16,6 @@
  */
 package me.cmastudios.mcparkour;
 
-import com.google.common.collect.Lists;
 import me.cmastudios.mcparkour.commands.*;
 import me.cmastudios.mcparkour.data.EffectHead;
 import me.cmastudios.mcparkour.data.Guild;
@@ -33,6 +32,8 @@ import org.bukkit.potion.PotionEffectType;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
@@ -40,16 +41,23 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import me.cmastudios.mcparkour.data.AchievementMilestone;
 import me.cmastudios.mcparkour.data.FavoritesList;
+import me.cmastudios.mcparkour.data.ParkourAchievement;
+import me.cmastudios.mcparkour.data.ParkourAchievement.AchievementType;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
+import me.cmastudios.mcparkour.data.PlayerAchievements;
 import me.cmastudios.mcparkour.data.PlayerExperience;
+import me.cmastudios.mcparkour.data.SimpleAchievement;
+import me.cmastudios.mcparkour.data.SimpleAchievement.AchievementCriteria;
+import me.cmastudios.mcparkour.data.SimpleMilestone;
 import org.bukkit.FireworkEffect.Type;
-import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.metadata.FixedMetadataValue;
 
 /**
  * Main class for mcparkour Bukkit plugin.
@@ -71,6 +79,8 @@ public class Parkour extends JavaPlugin {
     public Map<String, Long> fireworkCooldown = new HashMap<>();
     public Map<String, Long> favoritesCooldown = new HashMap<>();
     public Map<Player, FavoritesList> pendingFavs = new HashMap<>();
+    public List<ParkourAchievement> achievements = new ArrayList<>();
+    public List<AchievementMilestone> milestones = new ArrayList<>();
     public List<Player> disabledScoreboards = new ArrayList<>();
     public List<Duel> activeDuels = new ArrayList<>();
     public List<GuildWar> activeWars = new ArrayList<>();
@@ -94,6 +104,9 @@ public class Parkour extends JavaPlugin {
     public final ItemStack V_HARD = new ItemStack(Material.EXPLOSIVE_MINECART);
     public final ItemStack THEMATIC = new ItemStack(Material.BOAT);
     public final ItemStack ADVENTURE = new ItemStack(Material.SADDLE);
+    public final ItemStack ACHIEVEMENT = new ItemStack(Material.COAL);
+    public final ItemStack ACHIEVEMENT_ACHIEVED = new ItemStack(Material.DIAMOND);
+    public final ItemStack ACHIEVEMENTS_MENU = new ItemStack(Material.EXP_BOTTLE);
     private final Random random = new Random();
 
     @Override
@@ -115,7 +128,8 @@ public class Parkour extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.saveDefaultConfig();
         this.connectDatabase();
-        setupItems();
+        this.setupItems();
+        this.setupAchievements();
         try {
             this.rebuildHeads();
         } catch (SQLException e) {
@@ -153,6 +167,40 @@ public class Parkour extends JavaPlugin {
         blindPlayerExempts.clear();
         pendingFavs.clear();
 
+    }
+
+    private void setupAchievements() {
+        try {
+            PreparedStatement stmt = courseDatabase.prepareStatement("SELECT * FROM achievements");
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                String[] opt = rs.getString("options").split(",");
+                System.out.println(rs.getString("options"));
+                List<Integer> opts = new ArrayList<>();
+                for (String s : opt) {
+                    opts.add(Integer.parseInt(s));
+                }
+                achievements.add(new ParkourAchievement(rs.getInt("id"), rs.getString("name"), AchievementCriteria.valueOf(rs.getString("criteria")), AchievementType.valueOf(rs.getString("type")), opts.toArray(new Integer[opts.size()])));
+            }
+            rs.close();
+
+            stmt = courseDatabase.prepareStatement("SELECT * FROM milestones");
+            rs = stmt.executeQuery();
+            List<ParkourAchievement> achList = new ArrayList<>();
+            while (rs.next()) {
+                for (String s : rs.getString("options").split(",")) {
+                    if (s.equals("")) {
+                        continue;
+                    }
+                    achList.add(achievements.get(Integer.parseInt(s)));
+                }
+                milestones.add(new AchievementMilestone(rs.getInt("id"), rs.getString("name"), rs.getString("desc"), (ParkourAchievement[]) achList.toArray()));
+                achList.clear();
+            }
+            rs.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(Parkour.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private void setupItems() {
@@ -200,6 +248,10 @@ public class Parkour extends JavaPlugin {
         meta.setLore(Arrays.asList(favlore));
         FAVORITES.setItemMeta(meta);
 
+        meta = ACHIEVEMENTS_MENU.getItemMeta();
+        meta.setDisplayName(Parkour.getString("achievement.inventory.opener"));
+        ACHIEVEMENTS_MENU.setItemMeta(meta);
+
         HELMET.addEnchantment(Enchantment.DURABILITY, 3);
         CHESTPLATE.addEnchantment(Enchantment.DURABILITY, 3);
         LEGGINGS.addEnchantment(Enchantment.DURABILITY, 3);
@@ -233,6 +285,9 @@ public class Parkour extends JavaPlugin {
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courseheads (world_name varchar(32), x INTEGER, y INTEGER, z INTEGER, course_id INTEGER, skull_type_name varchar(32))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS gameresults (time TIMESTAMP, type enum('duel','guildwar'), winner varchar(16), loser varchar(16))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS favorites (`player` varchar(16) NOT NULL,`favorites` text NOT NULL, PRIMARY KEY (`player`))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS achievements (`id` int(11) NOT NULL AUTO_INCREMENT,`name` VARCHAR(20) NOT NULL,`description` mediumtext NOT NULL, `type` enum('BRONZE','SILVER','GOLD','PLATINUM','HIDDEN') NOT NULL,`criteria` enum('PARKOUR_COMPLETE','DUELS_PLAYED','PARKOURS_COMPLETED','TOTAL_PLAYTIME','PLAYS_ON_CERTAIN_PARKOUR','TOTAL_PLAYS_ON_PARKOURS','LEVEL_ACQUIRE','FAVORITES_NUMBER','BEST_SCORE','GUILD_CREATE','GUILD_MEMBERSHIP','BEST_HIGHSCORE','TOP_10','BEAT_PREVIOUS_SCORE') NOT NULL, `options` text NOT NULL, PRIMARY KEY (`id`))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS milestones (`id` int(11) NOT NULL AUTO_INCREMENT,`name` VARCHAR(20) NOT NULL,`options` text NOT NULL, PRIMARY KEY (`id`))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS playerachievements (`player` varchar(16) NOT NULL,`completed` text NOT NULL,`progress` mediumtext NOT NULL,`milestones` text NOT NULL, PRIMARY KEY (`player`))");
             }
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load database driver", ex);
@@ -523,6 +578,66 @@ public class Parkour extends JavaPlugin {
 
     public void setChat(boolean state) {
         chat = state;
+    }
+
+    public boolean containsSimiliarMilestone(List<? extends SimpleMilestone> milestones, SimpleMilestone achieved) {
+        for (SimpleMilestone milestone : milestones) {
+            if (achieved.isSimiliar(milestone)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public List<ParkourAchievement> getSimiliarAchievements(SimpleAchievement ach) {
+        List<ParkourAchievement> result = new ArrayList<>();
+        for (ParkourAchievement achievement : achievements) {
+            if (ach.isSimiliar(achievement)) {
+                result.add(achievement);
+            }
+        }
+        return result;
+    }
+
+    public List<AchievementMilestone> getSimiliarMilestones(SimpleMilestone milestone) {
+        List<AchievementMilestone> result = new ArrayList<>();
+        for (AchievementMilestone mile : milestones) {
+            if (mile.isSimiliar(milestone)) {
+                result.add(mile);
+            }
+        }
+        return result;
+    }
+
+    public ParkourAchievement getAchievementById(int id) {
+        for (ParkourAchievement achievement : achievements) {
+            if (achievement.getId() == id) {
+                return achievement;
+            }
+        }
+        return null;
+    }
+
+    public PlayerAchievements getPlayerAchievements(Player p) {
+        PlayerAchievements achs= null;
+        if (p.hasMetadata("achievements")) {
+            achs = (PlayerAchievements) p.getMetadata("achievements").get(0).value();
+        }
+        if (achs == null) {
+            PlayerAchievements newAchievements = new PlayerAchievements(p, this);
+            achs = newAchievements;
+            p.setMetadata("achievements", new FixedMetadataValue(this, achs));
+        }
+        return achs;
+    }
+
+    public AchievementMilestone getMilestoneById(int id) {
+        for (AchievementMilestone milestone : milestones) {
+            if (milestone.getId() == id) {
+                return milestone;
+            }
+        }
+        return null;
     }
 
     public static class PlayerCourseData {

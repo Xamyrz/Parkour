@@ -90,9 +90,9 @@ public class HighscoresCommand implements CommandExecutor {
                             }
                             if (args.length > 2) {
                                 target = Bukkit.getOfflinePlayer(args[2]);
-                                pc.resetScores(plugin.getCourseDatabase(), target);
+                                
                             }
-                            
+                            pc.resetScores(plugin.getCourseDatabase(), target);
                             sender.sendMessage(Parkour.getString("highscores.reset.success", parkId));
                             return true;
                         } catch (SQLException ex) {

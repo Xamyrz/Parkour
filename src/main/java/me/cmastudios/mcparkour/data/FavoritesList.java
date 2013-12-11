@@ -239,4 +239,8 @@ public class FavoritesList implements ItemMenu {
     public void setPage(int page) {
         this.page = page;
     }
+    
+    public int size() {
+        return favorites.size();
+    }
 }

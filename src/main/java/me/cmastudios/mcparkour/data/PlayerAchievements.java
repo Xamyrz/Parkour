@@ -104,12 +104,19 @@ public class PlayerAchievements implements ItemMenu {
         }
     }
 
+    /**
+     * Check if criterias are fullfilled and awards player with achievement.
+     *
+     * @param achievement gets SimpleAchievement for comparison
+     */
     public void awardAchievement(SimpleAchievement achievement) {
+        //Get similiar enchantments 
         List<ParkourAchievement> genericAchievements = plugin.getSimiliarAchievements(achievement);
         for (ParkourAchievement genericAchievement : genericAchievements) {
             if (genericAchievement == null) {
                 return;
             }
+            //Check if achievement is in progress
             if (achievementProgress.containsKey(genericAchievement) && !completedAchievements.contains(genericAchievement)) {
                 List<Integer> objects = achievementProgress.get(genericAchievement);
                 for (Integer o : achievement.getOptions()) {
@@ -117,28 +124,41 @@ public class PlayerAchievements implements ItemMenu {
                         objects.add(o);
                     }
                 }
+                //Check if achievement contains all keys
                 if (Arrays.asList(achievement.getOptions()).containsAll(objects)) {
                     achievementProgress.remove(genericAchievement);
                     completedAchievements.add(genericAchievement);
+                    //If successfully awarded check milestones
                     checkMilestones();
                 } else {
                     achievementProgress.put(genericAchievement, objects);
                 }
+                //Check if not already awarded
             } else if (!completedAchievements.contains(genericAchievement)) {
                 completedAchievements.add(genericAchievement);
+                //If successfully awarded check milestones
                 checkMilestones();
             }
         }
     }
 
+    /**
+     * Awards player with milestone
+     *
+     * @param milestone
+     */
     public void awardMilestone(SimpleMilestone milestone) {
-        for(AchievementMilestone mile : plugin.getSimiliarMilestones(milestone)) {
-            if(!completedMilestones.contains(mile)) {
+        for (AchievementMilestone mile : plugin.getSimiliarMilestones(milestone)) {
+            //Check if not already completed
+            if (!completedMilestones.contains(mile)) {
                 completedMilestones.add(mile);
             }
         }
     }
 
+    /**
+     * Check if criterias are fullfilled and awards player with milestone.
+     */
     public void checkMilestones() {
         for (AchievementMilestone mile : plugin.milestones) {
             if (!completedMilestones.contains(mile) && mile.isCompleted(completedAchievements.toArray(new ParkourAchievement[completedAchievements.size()]))) {
@@ -185,12 +205,12 @@ public class PlayerAchievements implements ItemMenu {
             inv.setItem(i, item);
         }
         int startingPos = target;
-        target = plugin.milestones.size()+plugin.achievements.size();
-        if (plugin.milestones.size()+plugin.achievements.size() > 45) {
+        target = plugin.milestones.size() + plugin.achievements.size();
+        if (plugin.milestones.size() + plugin.achievements.size() > 45) {
             target = 45;
         }
 
-        for (int i=startingPos; i < target; i++) {
+        for (int i = startingPos; i < target; i++) {
             ItemStack item;
             ItemMeta meta;
             AchievementMilestone current = plugin.milestones.get(45 * (page - 1) + i);
@@ -204,7 +224,7 @@ public class PlayerAchievements implements ItemMenu {
                 meta.setDisplayName(Parkour.getString("achievement.inventory.milestone.not_achieved", current.getName()));
             }
             item.setItemMeta(meta);
-            inv.setItem(i-startingPos, item);
+            inv.setItem(i - startingPos, item);
         }
 
         player.openInventory(inv);

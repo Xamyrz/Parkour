@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * It's a simple to create achievement, easy for firing.
  *
  * @author maciekmm
  */
@@ -29,68 +30,143 @@ public class SimpleAchievement {
     AchievementCriteria criterium;
     List<Integer> options;
 
+    /**
+     * 
+     * @param criteria - criteria for this achievement
+     * @param options - options for achievement
+     */
     public SimpleAchievement(AchievementCriteria criteria, Integer... options) {
         this.criterium = criteria;
         this.options = Arrays.asList(options);
     }
 
+    /**
+     * Gets criterium
+     * @return criterium of this achievement
+     */
     public AchievementCriteria getCriterium() {
         return criterium;
     }
 
+    /**
+     * Gets options of achievement.
+     * @return list of options.
+     */
     public List<Integer> getOptions() {
         return options;
     }
 
+    /**
+     *
+     * @param achievement to compare to this achievement
+     * @return if they're similiar true otherwise false
+     */
     public boolean isSimiliar(SimpleAchievement achievement) {
-        if (achievement.getCriterium().progressing == true && this.getCriterium().progressing == true) {
-            return this.getCriterium() == achievement.getCriterium() && Arrays.asList(achievement.getOptions()).containsAll(Arrays.asList(this.getOptions()));
-        } else {
-            if (this.getCriterium() == achievement.getCriterium() && this.getCriterium().atLeast) {
-                try {
-                    ArrayList<Integer> optsBase = new ArrayList<>(this.getOptions());
-                    ArrayList<Integer> optsChecked = new ArrayList<>(achievement.getOptions());
-                    for (int option : this.getCriterium().optionsAffected) {
-                        if (optsChecked.get(option) < optsBase.get(option)) {
-                            return false;
-                        } else {
-                            optsBase.remove(option);
-                            optsChecked.remove(option);
-                        }
-                    }
-                    if (!optsBase.isEmpty() && !optsChecked.isEmpty()) {
-                        return optsBase.equals(optsChecked);
-                    } else {
-                        return true;
-                    }
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    return false;
-                }
-            } else {
-                return this.getCriterium() == achievement.getCriterium() && this.getOptions().equals(achievement.getOptions());
-            }
+        if (this.getCriterium() != achievement.getCriterium()) {
+            return false;
         }
-
+        if (this.criterium.progressing) { // Check if achievement is progressing
+            //Check if the simpleachievement contains all things from generic (this) achievement 
+            return Arrays.asList(achievement.getOptions()).containsAll(options);
+        } else if (this.criterium.atLeast) { //Check if achievement is atLeast 
+            ArrayList<Integer> baseOpts = new ArrayList<>(this.options); //Get ArrayList from List to be able to modify
+            ArrayList<Integer> checkedOpts = new ArrayList<>(achievement.getOptions());
+            if(baseOpts.size()!=checkedOpts.size()) {
+                return false;
+            }
+            for (int option : this.criterium.optionsAffected) {
+                if (checkedOpts.get(option) < baseOpts.get(option)) {
+                    return false; //If checkedOpt is lower than baseOpts (required) return false, because it doesn't fullfill criterium
+                } else {
+                    baseOpts.remove(option); //We remove that option to check other not affected by atLeast options
+                    checkedOpts.remove(option);
+                }
+            }
+            return baseOpts.equals(checkedOpts); //Check if remaining options are thesame.
+        } else { //Normal check
+            return this.getOptions().equals(achievement.getOptions());
+        }
     }
 
     public enum AchievementCriteria {
 
-        PARKOUR_COMPLETE(false, false), //Completed certain parkour
+        /**
+         * Achievement fired when someone completes parkour. It takes the
+         * parkour number as first param.
+         */
+        PARKOUR_COMPLETE(false, false),
+        /**
+         * Achievement fired when someone completes parkour. It takes parkour
+         * ids in params
+         */
         PARKOURS_COMPLETED(true, false), //Total parkours completed, it's definetely faster doing that this way.
-        TOTAL_PLAYTIME(false, true, 1), //Total server playtime
-        DUELS_PLAYED(false, true, 1), //TODO
+        /**
+         * TODO still, will be fired on quit(?) or in scheduler. As the first
+         * param it takes total playtime on server.
+         */
+        TOTAL_PLAYTIME(false, true, 0), //Total server playtime
+        /**
+         * TODO still, will be fired on duel completion. As the first param it
+         * takes amount of duels played.
+         */
+        DUELS_PLAYED(false, true, 0), //TODO
+        /**
+         * Achievement fired when someone completes parkour. As the first param
+         * it takes number(id) of parkour. As the second param it takes amount
+         * of plays on certain parkour.
+         */
         PLAYS_ON_CERTAIN_PARKOUR(false, true, 1), //Total plays on certain parkour no. of runs
-        TOTAL_PLAYS_ON_PARKOURS(false, true, 1), //Total plays on all parkours
-        LEVEL_ACQUIRE(false, true, 0), 
+        /**
+         * TODO still, will be fired on parkour completion. As the first param
+         * it takes amount of plays on all parkours.
+         */
+        TOTAL_PLAYS_ON_PARKOURS(false, true, 0), //Total plays on all parkours
+        /**
+         * Achievement fired when someone's level changed. As the first param it
+         * takes a level. * It's atLeast, it means that the params specified in
+         * affected options must be higher or equal to thesame params in generic
+         * achievement.
+         */
+        LEVEL_ACQUIRE(false, true, 0),
+        /**
+         * Achievement fired when someone adds parkour to favorites. As the
+         * first param it takes a favorites number
+         */
         FAVORITES_NUMBER(false, true, 0),
-        GUILD_CREATE(false, false), //TODO
-        GUILD_MEMBERSHIP(false, false), //TODO
-        BEST_HIGHSCORE(false, false), 
-        TOP_10(false, false), 
+        /**
+         * TODO still, will be fired on guild creation.
+         */
+        GUILD_CREATE(false, false),
+        /**
+         * TODO still, will be fired when player joins guild.
+         */
+        GUILD_MEMBERSHIP(false, false),
+        /**
+         * Achievement fired when someone's gets the best highscore on parkour.
+         * It doesn't take any params (will take parkour id in the future maybe)
+         */
+        BEST_HIGHSCORE(false, false),
+        /**
+         * TODO still, will be fired when someone gets to TOP_10. It doesn't
+         * take any params (will take parkour id in the future maybe)
+         */
+        TOP_10(false, false),
+        /**
+         * Achievement fired when someone beats his previous score. It doesn't
+         * take any params (will take parkour id in the future maybe)
+         */
         BEAT_PREVIOUS_SCORE(false, false);
 
+        /**
+         * if true it means that the orded of params is not checked and they're
+         * expandable.
+         */
         public final boolean progressing;
-        public final boolean atLeast; //SORRY, can't find better name for that
+        /**
+         * if true it means that the params specified in affected options must
+         * be higher or equal to thesame params in generic achievement.
+         */
+        public final boolean atLeast;
         public final int[] optionsAffected;
 
         private AchievementCriteria(boolean isProgressing, boolean atLeast, int... optionsAffected) {

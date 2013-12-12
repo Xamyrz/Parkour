@@ -19,6 +19,8 @@ package me.cmastudios.mcparkour.data;
 import java.util.Arrays;
 
 /**
+ * Milestone is achievement that you get when completing other achievements,
+ * it'll have an impact on ratio and modifier
  *
  * @author maciekmm
  */
@@ -26,20 +28,37 @@ public class SimpleMilestone {
 
     ParkourAchievement[] criterias;
 
+    /**
+     * Creates SimpleMilestone based only on ParkourAchievements
+     * @param criterias - ParkourAchievements(criterias) that must be completed to get this achievement
+     */
     public SimpleMilestone(ParkourAchievement... criterias) {
         this.criterias = criterias;
     }
 
+    /**
+     * Checks if this milestone is similiar to other
+     * @param mile - milestone to check
+     * @return boolean - true if equals or false if not equals
+     */
     public boolean isSimiliar(SimpleMilestone mile) {
         return Arrays.asList(criterias).equals(Arrays.asList(mile.getCriterias()));
     }
 
+    /**
+     * Checks if achievement is completed
+     *
+     * @param completed - achievements that player has
+     * @return true - if is completed
+     */
     public boolean isCompleted(ParkourAchievement... completed) {
         if (completed.length < criterias.length) {
             return false;
         }
         int size = criterias.length; //Temporary thing, will be improved in future
+        //Iterates through needed achievement
         for (ParkourAchievement criterium : criterias) {
+            //Iterates through player achievements to check if it has certain achievement
             for (ParkourAchievement ach : completed) {
                 if (criterium.isSimiliar(ach)) {
                     size--;
@@ -49,6 +68,10 @@ public class SimpleMilestone {
         return size == 0;
     }
 
+    /**
+     * Gets ParkourAchievement that must be completed
+     * @return ParkourAchievements needed for this milestone to award
+     */
     public ParkourAchievement[] getCriterias() {
         return criterias;
     }

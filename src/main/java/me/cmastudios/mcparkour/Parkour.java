@@ -32,8 +32,6 @@ import org.bukkit.potion.PotionEffectType;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
@@ -41,16 +39,11 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import me.cmastudios.mcparkour.data.AchievementMilestone;
 import me.cmastudios.mcparkour.data.FavoritesList;
-import me.cmastudios.mcparkour.data.ParkourAchievement;
-import me.cmastudios.mcparkour.data.ParkourAchievement.AchievementType;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
 import me.cmastudios.mcparkour.data.PlayerAchievements;
+import static me.cmastudios.mcparkour.data.PlayerAchievements.loadPlayerAchievements;
 import me.cmastudios.mcparkour.data.PlayerExperience;
-import me.cmastudios.mcparkour.data.SimpleAchievement;
-import me.cmastudios.mcparkour.data.SimpleAchievement.AchievementCriteria;
-import me.cmastudios.mcparkour.data.SimpleMilestone;
 import org.bukkit.FireworkEffect.Type;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
@@ -79,8 +72,6 @@ public class Parkour extends JavaPlugin {
     public Map<String, Long> fireworkCooldown = new HashMap<>();
     public Map<String, Long> favoritesCooldown = new HashMap<>();
     public Map<Player, FavoritesList> pendingFavs = new HashMap<>();
-    public List<ParkourAchievement> achievements = new ArrayList<>();
-    public List<AchievementMilestone> milestones = new ArrayList<>();
     public List<Player> disabledScoreboards = new ArrayList<>();
     public List<Duel> activeDuels = new ArrayList<>();
     public List<GuildWar> activeWars = new ArrayList<>();
@@ -129,11 +120,17 @@ public class Parkour extends JavaPlugin {
         this.saveDefaultConfig();
         this.connectDatabase();
         this.setupItems();
-        this.setupAchievements();
+        PlayerAchievements.setupAchievements(courseDatabase);
         try {
             this.rebuildHeads();
         } catch (SQLException e) {
             this.getLogger().log(Level.WARNING, "Failed loading effect heads", e);
+        }
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (p.hasMetadata("achievements")) {
+                p.removeMetadata("achievement", this);
+            }
+            p.setMetadata("achievements", new FixedMetadataValue(this, PlayerAchievements.loadPlayerAchievements(p.getPlayer(), this)));
         }
     }
 
@@ -167,40 +164,6 @@ public class Parkour extends JavaPlugin {
         blindPlayerExempts.clear();
         pendingFavs.clear();
 
-    }
-
-    private void setupAchievements() {
-        try {
-            PreparedStatement stmt = courseDatabase.prepareStatement("SELECT * FROM achievements");
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                String[] opt = rs.getString("options").split(",");
-                System.out.println(rs.getString("options"));
-                List<Integer> opts = new ArrayList<>();
-                for (String s : opt) {
-                    opts.add(Integer.parseInt(s));
-                }
-                achievements.add(new ParkourAchievement(rs.getInt("id"), rs.getString("name"), AchievementCriteria.valueOf(rs.getString("criteria")), AchievementType.valueOf(rs.getString("type")), opts.toArray(new Integer[opts.size()])));
-            }
-            rs.close();
-
-            stmt = courseDatabase.prepareStatement("SELECT * FROM milestones");
-            rs = stmt.executeQuery();
-            List<ParkourAchievement> achList = new ArrayList<>();
-            while (rs.next()) {
-                for (String s : rs.getString("options").split(",")) {
-                    if (s.equals("")) {
-                        continue;
-                    }
-                    achList.add(achievements.get(Integer.parseInt(s)));
-                }
-                milestones.add(new AchievementMilestone(rs.getInt("id"), rs.getString("name"), rs.getString("desc"), (ParkourAchievement[]) achList.toArray()));
-                achList.clear();
-            }
-            rs.close();
-        } catch (SQLException ex) {
-            Logger.getLogger(Parkour.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     private void setupItems() {
@@ -580,64 +543,17 @@ public class Parkour extends JavaPlugin {
         chat = state;
     }
 
-    public boolean containsSimiliarMilestone(List<? extends SimpleMilestone> milestones, SimpleMilestone achieved) {
-        for (SimpleMilestone milestone : milestones) {
-            if (achieved.isSimiliar(milestone)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public List<ParkourAchievement> getSimiliarAchievements(SimpleAchievement ach) {
-        List<ParkourAchievement> result = new ArrayList<>();
-        for (ParkourAchievement achievement : achievements) {
-            if (ach.isSimiliar(achievement)) {
-                result.add(achievement);
-            }
-        }
-        return result;
-    }
-
-    public List<AchievementMilestone> getSimiliarMilestones(SimpleMilestone milestone) {
-        List<AchievementMilestone> result = new ArrayList<>();
-        for (AchievementMilestone mile : milestones) {
-            if (mile.isSimiliar(milestone)) {
-                result.add(mile);
-            }
-        }
-        return result;
-    }
-
-    public ParkourAchievement getAchievementById(int id) {
-        for (ParkourAchievement achievement : achievements) {
-            if (achievement.getId() == id) {
-                return achievement;
-            }
-        }
-        return null;
-    }
-
     public PlayerAchievements getPlayerAchievements(Player p) {
-        PlayerAchievements achs= null;
+        PlayerAchievements achs = null;
         if (p.hasMetadata("achievements")) {
             achs = (PlayerAchievements) p.getMetadata("achievements").get(0).value();
         }
         if (achs == null) {
-            PlayerAchievements newAchievements = new PlayerAchievements(p, this);
+            PlayerAchievements newAchievements = loadPlayerAchievements(p, this);
             achs = newAchievements;
             p.setMetadata("achievements", new FixedMetadataValue(this, achs));
         }
         return achs;
-    }
-
-    public AchievementMilestone getMilestoneById(int id) {
-        for (AchievementMilestone milestone : milestones) {
-            if (milestone.getId() == id) {
-                return milestone;
-            }
-        }
-        return null;
     }
 
     public static class PlayerCourseData {

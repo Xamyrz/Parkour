@@ -610,7 +610,7 @@ public class ParkourListener implements Listener {
         if (event.getPlayer().hasMetadata("achievements")) {
             event.getPlayer().removeMetadata("achievement", plugin);
         }
-        event.getPlayer().setMetadata("achievements", new FixedMetadataValue(plugin, new PlayerAchievements(event.getPlayer(), plugin)));
+        event.getPlayer().setMetadata("achievements", new FixedMetadataValue(plugin, PlayerAchievements.loadPlayerAchievements(event.getPlayer(), plugin)));
         GuildPlayer gp = GuildPlayer.loadGuildPlayer(plugin.getCourseDatabase(), event.getPlayer());
         GuildWar war = plugin.getWar(gp.getGuild());
         if (war != null) {

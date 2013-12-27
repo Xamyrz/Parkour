@@ -42,7 +42,6 @@ import java.util.logging.Logger;
 import me.cmastudios.mcparkour.data.FavoritesList;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
 import me.cmastudios.mcparkour.data.PlayerAchievements;
-import static me.cmastudios.mcparkour.data.PlayerAchievements.loadPlayerAchievements;
 import me.cmastudios.mcparkour.data.PlayerExperience;
 import org.bukkit.FireworkEffect.Type;
 import org.bukkit.enchantments.Enchantment;
@@ -549,7 +548,7 @@ public class Parkour extends JavaPlugin {
             achs = (PlayerAchievements) p.getMetadata("achievements").get(0).value();
         }
         if (achs == null) {
-            PlayerAchievements newAchievements = loadPlayerAchievements(p, this);
+            PlayerAchievements newAchievements = PlayerAchievements.loadPlayerAchievements(p, this);
             achs = newAchievements;
             p.setMetadata("achievements", new FixedMetadataValue(this, achs));
         }

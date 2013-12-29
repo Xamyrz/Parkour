@@ -17,6 +17,7 @@
 package me.cmastudios.mcparkour.data;
 
 import java.util.ArrayList;
+import org.bukkit.ChatColor;
 
 /**
  * Represents full achievement, with name, type and id
@@ -33,6 +34,7 @@ public class ParkourAchievement extends SimpleAchievement {
      * 
      * @param id - id for this achievement
      * @param name - name for this achievement
+     * @param description
      * @param criteria - AchievementCriteria for this achievement
      * @param type - AchievementType for this achievement
      * @param options - Options that must be fullfilled to complete this achievement
@@ -78,17 +80,20 @@ public class ParkourAchievement extends SimpleAchievement {
      * Milestones will calculate ratio modifier based on that.
      */
     public enum AchievementType {
-        BRONZE(0.04),
-        SILVER(0.06),
-        GOLD(0.1),
-        PLATINUM(0.12),
-        HIDDEN(0.1);
+        BRONZE(0.04,ChatColor.GOLD),
+        SILVER(0.06,ChatColor.GRAY),
+        GOLD(0.1,ChatColor.YELLOW),
+        PLATINUM(0.12,ChatColor.DARK_GRAY),
+        HIDDEN(0.1,ChatColor.BLACK);
         
         public final double modifier;
+        public final ChatColor color;
         
-        private AchievementType(double modifier) {
+        private AchievementType(double modifier,ChatColor color) {
             this.modifier = modifier;
+            this.color = color;
         }
+        
     }
 
 }

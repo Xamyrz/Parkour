@@ -270,6 +270,7 @@ public class PlayerAchievements implements ItemMenu {
                 if (Arrays.asList(achievement.getOptions()).containsAll(objects)) {
                     achievementProgress.remove(genericAchievement);
                     completedAchievements.add(genericAchievement);
+                    player.sendMessage(Parkour.getString("achievement.achievement.achieved", genericAchievement.getName(), genericAchievement.getType().color.getChar()));
                     //If successfully awarded check milestones
                     checkMilestones();
                 } else {
@@ -278,6 +279,7 @@ public class PlayerAchievements implements ItemMenu {
                 //Check if not already awarded
             } else if (!completedAchievements.contains(genericAchievement)) {
                 completedAchievements.add(genericAchievement);
+                player.sendMessage(Parkour.getString("achievement.achievement.achieved", genericAchievement.getName(), genericAchievement.getType().color.getChar()));
                 //If successfully awarded check milestones
                 checkMilestones();
             }
@@ -294,6 +296,8 @@ public class PlayerAchievements implements ItemMenu {
             //Check if not already completed
             if (!completedMilestones.contains(mile)) {
                 completedMilestones.add(mile);
+                player.sendMessage(Parkour.getString("achievement.milestone.achieved", mile.getName(),mile.getRatioModifier(),getModifier()));
+                Bukkit.broadcastMessage(Parkour.getString("achievement.milestone.broadcast", player.getName(),mile.getName(),getModifier()));
             }
         }
     }
@@ -337,11 +341,11 @@ public class PlayerAchievements implements ItemMenu {
             if (completedAchievements.contains(current)) {
                 item = plugin.ACHIEVEMENT_ACHIEVED;
                 meta = item.getItemMeta();
-                meta.setDisplayName(Parkour.getString("achievement.inventory.achievement.achieved", current.getName()));
+                meta.setDisplayName(Parkour.getString("achievement.inventory.achievement.achieved", current.getName(),current.getType().color.getChar()));
             } else {
                 item = plugin.ACHIEVEMENT;
                 meta = item.getItemMeta();
-                meta.setDisplayName(Parkour.getString("achievement.inventory.achievement.not_achieved", current.getName()));
+                meta.setDisplayName(Parkour.getString("achievement.inventory.achievement.not_achieved", current.getName(),current.getType().color.getChar()));
             }
             meta.setLore(current.getDescription());
             item.setItemMeta(meta);

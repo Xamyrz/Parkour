@@ -24,10 +24,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import me.cmastudios.mcparkour.Parkour;
+import me.cmastudios.mcparkour.data.SimpleAchievement.AchievementCriteria;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -95,33 +99,85 @@ public class PlayerAchievements implements ItemMenu {
         return null;
     }
 
-    public static void setupAchievements(Connection conn) {
-        try {
-            PreparedStatement stmt = conn.prepareStatement("SELECT * FROM achievements");
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                String[] opt = rs.getString("options").split(",");
-                List<Integer> opts = new ArrayList<>();
-                for (String s : opt) {
-                    opts.add(Integer.parseInt(s));
-                }
-                achievements.add(new ParkourAchievement(rs.getInt("id"), rs.getString("name"), SimpleAchievement.AchievementCriteria.valueOf(rs.getString("criteria")), ParkourAchievement.AchievementType.valueOf(rs.getString("type")), opts.toArray(new Integer[opts.size()])));
-            }
-            rs.close();
+    public static void setupAchievements(FileConfiguration config) {
 
-            stmt = conn.prepareStatement("SELECT * FROM milestones");
-            rs = stmt.executeQuery();
-            List<ParkourAchievement> achList = new ArrayList<>();
-            while (rs.next()) {
-                for (String s : rs.getString("options").split(",")) {
-                    achList.add(achievements.get(Integer.parseInt(s) - 1));
-                }
-                milestones.add(new AchievementMilestone(rs.getInt("id"), rs.getString("name"), rs.getString("description"), achList.toArray(new ParkourAchievement[achList.size()])));
-                achList.clear();
+        Set<String> sects = config.getConfigurationSection("achievements").getKeys(false);
+
+        for (String sctn : sects) {            
+            ConfigurationSection section = config.getConfigurationSection("achievements."+sctn);
+            if (!section.contains("options") || !section.contains("criteria") || !section.contains("type") || !section.contains("name")) {
+                Bukkit.getLogger().log(Level.WARNING, Parkour.getString("achievement.error.loading.missing", section.getCurrentPath()));
+                continue;
             }
-            rs.close();
-        } catch (SQLException ex) {
-            Logger.getLogger(Parkour.class.getName()).log(Level.SEVERE, null, ex);
+            List<Integer> opts = new ArrayList<>();
+            List<String> desc = new ArrayList<>();
+            if(section.contains("description")) {
+                desc = section.getStringList("description");
+            }
+            try {
+                AchievementCriteria criteria = AchievementCriteria.valueOf(section.getString("criteria"));
+
+                switch (criteria) {
+                    case PARKOUR_COMPLETE:
+                        if (!section.contains("options.parkour")) {
+                            continue;
+                        }
+                        opts.add(section.getInt("options.parkour"));
+                        break;
+                    case PARKOURS_COMPLETED:
+                        if (!section.contains("options.parkours")) {
+                            continue;
+                        }
+                        for (int pk : section.getIntegerList("options.parkour")) {
+                            opts.add(pk);
+                        }
+                        break;
+                    case TOTAL_PLAYTIME:
+                    case DUELS_PLAYED:
+                    case PLAYS_ON_CERTAIN_PARKOUR:
+                    case TOTAL_PLAYS_ON_PARKOURS:
+                    case LEVEL_ACQUIRE:
+                    case FAVORITES_NUMBER:
+                        if (!section.contains("options.required_amount")) {
+                            continue;
+                        }
+                        opts.add(section.getInt("options.required_amount"));
+                        break;
+                    /* These achievements don't get any params
+                     case GUILD_CREATE:
+                     case GUILD_MEMBERSHIP:
+                     case BEST_HIGHSCORE:
+                     case TOP_10:
+                     case BEAT_PREVIOUS_SCORE:
+                     break;*/
+                }
+                achievements.add(new ParkourAchievement(Integer.valueOf(sctn), section.getString("name"), desc, criteria, ParkourAchievement.AchievementType.valueOf(section.getString("type")), opts.toArray(new Integer[opts.size()])));
+
+            } catch (Exception e) { //CONFUSED AchievementCriteria.valueOf can throw IllegalArgumentException i believe but netbeans doesn't let me put it here
+                Bukkit.getLogger().log(Level.WARNING, Parkour.getString("achievement.error.loading.syntax", section.getCurrentPath()));
+                e.printStackTrace();
+            }
+        }
+
+        sects = config.getConfigurationSection("milestones").getKeys(false);
+
+        for (String mile : sects) {
+            List<ParkourAchievement> achs = new ArrayList<>();
+            ConfigurationSection section = config.getConfigurationSection("milestones."+mile);
+            if (!section.contains("achievements") || !section.contains("name")) {
+                Bukkit.getLogger().log(Level.WARNING, Parkour.getString("achievement.error.loading.missing", section.getCurrentPath()));
+                continue;
+            }
+            List<String> desc = new ArrayList<>();
+            if(section.contains("description")) {
+                desc = section.getStringList("description");
+            }
+            for (Integer ach : section.getIntegerList("achievements")) {
+                if (getAchievementById(Integer.parseInt(mile)) != null) {
+                    achs.add(getAchievementById(Integer.parseInt(mile)));
+                }
+            }
+            milestones.add(new AchievementMilestone(Integer.parseInt(mile), section.getString("name"), desc, achs.toArray(new ParkourAchievement[achs.size()])));
         }
     }
 
@@ -176,8 +232,10 @@ public class PlayerAchievements implements ItemMenu {
             }
 
             rs.close();
+
         } catch (SQLException ex) {
-            Logger.getLogger(PlayerAchievements.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PlayerAchievements.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
         return new PlayerAchievements(plugin, p, completedMilestones, completedAchievements, progressAchievements);
     }
@@ -287,6 +345,7 @@ public class PlayerAchievements implements ItemMenu {
                 meta = item.getItemMeta();
                 meta.setDisplayName(Parkour.getString("achievement.inventory.achievement.not_achieved", current.getName()));
             }
+            meta.setLore(current.getDescription());
             item.setItemMeta(meta);
             inv.setItem(i, item);
         }
@@ -309,6 +368,7 @@ public class PlayerAchievements implements ItemMenu {
                 meta = item.getItemMeta();
                 meta.setDisplayName(Parkour.getString("achievement.inventory.milestone.not_achieved", current.getName()));
             }
+            meta.setLore(current.getDescription());
             item.setItemMeta(meta);
             inv.setItem(i, item);
         }
@@ -359,8 +419,10 @@ public class PlayerAchievements implements ItemMenu {
             stmt.setString(3, sbprogress.toString());
             stmt.setString(4, sbmilestones.toString());
             stmt.executeUpdate();
+
         } catch (SQLException ex) {
-            Logger.getLogger(PlayerAchievements.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PlayerAchievements.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
 
     }

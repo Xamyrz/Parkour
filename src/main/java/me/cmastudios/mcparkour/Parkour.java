@@ -16,6 +16,7 @@
  */
 package me.cmastudios.mcparkour;
 
+import java.io.File;
 import me.cmastudios.mcparkour.commands.*;
 import me.cmastudios.mcparkour.data.EffectHead;
 import me.cmastudios.mcparkour.data.Guild;
@@ -44,6 +45,8 @@ import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
 import me.cmastudios.mcparkour.data.PlayerAchievements;
 import me.cmastudios.mcparkour.data.PlayerExperience;
 import org.bukkit.FireworkEffect.Type;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
@@ -74,6 +77,7 @@ public class Parkour extends JavaPlugin {
     public List<Player> disabledScoreboards = new ArrayList<>();
     public List<Duel> activeDuels = new ArrayList<>();
     public List<GuildWar> activeWars = new ArrayList<>();
+    private FileConfiguration achievements;
     public final ItemStack VISION = new ItemStack(Material.EYE_OF_ENDER);
     public final ItemStack CHAT = new ItemStack(Material.PAPER);
     public final ItemStack SPAWN = new ItemStack(Material.NETHER_STAR);
@@ -119,7 +123,11 @@ public class Parkour extends JavaPlugin {
         this.saveDefaultConfig();
         this.connectDatabase();
         this.setupItems();
-        PlayerAchievements.setupAchievements(courseDatabase);
+        if (!new File(this.getDataFolder(), "achievements.yml").exists()) {
+            this.saveResource("achievements.yml", false); //That's silly it's te second argument is senseless, because when the file exists it gives warning on console that it can't save file -.-
+        }
+        this.achievements = YamlConfiguration.loadConfiguration(new File(this.getDataFolder(), "achievements.yml"));
+        PlayerAchievements.setupAchievements(achievements);
         try {
             this.rebuildHeads();
         } catch (SQLException e) {

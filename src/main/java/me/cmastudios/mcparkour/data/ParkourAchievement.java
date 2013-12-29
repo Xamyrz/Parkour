@@ -16,6 +16,8 @@
  */
 package me.cmastudios.mcparkour.data;
 
+import java.util.List;
+
 /**
  * Represents full achievement, with name, type and id
  * @author maciekmm
@@ -24,6 +26,7 @@ public class ParkourAchievement extends SimpleAchievement {
 
     private int id; // Just for saving purposes
     private String name;
+    private List<String> description;
     private AchievementType type;
 
     /**
@@ -34,10 +37,11 @@ public class ParkourAchievement extends SimpleAchievement {
      * @param type - AchievementType for this achievement
      * @param options - Options that must be fullfilled to complete this achievement
      */
-    public ParkourAchievement(int id, String name, AchievementCriteria criteria, AchievementType type, Integer... options) {
+    public ParkourAchievement(int id, String name, List<String> description, AchievementCriteria criteria, AchievementType type, Integer... options) {
         super(criteria, options);
         this.id = id;
         this.name = name;
+        this.description = description;
         this.type = type;
         this.criterium = criteria;
     }
@@ -66,6 +70,10 @@ public class ParkourAchievement extends SimpleAchievement {
         return type;
     }
 
+    public List<String> getDescription() {
+        return description;
+    }
+    
     /**
      * Milestones will calculate ratio modifier based on that.
      */

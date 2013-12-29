@@ -72,6 +72,13 @@ commands:
     description: Toggle global chat
     usage: /<command> <state>
     permission: parkour.chat.toggle
+  ratio:
+    description: Set global ratio
+    usage: |
+      /<command> set <amount> - Sets global ratio
+      /<command> - Gets global ratio
+      /<command> get - Gets global ratio
+    permission: parkour.ratio
   guild:
     description: Guild management
     usage: |

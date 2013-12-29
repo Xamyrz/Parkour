@@ -192,9 +192,7 @@ public class ParkourListener implements Listener {
                                 if (duel != null && duel.hasStarted()) {
                                     throw new IndexOutOfBoundsException(); // Skip XP gain
                                 }
-                                if (player.hasPermission("parkour.vip")) {
-                                    courseXp *= 2;
-                                }
+                                courseXp *= plugin.getPlayerAchievements(player).getModifier()*(player.hasPermission("parkour.vip") ? plugin.getRatio()>2 ? plugin.getRatio() : 2 : plugin.getRatio());
                                 playerXp.setExperience(playerXp.getExperience() + courseXp);
                                 playerXp.save(plugin.getCourseDatabase());
                                 player.sendMessage(Parkour.getString("xp.gain", new Object[]{courseXp, playerXp.getExperience()}));

@@ -26,18 +26,25 @@ import java.util.Arrays;
  */
 public class SimpleMilestone {
 
-    ParkourAchievement[] criterias;
+    private ParkourAchievement[] criterias;
+    private double modifier;
 
     /**
      * Creates SimpleMilestone based only on ParkourAchievements
-     * @param criterias - ParkourAchievements(criterias) that must be completed to get this achievement
+     *
+     * @param criterias - ParkourAchievements(criterias) that must be completed
+     * to get this achievement
      */
     public SimpleMilestone(ParkourAchievement... criterias) {
         this.criterias = criterias;
+        for(ParkourAchievement ach : criterias) {
+            this.modifier += ach.getType().modifier;
+        }
     }
 
     /**
      * Checks if this milestone is similiar to other
+     *
      * @param mile - milestone to check
      * @return boolean - true if equals or false if not equals
      */
@@ -70,9 +77,20 @@ public class SimpleMilestone {
 
     /**
      * Gets ParkourAchievement that must be completed
+     *
      * @return ParkourAchievements needed for this milestone to award
      */
     public ParkourAchievement[] getCriterias() {
         return criterias;
+    }
+
+    /**
+     * Get ratio modifier for ratio based on achievements that it contains and
+     * their AchievementType
+     *
+     * @return modifier
+     */
+    public double getRatioModifier() {
+        return modifier;
     }
 }

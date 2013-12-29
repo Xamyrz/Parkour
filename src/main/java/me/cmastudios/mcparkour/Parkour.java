@@ -64,6 +64,7 @@ public class Parkour extends JavaPlugin {
     private static ResourceBundle messages = ResourceBundle.getBundle("messages");
     private Connection courseDatabase;
     private boolean chat = true;
+    private double ratio = 1;
     public List<Player> blindPlayers = new ArrayList<>();
     public final List<Player> deafPlayers = new ArrayList<>();
     public Map<Player, Checkpoint> playerCheckpoints = new HashMap<>();
@@ -119,6 +120,7 @@ public class Parkour extends JavaPlugin {
         this.getCommand("highscores").setExecutor(new HighscoresCommand(this));
         this.getCommand("chat").setExecutor(new ChatCommand(this));
         this.getCommand("pkroom").setExecutor(new PkRoomCommand(this));
+        this.getCommand("ratio").setExecutor(new RatioCommand(this));
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.saveDefaultConfig();
         this.connectDatabase();
@@ -425,6 +427,14 @@ public class Parkour extends JavaPlugin {
         return false;
     }
 
+    public double getRatio() {
+        return ratio;
+    }
+    
+    public void setRatio(double ratio) {
+        this.ratio = ratio;
+    }
+    
     public static void broadcast(List<Player> list, String message) {
         for (Player recipient : list) {
             recipient.sendMessage(message);

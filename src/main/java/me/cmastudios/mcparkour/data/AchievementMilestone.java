@@ -16,6 +16,7 @@
  */
 package me.cmastudios.mcparkour.data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,7 +27,7 @@ public class AchievementMilestone extends SimpleMilestone {
 
     private int id;
     private String name;
-    private List<String> desc;
+    private ArrayList<String> desc;
 
     /**
      * Creates AchievementMilestone from params
@@ -35,8 +36,8 @@ public class AchievementMilestone extends SimpleMilestone {
      * @param desc - description of this milestone
      * @param conds - ParkourAchievements - conditions to make this milestone
      */
-    public AchievementMilestone(int id, String name, List<String> desc, ParkourAchievement... conds) {
-        this.criterias = conds;
+    public AchievementMilestone(int id, String name, ArrayList<String> desc, ParkourAchievement... conds) {
+        super(conds);
         this.id = id;
         this.name = name;
         this.desc = desc;
@@ -49,22 +50,14 @@ public class AchievementMilestone extends SimpleMilestone {
      * @param name - name of this Milestone
      * @param desc - description of this Milestone
      */
-    public AchievementMilestone(SimpleMilestone mile, int id, String name, List<String> desc) {
+    public AchievementMilestone(SimpleMilestone mile, int id, String name, ArrayList<String> desc) {
         super(mile.getCriterias());
         this.id = id;
         this.name = name;
         this.desc = desc;
     }
 
-    /**
-     * Get ratio modifier for ratio based on achievements that it contains and their AchievementType
-     *
-     * @return modifier
-     */
-    public double getRatioModifier() {
-        //TODO
-        return 0;
-    }
+    
 
     /**
      * Gets name of this milestone
@@ -78,7 +71,7 @@ public class AchievementMilestone extends SimpleMilestone {
      * Gets description of this milestone
      * @return description of milestone
      */
-    public List<String> getDescription() {
+    public ArrayList<String> getDescription() {
         return desc;
     }
 

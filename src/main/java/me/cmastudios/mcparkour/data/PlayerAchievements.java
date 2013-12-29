@@ -110,9 +110,9 @@ public class PlayerAchievements implements ItemMenu {
                 continue;
             }
             List<Integer> opts = new ArrayList<>();
-            List<String> desc = new ArrayList<>();
+            ArrayList<String> desc = new ArrayList<>();
             if (section.contains("description")) {
-                desc = section.getStringList("description");
+                desc =  new ArrayList(section.getStringList("description"));
             }
             try {
                 AchievementCriteria criteria = AchievementCriteria.valueOf(section.getString("criteria"));
@@ -167,9 +167,9 @@ public class PlayerAchievements implements ItemMenu {
                 Bukkit.getLogger().log(Level.WARNING, Parkour.getString("achievement.error.loading.missing", section.getCurrentPath()));
                 continue;
             }
-            List<String> desc = new ArrayList<>();
+            ArrayList<String> desc = new ArrayList<>();
             if (section.contains("description")) {
-                desc = section.getStringList("description");
+                desc = new ArrayList(section.getStringList("description"));
             }
             try {
                 for (Integer ach : section.getIntegerList("achievements")) {
@@ -371,7 +371,9 @@ public class PlayerAchievements implements ItemMenu {
                 meta = item.getItemMeta();
                 meta.setDisplayName(Parkour.getString("achievement.inventory.milestone.not_achieved", current.getName()));
             }
-            meta.setLore(current.getDescription());
+            ArrayList<String> desc = (ArrayList<String>) current.getDescription().clone();
+            desc.add(Parkour.getString("achievement.inventory.milestone.modifier", current.getRatioModifier()));
+            meta.setLore(desc);
             item.setItemMeta(meta);
             inv.setItem(i, item);
         }
@@ -428,5 +430,13 @@ public class PlayerAchievements implements ItemMenu {
                     .getName()).log(Level.SEVERE, null, ex);
         }
 
+    }
+    
+    public double getModifier() {
+        double mod = 1;
+        for(AchievementMilestone mile : completedMilestones) {
+            mod+=mile.getRatioModifier();
+        }
+        return mod;
     }
 }

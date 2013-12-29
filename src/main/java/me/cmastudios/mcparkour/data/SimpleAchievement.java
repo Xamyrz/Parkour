@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 maciekmm
+ * Copyright (C) 2013 Maciej Mionskowski
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@ import java.util.List;
 /**
  * It's a simple to create achievement, easy for firing.
  *
- * @author maciekmm
  */
 public class SimpleAchievement {
 

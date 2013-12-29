@@ -31,10 +31,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-/**
- *
- * @author maciekmm
- */
 public class HighscoresCommand implements CommandExecutor {
 
     private Parkour plugin;

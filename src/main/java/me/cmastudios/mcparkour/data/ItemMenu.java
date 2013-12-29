@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 maciekmm
+ * Copyright (C) 2013 Maciej Mionskowski
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,10 +16,6 @@
  */
 package me.cmastudios.mcparkour.data;
 
-/**
- *
- * @author maciekmm
- */
 public interface ItemMenu {
 
     public void openMenu();

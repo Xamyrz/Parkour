@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 maciekmm
+ * Copyright (C) 2013 Maciej Mionskowski
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@ import java.util.Arrays;
  * Milestone is achievement that you get when completing other achievements,
  * it'll have an impact on ratio and modifier
  *
- * @author maciekmm
  */
 public class SimpleMilestone {
 

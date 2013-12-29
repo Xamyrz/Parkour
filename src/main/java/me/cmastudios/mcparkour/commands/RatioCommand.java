@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Maciej
+ * Copyright (C) 2013 Maciej Mionskowski
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
-/**
- *
- * @author Maciej
- */
 public class RatioCommand implements CommandExecutor {
 
     private final Parkour plugin;

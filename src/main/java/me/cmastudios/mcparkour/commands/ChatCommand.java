@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 maciekmm
+ * Copyright (C) 2013 Maciej Mionskowski
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,12 +21,7 @@ import me.cmastudios.mcparkour.Parkour;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
-/**
- *
- * @author maciekmm
- */
 public class ChatCommand implements CommandExecutor {
     private Parkour plugin;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 maciekmm
+ * Copyright (C) 2013 Maciej Mionskowski
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
  */
 package me.cmastudios.mcparkour.data;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -37,10 +36,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-/**
- *
- * @author maciekmm
- */
 public class PlayerAchievements implements ItemMenu {
 
     private static List<ParkourAchievement> achievements = new ArrayList<>();

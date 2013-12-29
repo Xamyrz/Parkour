@@ -21,14 +21,12 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import me.cmastudios.mcparkour.Parkour;
-import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.PlayerExperience;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 
 public class ParkourCommand implements CommandExecutor {

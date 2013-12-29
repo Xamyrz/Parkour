@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 maciekmm
+ * Copyright (C) 2013 Maciej Mionskowski
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,12 +17,7 @@
 package me.cmastudios.mcparkour.data;
 
 import java.util.ArrayList;
-import java.util.List;
 
-/**
- *
- * @author maciekmm
- */
 public class AchievementMilestone extends SimpleMilestone {
 
     private int id;

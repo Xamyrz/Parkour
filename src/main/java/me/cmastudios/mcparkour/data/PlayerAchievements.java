@@ -103,15 +103,15 @@ public class PlayerAchievements implements ItemMenu {
 
         Set<String> sects = config.getConfigurationSection("achievements").getKeys(false);
 
-        for (String sctn : sects) {            
-            ConfigurationSection section = config.getConfigurationSection("achievements."+sctn);
+        for (String sctn : sects) {
+            ConfigurationSection section = config.getConfigurationSection("achievements." + sctn);
             if (!section.contains("options") || !section.contains("criteria") || !section.contains("type") || !section.contains("name")) {
                 Bukkit.getLogger().log(Level.WARNING, Parkour.getString("achievement.error.loading.missing", section.getCurrentPath()));
                 continue;
             }
             List<Integer> opts = new ArrayList<>();
             List<String> desc = new ArrayList<>();
-            if(section.contains("description")) {
+            if (section.contains("description")) {
                 desc = section.getStringList("description");
             }
             try {
@@ -155,7 +155,6 @@ public class PlayerAchievements implements ItemMenu {
 
             } catch (Exception e) { //CONFUSED AchievementCriteria.valueOf can throw IllegalArgumentException i believe but netbeans doesn't let me put it here
                 Bukkit.getLogger().log(Level.WARNING, Parkour.getString("achievement.error.loading.syntax", section.getCurrentPath()));
-                e.printStackTrace();
             }
         }
 
@@ -163,21 +162,25 @@ public class PlayerAchievements implements ItemMenu {
 
         for (String mile : sects) {
             List<ParkourAchievement> achs = new ArrayList<>();
-            ConfigurationSection section = config.getConfigurationSection("milestones."+mile);
+            ConfigurationSection section = config.getConfigurationSection("milestones." + mile);
             if (!section.contains("achievements") || !section.contains("name")) {
                 Bukkit.getLogger().log(Level.WARNING, Parkour.getString("achievement.error.loading.missing", section.getCurrentPath()));
                 continue;
             }
             List<String> desc = new ArrayList<>();
-            if(section.contains("description")) {
+            if (section.contains("description")) {
                 desc = section.getStringList("description");
             }
-            for (Integer ach : section.getIntegerList("achievements")) {
-                if (getAchievementById(Integer.parseInt(mile)) != null) {
-                    achs.add(getAchievementById(Integer.parseInt(mile)));
+            try {
+                for (Integer ach : section.getIntegerList("achievements")) {
+                    if (getAchievementById(Integer.parseInt(mile)) != null) {
+                        achs.add(getAchievementById(Integer.parseInt(mile)));
+                    }
                 }
+                milestones.add(new AchievementMilestone(Integer.parseInt(mile), section.getString("name"), desc, achs.toArray(new ParkourAchievement[achs.size()])));
+            } catch (Exception e) { //Same as above
+                Bukkit.getLogger().log(Level.WARNING, Parkour.getString("achievement.error.loading.syntax", section.getCurrentPath()));
             }
-            milestones.add(new AchievementMilestone(Integer.parseInt(mile), section.getString("name"), desc, achs.toArray(new ParkourAchievement[achs.size()])));
         }
     }
 

@@ -131,13 +131,22 @@ public class PlayerAchievements implements ItemMenu {
                         break;
                     case TOTAL_PLAYTIME:
                     case DUELS_PLAYED:
-                    case PLAYS_ON_CERTAIN_PARKOUR:
                     case TOTAL_PLAYS_ON_PARKOURS:
                     case LEVEL_ACQUIRE:
                     case FAVORITES_NUMBER:
                         if (!section.contains("options.required_amount")) {
                             continue;
                         }
+                        opts.add(section.getLong("options.required_amount"));
+                        break;
+                    case PLAYS_ON_CERTAIN_PARKOUR:
+                        if (!section.contains("options.parkour")) {
+                            continue;
+                        }
+                        if (!section.contains("options.required_amount")) {
+                            continue;
+                        }
+                        opts.add(section.getLong("options.parkour"));
                         opts.add(section.getLong("options.required_amount"));
                         break;
                     /* These achievements don't get any params

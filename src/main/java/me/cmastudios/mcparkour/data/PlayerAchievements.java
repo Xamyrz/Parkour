@@ -367,11 +367,11 @@ public class PlayerAchievements implements ItemMenu {
             ItemMeta meta;
             AchievementMilestone current = milestones.get(45 * (page - 1) + i - startingPos);
             if (completedMilestones.contains(current)) {
-                item = Items.ACHIEVEMENT_ACHIEVED.getItem();
+                item = Items.MILESTONE_ACHIEVED.getItem();
                 meta = item.getItemMeta();
                 meta.setDisplayName(Parkour.getString("achievement.inventory.milestone.achieved", current.getName()));
             } else {
-                item = Items.ACHIEVEMENT.getItem();
+                item = Items.MILESTONE.getItem();
                 meta = item.getItemMeta();
                 meta.setDisplayName(Parkour.getString("achievement.inventory.milestone.not_achieved", current.getName()));
             }

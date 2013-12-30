@@ -33,6 +33,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -320,18 +321,21 @@ public class PlayerAchievements implements ItemMenu {
 
     @Override
     public void openMenu() {
+        openMenu(page);
+    }
+
+    public void openMenu(int page) {
         Inventory inv = Bukkit.createInventory(player, 54, Parkour.getString("achievement.inventory.name"));
         if (achievements.size() + milestones.size() > 45 * page) {
-            if (page > 1) {
-                ItemStack prev = Items.PREV_PAGE.getItem();
-                prev.setAmount(page - 1);
-                inv.setItem(46, prev);
-            }
-            if (achievements.size() + milestones.size() / 45 > 1) {
-                ItemStack next = Items.NEXT_PAGE.getItem();
-                next.setAmount(page + 1);
-                inv.setItem(53, next);
-            }
+            ItemStack next = Items.NEXT_PAGE.getItem();
+            next.setAmount(page + 1);
+            inv.setItem(53, next);
+        }
+
+        if (page > 1) {
+            ItemStack prev = Items.PREV_PAGE.getItem();
+            prev.setAmount(page - 1);
+            inv.setItem(45, prev);
         }
 
         int target = achievements.size();
@@ -391,6 +395,30 @@ public class PlayerAchievements implements ItemMenu {
 
     public int getPage() {
         return page;
+    }
+
+    public void handleSelection(int page, int slot, ClickType click, Inventory inv) {
+        if (slot == 45 && inv.getItem(45) != null) {
+            this.page--;
+            destroyMenu();
+            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+                @Override
+                public void run() {
+                    openMenu();
+                }
+            }, 2L);
+            return;
+        } else if (slot == 53 && inv.getItem(53) != null) {
+            this.page++;
+            destroyMenu();
+            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+                @Override
+                public void run() {
+                    openMenu();
+                }
+            }, 2L);
+            return;
+        }
     }
 
     @Override

@@ -77,17 +77,15 @@ public class FavoritesList implements ItemMenu {
         }
         Inventory inv = Bukkit.createInventory(player, 54, Parkour.getString("favorites.inventory.name"));
         Collections.sort(favorites);
-        if (favorites.size() > 45 * page) {
-            if (page > 1) {
-                ItemStack prev = Items.PREV_PAGE.getItem();
-                prev.setAmount(page - 1);
-                inv.setItem(46, prev);
-            }
-            if (favorites.size() / 45 > 1) {
-                ItemStack next = Items.NEXT_PAGE.getItem();
-                next.setAmount(page + 1);
-                inv.setItem(53, next);
-            }
+        if (favorites.size() > 45*page) {
+            ItemStack next = Items.NEXT_PAGE.getItem();
+            next.setAmount(page + 1);
+            inv.setItem(53, next);
+        }
+        if (page > 1) {
+            ItemStack prev = Items.PREV_PAGE.getItem();
+            prev.setAmount(page - 1);
+            inv.setItem(45, prev);
         }
 
         int target = favorites.size();
@@ -98,6 +96,9 @@ public class FavoritesList implements ItemMenu {
             try {
                 ItemStack item = null;
                 ItemMeta meta;
+                if(favorites.size()<45 * (page - 1) + i + 1) {
+                    break;
+                }
                 int courseId = favorites.get(45 * (page - 1) + i);
                 ParkourCourse current = ParkourCourse.loadCourse(conn, courseId);
 
@@ -168,17 +169,27 @@ public class FavoritesList implements ItemMenu {
     }
 
     public void handleSelection(int page, int slot, ClickType click, Inventory inv) {
-        int pos = page * slot;
+        int pos = (page-1) * 45 + slot;
         if (click.isLeftClick()) {
-            if (slot == 46 && inv.getItem(46) != null) {
-                setPage(page--);
+            if (slot == 45 && inv.getItem(45) != null) {
+                this.page--;
                 destroyMenu();
-                openMenu();
+                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+                    @Override
+                    public void run() {
+                        openMenu();
+                    }
+                }, 2L);
                 return;
             } else if (slot == 53 && inv.getItem(53) != null) {
-                setPage(page++);
+                this.page++;
                 destroyMenu();
-                openMenu();
+                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+                    @Override
+                    public void run() {
+                        openMenu();
+                    }
+                }, 2L);
                 return;
             }
             if (favorites.get(pos) != null) {

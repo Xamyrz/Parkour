@@ -39,7 +39,7 @@ public class ParkourAchievement extends SimpleAchievement {
      * @param type - AchievementType for this achievement
      * @param options - Options that must be fullfilled to complete this achievement
      */
-    public ParkourAchievement(int id, String name, ArrayList<String> description, AchievementCriteria criteria, AchievementType type, Integer... options) {
+    public ParkourAchievement(int id, String name, ArrayList<String> description, AchievementCriteria criteria, AchievementType type, Long... options) {
         super(criteria, options);
         this.id = id;
         this.name = name;
@@ -79,11 +79,11 @@ public class ParkourAchievement extends SimpleAchievement {
      * Milestones will calculate ratio modifier based on that.
      */
     public enum AchievementType {
-        BRONZE(0.04,ChatColor.GOLD),
-        SILVER(0.06,ChatColor.GRAY),
-        GOLD(0.1,ChatColor.YELLOW),
-        PLATINUM(0.12,ChatColor.DARK_GRAY),
-        HIDDEN(0.1,ChatColor.BLACK);
+        BRONZE(0.01,ChatColor.GOLD),
+        SILVER(0.02,ChatColor.GRAY),
+        GOLD(0.04,ChatColor.YELLOW),
+        PLATINUM(0.07,ChatColor.DARK_GRAY),
+        HIDDEN(0.04,ChatColor.BLACK);
         
         public final double modifier;
         public final ChatColor color;

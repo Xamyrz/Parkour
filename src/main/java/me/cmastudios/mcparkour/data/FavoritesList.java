@@ -26,6 +26,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import me.cmastudios.mcparkour.Items;
 import me.cmastudios.mcparkour.Parkour;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -55,6 +57,7 @@ public class FavoritesList implements ItemMenu {
                         try {
                             favorites.add(Integer.parseInt(s));
                         } catch (NumberFormatException e) {
+                            Bukkit.getLogger().log(Level.WARNING,Parkour.getString("error.invalidint"));
                         }
                     }
                 }
@@ -76,12 +79,12 @@ public class FavoritesList implements ItemMenu {
         Collections.sort(favorites);
         if (favorites.size() > 45 * page) {
             if (page > 1) {
-                ItemStack prev = plugin.PREV_PAGE;
+                ItemStack prev = Items.PREV_PAGE.getItem();
                 prev.setAmount(page - 1);
                 inv.setItem(46, prev);
             }
             if (favorites.size() / 45 > 1) {
-                ItemStack next = plugin.NEXT_PAGE;
+                ItemStack next = Items.NEXT_PAGE.getItem();
                 next.setAmount(page + 1);
                 inv.setItem(53, next);
             }
@@ -102,25 +105,25 @@ public class FavoritesList implements ItemMenu {
                     case NORMAL:
                         switch (current.getDifficulty()) {
                             case EASY:
-                                item = plugin.EASY;
+                                item = Items.EASY.getItem();
                                 meta = item.getItemMeta();
                                 meta.setDisplayName(Parkour.getString("favorites.item.easy", current.getId()));
                                 item.setItemMeta(meta);
                                 break;
                             case MEDIUM:
-                                item = plugin.MEDIUM;
+                                item = Items.MEDIUM.getItem();
                                 meta = item.getItemMeta();
                                 meta.setDisplayName(Parkour.getString("favorites.item.medium", current.getId()));
                                 item.setItemMeta(meta);
                                 break;
                             case HARD:
-                                item = plugin.HARD;
+                                item = Items.HARD.getItem();
                                 meta = item.getItemMeta();
                                 meta.setDisplayName(Parkour.getString("favorites.item.hard", current.getId()));
                                 item.setItemMeta(meta);
                                 break;
                             case VERYHARD:
-                                item = plugin.V_HARD;
+                                item = Items.V_HARD.getItem();
                                 meta = item.getItemMeta();
                                 meta.setDisplayName(Parkour.getString("favorites.item.vhard", current.getId()));
                                 item.setItemMeta(meta);
@@ -128,19 +131,19 @@ public class FavoritesList implements ItemMenu {
                         }
                         break;
                     case HIDDEN:
-                        item = plugin.HIDDEN;
+                        item = Items.HIDDEN.getItem();
                         meta = item.getItemMeta();
                         meta.setDisplayName(Parkour.getString("favorites.item.hidden", current.getId()));
                         item.setItemMeta(meta);
                         break;
                     case ADVENTURE:
-                        item = plugin.ADVENTURE;
+                        item = Items.ADVENTURE.getItem();
                         meta = item.getItemMeta();
                         meta.setDisplayName(Parkour.getString("favorites.item.adventure", current.getId()));
                         item.setItemMeta(meta);
                         break;
                     case VIP:
-                        item = plugin.THEMATIC;
+                        item = Items.THEMATIC.getItem();
                         meta = item.getItemMeta();
                         meta.setDisplayName(Parkour.getString("favorites.item.thematic", current.getId()));
                         item.setItemMeta(meta);

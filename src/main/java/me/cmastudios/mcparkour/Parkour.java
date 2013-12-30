@@ -27,7 +27,6 @@ import me.cmastudios.mcparkour.data.ParkourCourse.CourseDifficulty;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
 
@@ -47,7 +46,6 @@ import me.cmastudios.mcparkour.data.PlayerExperience;
 import org.bukkit.FireworkEffect.Type;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
@@ -79,29 +77,6 @@ public class Parkour extends JavaPlugin {
     public List<Duel> activeDuels = new ArrayList<>();
     public List<GuildWar> activeWars = new ArrayList<>();
     private FileConfiguration achievements;
-    public final ItemStack VISION = new ItemStack(Material.EYE_OF_ENDER);
-    public final ItemStack CHAT = new ItemStack(Material.PAPER);
-    public final ItemStack SPAWN = new ItemStack(Material.NETHER_STAR);
-    public final ItemStack POINT = new ItemStack(Material.STICK);
-    public final ItemStack HELMET = new ItemStack(Material.GOLD_HELMET);
-    public final ItemStack CHESTPLATE = new ItemStack(Material.GOLD_CHESTPLATE);
-    public final ItemStack LEGGINGS = new ItemStack(Material.GOLD_LEGGINGS);
-    public final ItemStack BOOTS = new ItemStack(Material.GOLD_BOOTS);
-    public final ItemStack FIREWORK_SPAWNER = new ItemStack(Material.FIREWORK);
-    public final ItemStack SCOREBOARD = new ItemStack(Material.BOOK);
-    public final ItemStack FAVORITES = new ItemStack(Material.EMERALD);
-    public final ItemStack NEXT_PAGE = new ItemStack(Material.ACTIVATOR_RAIL);
-    public final ItemStack PREV_PAGE = new ItemStack(Material.RAILS);
-    public final ItemStack EASY = new ItemStack(Material.MINECART);
-    public final ItemStack MEDIUM = new ItemStack(Material.STORAGE_MINECART);
-    public final ItemStack HARD = new ItemStack(Material.POWERED_MINECART);
-    public final ItemStack HIDDEN = new ItemStack(Material.HOPPER_MINECART);
-    public final ItemStack V_HARD = new ItemStack(Material.EXPLOSIVE_MINECART);
-    public final ItemStack THEMATIC = new ItemStack(Material.BOAT);
-    public final ItemStack ADVENTURE = new ItemStack(Material.SADDLE);
-    public final ItemStack ACHIEVEMENT = new ItemStack(Material.COAL);
-    public final ItemStack ACHIEVEMENT_ACHIEVED = new ItemStack(Material.DIAMOND);
-    public final ItemStack ACHIEVEMENTS_MENU = new ItemStack(Material.EXP_BOTTLE);
     private final Random random = new Random();
 
     @Override
@@ -124,7 +99,6 @@ public class Parkour extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.saveDefaultConfig();
         this.connectDatabase();
-        this.setupItems();
         if (!new File(this.getDataFolder(), "achievements.yml").exists()) {
             this.saveResource("achievements.yml", false); //That's silly it's te second argument is senseless, because when the file exists it gives warning on console that it can't save file -.-
         }
@@ -180,61 +154,6 @@ public class Parkour extends JavaPlugin {
         blindPlayerExempts.clear();
         pendingFavs.clear();
 
-    }
-
-    private void setupItems() {
-        ItemMeta meta = VISION.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.vision"));
-        VISION.setItemMeta(meta);
-
-        meta = FIREWORK_SPAWNER.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.firework"));
-        FIREWORK_SPAWNER.setItemMeta(meta);
-
-        meta = CHAT.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.chat"));
-        CHAT.setItemMeta(meta);
-
-        meta = SPAWN.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.spawn"));
-        SPAWN.setItemMeta(meta);
-
-        meta = POINT.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.point"));
-        String[] lore = {
-            Parkour.getString("item.point.description.0"),
-            Parkour.getString("item.point.description.1"),
-            Parkour.getString("item.point.description.2")};
-        meta.setLore(Arrays.asList(lore));
-        POINT.setItemMeta(meta);
-
-        meta = SCOREBOARD.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.scoreboard"));
-        SCOREBOARD.setItemMeta(meta);
-
-        meta = NEXT_PAGE.getItemMeta();
-        meta.setDisplayName(Parkour.getString("favorites.item.next"));
-        NEXT_PAGE.setItemMeta(meta);
-
-        meta = PREV_PAGE.getItemMeta();
-        meta.setDisplayName(Parkour.getString("favorites.item.prev"));
-        PREV_PAGE.setItemMeta(meta);
-
-        meta = FAVORITES.getItemMeta();
-        meta.setDisplayName(Parkour.getString("favorites.item.base"));
-        String[] favlore = {
-            Parkour.getString("favorites.item.base.lore0")};
-        meta.setLore(Arrays.asList(favlore));
-        FAVORITES.setItemMeta(meta);
-
-        meta = ACHIEVEMENTS_MENU.getItemMeta();
-        meta.setDisplayName(Parkour.getString("achievement.inventory.opener"));
-        ACHIEVEMENTS_MENU.setItemMeta(meta);
-
-        HELMET.addEnchantment(Enchantment.DURABILITY, 3);
-        CHESTPLATE.addEnchantment(Enchantment.DURABILITY, 3);
-        LEGGINGS.addEnchantment(Enchantment.DURABILITY, 3);
-        BOOTS.addEnchantment(Enchantment.DURABILITY, 3);
     }
 
     public static String getString(String key, Object... args) {
@@ -338,7 +257,7 @@ public class Parkour extends JavaPlugin {
 
     public void refreshHand(Player player) {
         boolean inHand = player.getItemInHand().getType() == Material.ENDER_PEARL || player.getItemInHand().getType() == Material.EYE_OF_ENDER;
-        ItemStack item = VISION.clone();
+        ItemStack item = Items.VISION.getItem();
         item.setType(blindPlayers.contains(player) ? Material.ENDER_PEARL : Material.EYE_OF_ENDER);
         player.getInventory().remove(Material.ENDER_PEARL);
         player.getInventory().remove(Material.EYE_OF_ENDER);

@@ -165,9 +165,10 @@ public class ParkourListener implements Listener {
                             }
                             highScore.setPlays(highScore.getPlays() + 1);
                            
-                            plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PLAYS_ON_CERTAIN_PARKOUR, highScore.getCourse(), highScore.getPlays()));
-                            plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PARKOUR_COMPLETE, highScore.getCourse()));
-                            plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PARKOURS_COMPLETED, highScore.getCourse()));
+                            plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PLAYS_ON_CERTAIN_PARKOUR, (long)highScore.getCourse(), (long)highScore.getPlays()));
+                            plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PARKOUR_COMPLETE, (long)highScore.getCourse()));
+                            plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PARKOURS_COMPLETED, (long)highScore.getCourse()));
+                            plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PARKOUR_COMPLETED_IN_TIME, (long)highScore.getCourse(), highScore.getTime()));
                             highScore.save(plugin.getCourseDatabase());
                             DecimalFormat df = new DecimalFormat("#.###");
                             double completionTimeSeconds = ((double) completionTime) / 1000;
@@ -200,7 +201,7 @@ public class ParkourListener implements Listener {
                             }
                             int afterLevel = plugin.getLevel(playerXp.getExperience());
                             if (prevLevel < afterLevel) {
-                                plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.LEVEL_ACQUIRE, afterLevel));
+                                plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.LEVEL_ACQUIRE, (long)afterLevel));
                             }
                             plugin.playerCheckpoints.remove(player);
                             plugin.completedCourseTracker.put(player, endData);
@@ -417,7 +418,7 @@ public class ParkourListener implements Listener {
                             plugin.pendingFavs.put(event.getPlayer(), favs);
                         }
                         favs.addParkour(parkID);
-                        plugin.getPlayerAchievements(event.getPlayer()).awardAchievement(new SimpleAchievement(AchievementCriteria.FAVORITES_NUMBER,favs.size()));
+                        plugin.getPlayerAchievements(event.getPlayer()).awardAchievement(new SimpleAchievement(AchievementCriteria.FAVORITES_NUMBER,(long)favs.size()));
                         favs.save();
                         event.setCancelled(true);
                     } catch (IndexOutOfBoundsException | NumberFormatException | NullPointerException ignored) {
@@ -565,44 +566,44 @@ public class ParkourListener implements Listener {
             event.getPlayer().getInventory().remove(Material.ENDER_PEARL);
         }
         if (!event.getPlayer().getInventory().contains(Material.EYE_OF_ENDER)) {
-            event.getPlayer().getInventory().addItem(plugin.VISION);
+            event.getPlayer().getInventory().addItem(Items.VISION.getItem());
         }
         if (!event.getPlayer().getInventory().contains(Material.PAPER)) {
-            event.getPlayer().getInventory().addItem(plugin.CHAT);
+            event.getPlayer().getInventory().addItem(Items.CHAT.getItem());
         }
         if (!event.getPlayer().getInventory().contains(Material.NETHER_STAR)) {
-            event.getPlayer().getInventory().addItem(plugin.SPAWN);
+            event.getPlayer().getInventory().addItem(Items.SPAWN.getItem());
         }
         if (!event.getPlayer().getInventory().contains(Material.STICK)) {
-            event.getPlayer().getInventory().addItem(plugin.POINT);
+            event.getPlayer().getInventory().addItem(Items.POINT.getItem());
         }
         if (!event.getPlayer().getInventory().contains(Material.BOOK)) {
-            event.getPlayer().getInventory().addItem(plugin.SCOREBOARD);
+            event.getPlayer().getInventory().addItem(Items.SCOREBOARD.getItem());
         }
         if (!event.getPlayer().hasPermission("parkour.tpexempt")) {
             event.getPlayer().teleport(plugin.getSpawn());
         }
         if (!event.getPlayer().getInventory().contains(Material.EMERALD)) {
-            event.getPlayer().getInventory().addItem(plugin.FAVORITES);
+            event.getPlayer().getInventory().addItem(Items.FAVORITES.getItem());
         }
         if (!event.getPlayer().getInventory().contains(Material.EXP_BOTTLE)) {
-            event.getPlayer().getInventory().addItem(plugin.ACHIEVEMENTS_MENU);
+            event.getPlayer().getInventory().addItem(Items.ACHIEVEMENTS_MENU.getItem());
         }
         if (event.getPlayer().hasPermission("parkour.vip")) {
             if (!event.getPlayer().getInventory().contains(Material.GOLD_HELMET)) {
-                event.getPlayer().getInventory().setHelmet(plugin.HELMET);
+                event.getPlayer().getInventory().setHelmet(Items.HELMET.getItem());
             }
             if (!event.getPlayer().getInventory().contains(Material.GOLD_CHESTPLATE)) {
-                event.getPlayer().getInventory().setChestplate(plugin.CHESTPLATE);
+                event.getPlayer().getInventory().setChestplate(Items.CHESTPLATE.getItem());
             }
             if (!event.getPlayer().getInventory().contains(Material.GOLD_LEGGINGS)) {
-                event.getPlayer().getInventory().setLeggings(plugin.LEGGINGS);
+                event.getPlayer().getInventory().setLeggings(Items.LEGGINGS.getItem());
             }
             if (!event.getPlayer().getInventory().contains(Material.GOLD_BOOTS)) {
-                event.getPlayer().getInventory().setBoots(plugin.BOOTS);
+                event.getPlayer().getInventory().setBoots(Items.BOOTS.getItem());
             }
             if (!event.getPlayer().getInventory().contains(Material.FIREWORK)) {
-                event.getPlayer().getInventory().addItem(plugin.FIREWORK_SPAWNER);
+                event.getPlayer().getInventory().addItem(Items.FIREWORK_SPAWNER.getItem());
             }
         }
         if (event.getPlayer().hasMetadata("achievements")) {

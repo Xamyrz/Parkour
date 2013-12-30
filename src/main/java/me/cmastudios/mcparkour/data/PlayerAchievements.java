@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import me.cmastudios.mcparkour.Items;
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.data.SimpleAchievement.AchievementCriteria;
 import org.bukkit.Bukkit;
@@ -40,7 +42,7 @@ public class PlayerAchievements implements ItemMenu {
     private static List<ParkourAchievement> achievements = new ArrayList<>();
     private static List<AchievementMilestone> milestones = new ArrayList<>();
     ArrayList<ParkourAchievement> completedAchievements;
-    HashMap<ParkourAchievement, ArrayList<Integer>> achievementProgress;
+    HashMap<ParkourAchievement, ArrayList<Long>> achievementProgress;
     ArrayList<AchievementMilestone> completedMilestones;
     private Player player;
     private final Parkour plugin;
@@ -103,7 +105,7 @@ public class PlayerAchievements implements ItemMenu {
                 Bukkit.getLogger().log(Level.WARNING, Parkour.getString("achievement.error.loading.missing", section.getCurrentPath()));
                 continue;
             }
-            List<Integer> opts = new ArrayList<>();
+            List<Long> opts = new ArrayList<>();
             ArrayList<String> desc = new ArrayList<>();
             if (section.contains("description")) {
                 desc = new ArrayList(section.getStringList("description"));
@@ -116,13 +118,13 @@ public class PlayerAchievements implements ItemMenu {
                         if (!section.contains("options.parkour")) {
                             continue;
                         }
-                        opts.add(section.getInt("options.parkour"));
+                        opts.add(section.getLong("options.parkour"));
                         break;
                     case PARKOURS_COMPLETED:
                         if (!section.contains("options.parkours")) {
                             continue;
                         }
-                        for (int pk : section.getIntegerList("options.parkours")) {
+                        for (long pk : section.getLongList("options.parkours")) {
                             opts.add(pk);
                         }
                         break;
@@ -135,7 +137,7 @@ public class PlayerAchievements implements ItemMenu {
                         if (!section.contains("options.required_amount")) {
                             continue;
                         }
-                        opts.add(section.getInt("options.required_amount"));
+                        opts.add(section.getLong("options.required_amount"));
                         break;
                     /* These achievements don't get any params
                      case GUILD_CREATE:
@@ -145,7 +147,7 @@ public class PlayerAchievements implements ItemMenu {
                      case BEAT_PREVIOUS_SCORE:
                      break;*/
                 }
-                achievements.add(new ParkourAchievement(Integer.valueOf(sctn), section.getString("name"), desc, criteria, ParkourAchievement.AchievementType.valueOf(section.getString("type")), opts.toArray(new Integer[opts.size()])));
+                achievements.add(new ParkourAchievement(Integer.valueOf(sctn), section.getString("name"), desc, criteria, ParkourAchievement.AchievementType.valueOf(section.getString("type")), opts.toArray(new Long[opts.size()])));
 
             } catch (Exception e) { //CONFUSED AchievementCriteria.valueOf can throw IllegalArgumentException i believe but netbeans doesn't let me put it here
                 Bukkit.getLogger().log(Level.WARNING, Parkour.getString("achievement.error.loading.syntax", section.getCurrentPath()));
@@ -181,7 +183,7 @@ public class PlayerAchievements implements ItemMenu {
     public static PlayerAchievements loadPlayerAchievements(Player p, Parkour plugin) {
         ArrayList<ParkourAchievement> completedAchievements = new ArrayList<>();
         ArrayList<AchievementMilestone> completedMilestones = new ArrayList<>();
-        HashMap<ParkourAchievement, ArrayList<Integer>> progressAchievements = new HashMap<>();
+        HashMap<ParkourAchievement, ArrayList<Long>> progressAchievements = new HashMap<>();
         try {
             PreparedStatement stmt = plugin.getCourseDatabase().prepareStatement("SELECT * FROM playerachievements WHERE player=?");
             stmt.setString(1, p.getName());
@@ -207,9 +209,9 @@ public class PlayerAchievements implements ItemMenu {
 
                                 ParkourAchievement ach = getAchievementById(Integer.parseInt(parent[0]));
                                 if (ach != null) {
-                                    ArrayList<Integer> optionList = new ArrayList<>();
+                                    ArrayList<Long> optionList = new ArrayList<>();
                                     for (String opt : options) {
-                                        optionList.add(Integer.parseInt(opt));
+                                        optionList.add(Long.parseLong(opt));
                                     }
                                     progressAchievements.put(ach, optionList);
                                 }
@@ -239,7 +241,7 @@ public class PlayerAchievements implements ItemMenu {
         return new PlayerAchievements(plugin, p, completedMilestones, completedAchievements, progressAchievements);
     }
 
-    public PlayerAchievements(Parkour plugin, Player p, ArrayList<AchievementMilestone> milestones, ArrayList<ParkourAchievement> achievements, HashMap<ParkourAchievement, ArrayList<Integer>> progress) {
+    public PlayerAchievements(Parkour plugin, Player p, ArrayList<AchievementMilestone> milestones, ArrayList<ParkourAchievement> achievements, HashMap<ParkourAchievement, ArrayList<Long>> progress) {
         this.player = p;
         this.completedAchievements = achievements;
         this.completedMilestones = milestones;
@@ -262,8 +264,8 @@ public class PlayerAchievements implements ItemMenu {
             //Check if achievement is in progress
             if (achievement.getCriterium().progressing && !completedAchievements.contains(genericAchievement)) {
                 if (achievementProgress.containsKey(genericAchievement)) {
-                    ArrayList<Integer> objects = (ArrayList<Integer>) achievementProgress.get(genericAchievement).clone();
-                    for (Integer o : achievement.getOptions()) {
+                    ArrayList<Long> objects = (ArrayList<Long>) achievementProgress.get(genericAchievement).clone();
+                    for (Long o : achievement.getOptions()) {
                         if (!objects.contains(o)) {
                             objects.add(o);
                         }
@@ -321,12 +323,12 @@ public class PlayerAchievements implements ItemMenu {
         Inventory inv = Bukkit.createInventory(player, 54, Parkour.getString("achievement.inventory.name"));
         if (achievements.size() + milestones.size() > 45 * page) {
             if (page > 1) {
-                ItemStack prev = plugin.PREV_PAGE;
+                ItemStack prev = Items.PREV_PAGE.getItem();
                 prev.setAmount(page - 1);
                 inv.setItem(46, prev);
             }
             if (achievements.size() + milestones.size() / 45 > 1) {
-                ItemStack next = plugin.NEXT_PAGE;
+                ItemStack next = Items.NEXT_PAGE.getItem();
                 next.setAmount(page + 1);
                 inv.setItem(53, next);
             }
@@ -342,11 +344,11 @@ public class PlayerAchievements implements ItemMenu {
             ItemMeta meta;
             ParkourAchievement current = achievements.get(45 * (page - 1) + i);
             if (completedAchievements.contains(current)) {
-                item = plugin.ACHIEVEMENT_ACHIEVED;
+                item = Items.ACHIEVEMENT_ACHIEVED.getItem();
                 meta = item.getItemMeta();
                 meta.setDisplayName(Parkour.getString("achievement.inventory.achievement.achieved", current.getName(), current.getType().color.getChar()));
             } else {
-                item = plugin.ACHIEVEMENT;
+                item = Items.ACHIEVEMENT.getItem();
                 meta = item.getItemMeta();
                 meta.setDisplayName(Parkour.getString("achievement.inventory.achievement.not_achieved", current.getName(), current.getType().color.getChar()));
             }
@@ -365,11 +367,11 @@ public class PlayerAchievements implements ItemMenu {
             ItemMeta meta;
             AchievementMilestone current = milestones.get(45 * (page - 1) + i - startingPos);
             if (completedMilestones.contains(current)) {
-                item = plugin.ACHIEVEMENT_ACHIEVED;
+                item = Items.ACHIEVEMENT_ACHIEVED.getItem();
                 meta = item.getItemMeta();
                 meta.setDisplayName(Parkour.getString("achievement.inventory.milestone.achieved", current.getName()));
             } else {
-                item = plugin.ACHIEVEMENT;
+                item = Items.ACHIEVEMENT.getItem();
                 meta = item.getItemMeta();
                 meta.setDisplayName(Parkour.getString("achievement.inventory.milestone.not_achieved", current.getName()));
             }
@@ -411,7 +413,7 @@ public class PlayerAchievements implements ItemMenu {
             StringBuilder sbprogress = new StringBuilder();
             for (ParkourAchievement ach : achievementProgress.keySet()) {
                 sbprogress.append(ach.getId()).append("/");
-                for (int i : achievementProgress.get(ach)) {
+                for (long i : achievementProgress.get(ach)) {
                     sbprogress.append(i).append(",");
                 }
                 sbprogress.append(";");

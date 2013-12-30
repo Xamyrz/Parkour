@@ -41,7 +41,7 @@ public class PlayerHighScore {
 
     public static PlayerHighScore loadHighScore(Connection conn, OfflinePlayer player, int course) throws SQLException {
         PlayerHighScore ret = new PlayerHighScore(course, player.getName(), Long.MAX_VALUE, 0);
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE player = ? AND course = ?")) {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE player = ? AND time>0 AND course = ?")) {
             stmt.setString(1, player.getName());
             stmt.setInt(2, course);
             try (ResultSet result = stmt.executeQuery()) {
@@ -55,7 +55,7 @@ public class PlayerHighScore {
 
     public static List<PlayerHighScore> loadHighScores(Connection conn, int course) throws SQLException {
         List<PlayerHighScore> ret = new ArrayList<>();
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE course = ? ORDER BY time")) {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE course = ? AND time>0 ORDER BY time")) {
             stmt.setInt(1, course);
             try (ResultSet result = stmt.executeQuery()) {
                 while (result.next()) {
@@ -68,7 +68,7 @@ public class PlayerHighScore {
 
     public static List<PlayerHighScore> loadHighScores(Connection conn, int course, int limit) throws SQLException {
         List<PlayerHighScore> ret = new ArrayList<>();
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE course = ? ORDER BY time LIMIT 0, ?")) {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE course = ? AND time>0 ORDER BY time LIMIT 0, ?")) {
             stmt.setInt(1, course);
             stmt.setInt(2, limit);
             try (ResultSet result = stmt.executeQuery()) {

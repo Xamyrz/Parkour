@@ -137,7 +137,7 @@ public class Parkour extends JavaPlugin {
         }
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (p.hasMetadata("achievements")) {
-                p.removeMetadata("achievement", this);
+                p.removeMetadata("achievements", this);
             }
             p.setMetadata("achievements", new FixedMetadataValue(this, PlayerAchievements.loadPlayerAchievements(p.getPlayer(), this)));
         }
@@ -145,6 +145,13 @@ public class Parkour extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        for(Player p : Bukkit.getOnlinePlayers()) {
+            if(p.hasMetadata("achievements")) {
+                PlayerAchievements achievement = (PlayerAchievements) p.getMetadata("achievements").get(0).value();
+                achievement.save();
+                p.removeMetadata("achievements",this);
+            }
+        }
         if (this.courseDatabase != null) {
             try {
                 this.courseDatabase.close();

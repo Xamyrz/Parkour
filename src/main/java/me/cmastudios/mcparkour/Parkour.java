@@ -153,7 +153,6 @@ public class Parkour extends JavaPlugin {
         completedCourseTracker.clear();
         blindPlayerExempts.clear();
         pendingFavs.clear();
-
     }
 
     public static String getString(String key, Object... args) {

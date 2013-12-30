@@ -48,7 +48,12 @@ public class SimpleMilestone {
      * @return boolean - true if equals or false if not equals
      */
     public boolean isSimiliar(SimpleMilestone mile) {
-        return Arrays.asList(criterias).equals(Arrays.asList(mile.getCriterias()));
+        for(ParkourAchievement ac : mile.getCriterias()) {
+                if(!Arrays.asList(criterias).contains(ac)) {
+                    return false;
+                }
+            }
+            return true;
     }
 
     /**
@@ -71,7 +76,7 @@ public class SimpleMilestone {
                 }
             }
         }
-        return size == 0;
+        return size <= 0;
     }
 
     /**

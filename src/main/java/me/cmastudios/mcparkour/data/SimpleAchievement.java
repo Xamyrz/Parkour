@@ -18,7 +18,6 @@ package me.cmastudios.mcparkour.data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * It's a simple to create achievement, easy for firing.
@@ -26,8 +25,8 @@ import java.util.List;
  */
 public class SimpleAchievement {
 
-    AchievementCriteria criterium;
-    List<Integer> options;
+    private AchievementCriteria criterium;
+    private ArrayList<Integer> options;
 
     /**
      * 
@@ -36,7 +35,7 @@ public class SimpleAchievement {
      */
     public SimpleAchievement(AchievementCriteria criteria, Integer... options) {
         this.criterium = criteria;
-        this.options = Arrays.asList(options);
+        this.options = new ArrayList(Arrays.asList(options));        
     }
 
     /**
@@ -51,7 +50,7 @@ public class SimpleAchievement {
      * Gets options of achievement.
      * @return list of options.
      */
-    public List<Integer> getOptions() {
+    public ArrayList<Integer> getOptions() {
         return options;
     }
 
@@ -66,7 +65,12 @@ public class SimpleAchievement {
         }
         if (this.criterium.progressing) { // Check if achievement is progressing
             //Check if the simpleachievement contains all things from generic (this) achievement 
-            return Arrays.asList(achievement.getOptions()).containsAll(options);
+            for(Integer ac : options) {
+                if(!achievement.getOptions().contains(ac)) {
+                    return false;
+                }
+            }
+            return true;
         } else if (this.criterium.atLeast) { //Check if achievement is atLeast 
             ArrayList<Integer> baseOpts = new ArrayList<>(this.options); //Get ArrayList from List to be able to modify
             ArrayList<Integer> checkedOpts = new ArrayList<>(achievement.getOptions());

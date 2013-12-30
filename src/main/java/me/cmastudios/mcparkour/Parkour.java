@@ -257,8 +257,6 @@ public class Parkour extends JavaPlugin {
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courseheads (world_name varchar(32), x INTEGER, y INTEGER, z INTEGER, course_id INTEGER, skull_type_name varchar(32))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS gameresults (time TIMESTAMP, type enum('duel','guildwar'), winner varchar(16), loser varchar(16))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS favorites (`player` varchar(16) NOT NULL,`favorites` text NOT NULL, PRIMARY KEY (`player`))");
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS achievements (`id` int(11) NOT NULL AUTO_INCREMENT,`name` VARCHAR(20) NOT NULL,`description` mediumtext NOT NULL, `type` enum('BRONZE','SILVER','GOLD','PLATINUM','HIDDEN') NOT NULL,`criteria` enum('PARKOUR_COMPLETE','DUELS_PLAYED','PARKOURS_COMPLETED','TOTAL_PLAYTIME','PLAYS_ON_CERTAIN_PARKOUR','TOTAL_PLAYS_ON_PARKOURS','LEVEL_ACQUIRE','FAVORITES_NUMBER','BEST_SCORE','GUILD_CREATE','GUILD_MEMBERSHIP','BEST_HIGHSCORE','TOP_10','BEAT_PREVIOUS_SCORE') NOT NULL, `options` text NOT NULL, PRIMARY KEY (`id`))");
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS milestones (`id` int(11) NOT NULL AUTO_INCREMENT,`name` VARCHAR(20) NOT NULL,`options` text NOT NULL, PRIMARY KEY (`id`))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS playerachievements (`player` varchar(16) NOT NULL,`completed` text NOT NULL,`progress` mediumtext NOT NULL,`milestones` text NOT NULL, PRIMARY KEY (`player`))");
             }
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {

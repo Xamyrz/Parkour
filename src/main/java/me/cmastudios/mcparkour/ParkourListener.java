@@ -167,7 +167,7 @@ public class ParkourListener implements Listener {
                            
                             plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PLAYS_ON_CERTAIN_PARKOUR, highScore.getCourse(), highScore.getPlays()));
                             plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PARKOUR_COMPLETE, highScore.getCourse()));
-                            plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PARKOURS_COMPLETED, endData.course.getId()));
+                            plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PARKOURS_COMPLETED, highScore.getCourse()));
                             highScore.save(plugin.getCourseDatabase());
                             DecimalFormat df = new DecimalFormat("#.###");
                             double completionTimeSeconds = ((double) completionTime) / 1000;
@@ -192,7 +192,7 @@ public class ParkourListener implements Listener {
                                 if (duel != null && duel.hasStarted()) {
                                     throw new IndexOutOfBoundsException(); // Skip XP gain
                                 }
-                                courseXp *= plugin.getPlayerAchievements(player).getModifier()*(player.hasPermission("parkour.vip") ? plugin.getRatio()>2 ? plugin.getRatio() : 2 : plugin.getRatio());
+                                courseXp *= (plugin.getPlayerAchievements(player).getModifier()+(player.hasPermission("parkour.vip") ? plugin.getRatio()>2 ? plugin.getRatio() : 2 : plugin.getRatio()));
                                 playerXp.setExperience(playerXp.getExperience() + courseXp);
                                 playerXp.save(plugin.getCourseDatabase());
                                 player.sendMessage(Parkour.getString("xp.gain", new Object[]{courseXp, playerXp.getExperience()}));

@@ -45,7 +45,6 @@ public class ParkourAchievement extends SimpleAchievement {
         this.name = name;
         this.description = description;
         this.type = type;
-        this.criterium = criteria;
     }
 
     /**

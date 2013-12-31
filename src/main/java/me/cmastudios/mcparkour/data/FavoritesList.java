@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import me.cmastudios.mcparkour.Items;
+import me.cmastudios.mcparkour.Item;
 import me.cmastudios.mcparkour.Parkour;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -78,12 +78,12 @@ public class FavoritesList implements ItemMenu {
         Inventory inv = Bukkit.createInventory(player, 54, Parkour.getString("favorites.inventory.name"));
         Collections.sort(favorites);
         if (favorites.size() > 45*page) {
-            ItemStack next = Items.NEXT_PAGE.getItem();
+            ItemStack next = Item.NEXT_PAGE.getItem();
             next.setAmount(page + 1);
             inv.setItem(53, next);
         }
         if (page > 1) {
-            ItemStack prev = Items.PREV_PAGE.getItem();
+            ItemStack prev = Item.PREV_PAGE.getItem();
             prev.setAmount(page - 1);
             inv.setItem(45, prev);
         }
@@ -106,25 +106,25 @@ public class FavoritesList implements ItemMenu {
                     case NORMAL:
                         switch (current.getDifficulty()) {
                             case EASY:
-                                item = Items.EASY.getItem();
+                                item = Item.EASY.getItem();
                                 meta = item.getItemMeta();
                                 meta.setDisplayName(Parkour.getString("favorites.item.easy", current.getId()));
                                 item.setItemMeta(meta);
                                 break;
                             case MEDIUM:
-                                item = Items.MEDIUM.getItem();
+                                item = Item.MEDIUM.getItem();
                                 meta = item.getItemMeta();
                                 meta.setDisplayName(Parkour.getString("favorites.item.medium", current.getId()));
                                 item.setItemMeta(meta);
                                 break;
                             case HARD:
-                                item = Items.HARD.getItem();
+                                item = Item.HARD.getItem();
                                 meta = item.getItemMeta();
                                 meta.setDisplayName(Parkour.getString("favorites.item.hard", current.getId()));
                                 item.setItemMeta(meta);
                                 break;
                             case VERYHARD:
-                                item = Items.V_HARD.getItem();
+                                item = Item.V_HARD.getItem();
                                 meta = item.getItemMeta();
                                 meta.setDisplayName(Parkour.getString("favorites.item.vhard", current.getId()));
                                 item.setItemMeta(meta);
@@ -132,19 +132,19 @@ public class FavoritesList implements ItemMenu {
                         }
                         break;
                     case HIDDEN:
-                        item = Items.HIDDEN.getItem();
+                        item = Item.HIDDEN.getItem();
                         meta = item.getItemMeta();
                         meta.setDisplayName(Parkour.getString("favorites.item.hidden", current.getId()));
                         item.setItemMeta(meta);
                         break;
                     case ADVENTURE:
-                        item = Items.ADVENTURE.getItem();
+                        item = Item.ADVENTURE.getItem();
                         meta = item.getItemMeta();
                         meta.setDisplayName(Parkour.getString("favorites.item.adventure", current.getId()));
                         item.setItemMeta(meta);
                         break;
                     case VIP:
-                        item = Items.THEMATIC.getItem();
+                        item = Item.THEMATIC.getItem();
                         meta = item.getItemMeta();
                         meta.setDisplayName(Parkour.getString("favorites.item.thematic", current.getId()));
                         item.setItemMeta(meta);

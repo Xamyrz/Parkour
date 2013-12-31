@@ -26,7 +26,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import me.cmastudios.mcparkour.Items;
+import me.cmastudios.mcparkour.Item;
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.data.SimpleAchievement.AchievementCriteria;
 import org.bukkit.Bukkit;
@@ -336,13 +336,13 @@ public class PlayerAchievements implements ItemMenu {
     public void openMenu(int page) {
         Inventory inv = Bukkit.createInventory(player, 54, Parkour.getString("achievement.inventory.name"));
         if (achievements.size() + milestones.size() > 45 * page) {
-            ItemStack next = Items.NEXT_PAGE.getItem();
+            ItemStack next = Item.NEXT_PAGE.getItem();
             next.setAmount(page + 1);
             inv.setItem(53, next);
         }
 
         if (page > 1) {
-            ItemStack prev = Items.PREV_PAGE.getItem();
+            ItemStack prev = Item.PREV_PAGE.getItem();
             prev.setAmount(page - 1);
             inv.setItem(45, prev);
         }
@@ -357,11 +357,11 @@ public class PlayerAchievements implements ItemMenu {
             ItemMeta meta;
             ParkourAchievement current = achievements.get(45 * (page - 1) + i);
             if (completedAchievements.contains(current)) {
-                item = Items.ACHIEVEMENT_ACHIEVED.getItem();
+                item = Item.ACHIEVEMENT_ACHIEVED.getItem();
                 meta = item.getItemMeta();
                 meta.setDisplayName(Parkour.getString("achievement.inventory.achievement.achieved", current.getName(), current.getType().color.getChar()));
             } else {
-                item = Items.ACHIEVEMENT.getItem();
+                item = Item.ACHIEVEMENT.getItem();
                 meta = item.getItemMeta();
                 meta.setDisplayName(Parkour.getString("achievement.inventory.achievement.not_achieved", current.getName(), current.getType().color.getChar()));
             }
@@ -380,11 +380,11 @@ public class PlayerAchievements implements ItemMenu {
             ItemMeta meta;
             AchievementMilestone current = milestones.get(45 * (page - 1) + i - startingPos);
             if (completedMilestones.contains(current)) {
-                item = Items.MILESTONE_ACHIEVED.getItem();
+                item = Item.MILESTONE_ACHIEVED.getItem();
                 meta = item.getItemMeta();
                 meta.setDisplayName(Parkour.getString("achievement.inventory.milestone.achieved", current.getName()));
             } else {
-                item = Items.MILESTONE.getItem();
+                item = Item.MILESTONE.getItem();
                 meta = item.getItemMeta();
                 meta.setDisplayName(Parkour.getString("achievement.inventory.milestone.not_achieved", current.getName()));
             }

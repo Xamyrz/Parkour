@@ -434,22 +434,22 @@ public class ParkourListener implements Listener {
                 || event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) {
             if (event.getPlayer().getItemInHand().getType() == Material.ENDER_PEARL) {
                 ItemStack check = event.getPlayer().getItemInHand().clone();
-                check.setType(Items.VISION.getItem().getType());
-                if (check.isSimilar(Items.VISION.getItem())) {
+                check.setType(Item.VISION.getItem().getType());
+                if (check.isSimilar(Item.VISION.getItem())) {
                     event.setCancelled(true);
                     plugin.blindPlayers.remove(event.getPlayer());
                     plugin.refreshVision(event.getPlayer());
                     plugin.refreshHand(event.getPlayer());
                     event.getPlayer().sendMessage(Parkour.getString("blind.disable", new Object[]{}));
                 }
-            } else if (event.getPlayer().getItemInHand().isSimilar(Items.VISION.getItem())) {
+            } else if (event.getPlayer().getItemInHand().isSimilar(Item.VISION.getItem())) {
                 event.setCancelled(true);
                 plugin.blindPlayers.remove(event.getPlayer());
                 plugin.blindPlayers.add(event.getPlayer());
                 plugin.refreshVision(event.getPlayer());
                 plugin.refreshHand(event.getPlayer());
                 event.getPlayer().sendMessage(Parkour.getString("blind.enable", new Object[]{}));
-            } else if (event.getPlayer().getItemInHand().isSimilar(Items.CHAT.getItem())) {
+            } else if (event.getPlayer().getItemInHand().isSimilar(Item.CHAT.getItem())) {
                 synchronized (plugin.deafPlayers) {
                     if (plugin.deafPlayers.contains(event.getPlayer())) {
                         plugin.deafPlayers.remove(event.getPlayer());
@@ -459,16 +459,16 @@ public class ParkourListener implements Listener {
                         event.getPlayer().sendMessage(Parkour.getString("deaf.enable", new Object[]{}));
                     }
                 }
-            } else if (event.getPlayer().getItemInHand().isSimilar(Items.SPAWN.getItem())) {
+            } else if (event.getPlayer().getItemInHand().isSimilar(Item.SPAWN.getItem())) {
                 event.getPlayer().teleport(plugin.getSpawn(), TeleportCause.COMMAND);
-            } else if (event.getPlayer().getItemInHand().isSimilar(Items.ACHIEVEMENTS_MENU.getItem())) {
+            } else if (event.getPlayer().getItemInHand().isSimilar(Item.ACHIEVEMENTS_MENU.getItem())) {
                 event.setCancelled(true);
                 PlayerAchievements ach;
                 if (event.getPlayer().hasMetadata("achievements")) {
                     ach = (PlayerAchievements) event.getPlayer().getMetadata("achievements").get(0).value();
                     ach.openMenu();
                 }
-            } else if (event.getPlayer().getItemInHand().isSimilar(Items.FAVORITES.getItem())) {
+            } else if (event.getPlayer().getItemInHand().isSimilar(Item.FAVORITES.getItem())) {
                 event.setCancelled(true);
                 if (!plugin.favoritesCooldown.containsKey(event.getPlayer().getName())) {
                     plugin.favoritesCooldown.put(event.getPlayer().getName(), System.currentTimeMillis());
@@ -485,9 +485,9 @@ public class ParkourListener implements Listener {
                 }
                 favs.openMenu();
                 plugin.favoritesCooldown.put(event.getPlayer().getName(), System.currentTimeMillis());
-            } else if (event.getPlayer().getItemInHand().isSimilar(Items.POINT.getItem())) {
+            } else if (event.getPlayer().getItemInHand().isSimilar(Item.POINT.getItem())) {
                 event.getPlayer().performCommand("cp");
-            } else if (event.getPlayer().getItemInHand().isSimilar(Items.SCOREBOARD.getItem())) {
+            } else if (event.getPlayer().getItemInHand().isSimilar(Item.SCOREBOARD.getItem())) {
                 event.setCancelled(true);
                 if (plugin.disabledScoreboards.contains(event.getPlayer())) {
                     plugin.disabledScoreboards.remove(event.getPlayer());
@@ -498,7 +498,7 @@ public class ParkourListener implements Listener {
                     event.getPlayer().sendMessage(Parkour.getString("scoreboard.disable"));
                     event.getPlayer().setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
                 }
-            } else if (event.getPlayer().getItemInHand().isSimilar(Items.FIREWORK_SPAWNER.getItem())) {
+            } else if (event.getPlayer().getItemInHand().isSimilar(Item.FIREWORK_SPAWNER.getItem())) {
                 event.setCancelled(true);
                 if (plugin.playerCourseTracker.get(event.getPlayer()) != null) {
                     event.getPlayer().sendMessage(Parkour.getString("firework.incourse"));
@@ -573,14 +573,14 @@ public class ParkourListener implements Listener {
             event.getPlayer().getInventory().remove(Material.ENDER_PEARL);
         }
 
-        for (Items item : Items.getItemsByType(Items.ItemType.SPAWN)) {
+        for (Item item : Item.getItemsByType(Item.ItemType.SPAWN)) {
             if (!event.getPlayer().getInventory().contains(item.getItem().getType()) || (event.getPlayer().getInventory().contains(item.getItem().getType()) && event.getPlayer().getInventory().all(item.getItem()).isEmpty())) {
                 event.getPlayer().getInventory().addItem(item.getItem());
             }
         }
 
         if (event.getPlayer().hasPermission("parkour.vip")) {
-            for (Items item : Items.getItemsByType(Items.ItemType.VIP)) {
+            for (Item item : Item.getItemsByType(Item.ItemType.VIP)) {
                 if (!event.getPlayer().getInventory().contains(item.getItem().getType()) || (event.getPlayer().getInventory().contains(item.getItem().getType()) && event.getPlayer().getInventory().all(item.getItem()).isEmpty())) {
                     switch (item) {
                         case HELMET:

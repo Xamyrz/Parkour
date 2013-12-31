@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public enum Items {
+public enum Item {
     VISION(ItemType.SPAWN,Material.EYE_OF_ENDER, Parkour.getString("item.vision"), 1, (short) 0),
     CHAT(ItemType.SPAWN,Material.PAPER, Parkour.getString("item.chat"), 1, (short) 0),
     SPAWN(ItemType.SPAWN,Material.NETHER_STAR, Parkour.getString("item.spawn"), 1, (short) 0),
@@ -65,7 +65,7 @@ public enum Items {
     private final ItemStack item;
     private final ItemType type;
 
-    private Items(ItemType type, Material material, String name, int amount, short data, String... desc) {
+    private Item(ItemType type, Material material, String name, int amount, short data, String... desc) {
         this(type,material,amount,data);
         ItemMeta meta = this.item.getItemMeta();
         meta.setDisplayName(name);
@@ -73,7 +73,7 @@ public enum Items {
         item.setItemMeta(meta);
     }
 
-    private Items(ItemType type, Material material, int amount, short data, HashMap<Enchantment, Integer> ens) {
+    private Item(ItemType type, Material material, int amount, short data, HashMap<Enchantment, Integer> ens) {
         this(type,material,amount,data);
         for (Map.Entry<Enchantment, Integer> ench : ens.entrySet()) {
             item.addEnchantment(ench.getKey(), ench.getValue());
@@ -81,7 +81,7 @@ public enum Items {
 
     }
 
-    private Items(ItemType type, Material material, int amount, short data) {
+    private Item(ItemType type, Material material, int amount, short data) {
         this.type =type;
         this.item = new ItemStack(material, amount, data);
     }
@@ -94,9 +94,9 @@ public enum Items {
         return type;
     }
 
-    public static ArrayList<Items> getItemsByType(ItemType type) {
-        ArrayList<Items> items = new ArrayList<>();
-        for(Items item : values()) {
+    public static ArrayList<Item> getItemsByType(ItemType type) {
+        ArrayList<Item> items = new ArrayList<>();
+        for(Item item : values()) {
             if(item.getType()==type) {
                 items.add(item);
             }

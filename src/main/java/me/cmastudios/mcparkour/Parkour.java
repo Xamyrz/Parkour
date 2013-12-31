@@ -256,7 +256,7 @@ public class Parkour extends JavaPlugin {
 
     public void refreshHand(Player player) {
         boolean inHand = player.getItemInHand().getType() == Material.ENDER_PEARL || player.getItemInHand().getType() == Material.EYE_OF_ENDER;
-        ItemStack item = Items.VISION.getItem();
+        ItemStack item = Item.VISION.getItem();
         item.setType(blindPlayers.contains(player) ? Material.ENDER_PEARL : Material.EYE_OF_ENDER);
         player.getInventory().remove(Material.ENDER_PEARL);
         player.getInventory().remove(Material.EYE_OF_ENDER);

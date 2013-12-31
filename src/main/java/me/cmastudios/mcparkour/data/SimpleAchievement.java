@@ -79,12 +79,12 @@ public class SimpleAchievement {
             for (int option : this.criterium.optionsAffected) {
                 switch (this.criterium.option) {
                     case LESS_THAN:
-                        if (checkedOpts.get(option) > baseOpts.get(option)) {
+                        if (checkedOpts.get(option) < baseOpts.get(option)) {
                             return false;
                         }
                         break;
                     case MORE_THAN:
-                        if (checkedOpts.get(option) < baseOpts.get(option)) {
+                        if (checkedOpts.get(option) > baseOpts.get(option)) {
                             return false;
                         }
                         break;
@@ -163,10 +163,15 @@ public class SimpleAchievement {
          */
         BEST_HIGHSCORE(false, Option.NONE),
         /**
-         * TODO still, will be fired when someone gets to TOP_10. It doesn't
+         * Achievement fired when someone gets to TOP_10. It doesn't
          * take any params (will take parkour id in the future maybe)
          */
         TOP_10(false, Option.NONE),
+        /**
+         * Achievement fired when someone gets to TOP_10 in certain parkour. It doesn't
+         * take any params (will take parkour id in the future maybe)
+         */
+        TOP_10_ON_CERTAIN_PARKOUR(false,Option.MORE_THAN,0),
         /**
          * Achievement fired when someone beats his previous score. It doesn't
          * take any params (will take parkour id in the future maybe)

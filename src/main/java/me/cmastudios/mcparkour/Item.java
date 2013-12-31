@@ -46,7 +46,7 @@ public enum Item {
     }}),
     FIREWORK_SPAWNER(ItemType.VIP,Material.FIREWORK, Parkour.getString("item.firework"), 1, (short) 0),
     SCOREBOARD(ItemType.SPAWN,Material.BOOK, Parkour.getString("item.scoreboard"), 1, (short) 0),
-    FAVORITES(ItemType.SPAWN,Material.EMERALD, Parkour.getString("favorites.item.base"), 1, (short) 0, Parkour.getString("favorites.item.base.lore0")),
+    FAVORITES(ItemType.SPAWN,Material.EMERALD, Parkour.getString("favorites.item.base"), 1, (short) 0, Parkour.getString("favorites.item.base.lore0"), Parkour.getString("favorites.item.base.lore1")),
     NEXT_PAGE(ItemType.MISC,Material.ACTIVATOR_RAIL, Parkour.getString("favorites.item.next"), 1, (short) 0),
     PREV_PAGE(ItemType.MISC,Material.RAILS, Parkour.getString("favorites.item.prev"), 1, (short) 0),
     EASY(ItemType.MISC,Material.MINECART, 1),

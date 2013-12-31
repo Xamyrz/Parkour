@@ -30,6 +30,7 @@ import me.cmastudios.mcparkour.Item;
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.data.SimpleAchievement.AchievementCriteria;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -48,15 +49,6 @@ public class PlayerAchievements implements ItemMenu {
     private Player player;
     private final Parkour plugin;
     private int page = 1;
-
-    public static boolean containsSimiliarMilestone(List<? extends SimpleMilestone> milestones, SimpleMilestone achieved) {
-        for (SimpleMilestone milestone : milestones) {
-            if (achieved.isSimiliar(milestone)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     public static List<ParkourAchievement> getSimiliarAchievements(SimpleAchievement ach) {
         List<ParkourAchievement> result = new ArrayList<>();
@@ -116,6 +108,7 @@ public class PlayerAchievements implements ItemMenu {
 
                 switch (criteria) {
                     case PARKOUR_COMPLETE:
+                    case TOP_10_ON_CERTAIN_PARKOUR:
                         if (!section.contains("options.parkour")) {
                             continue;
                         }
@@ -274,7 +267,7 @@ public class PlayerAchievements implements ItemMenu {
             //Check if achievement is in progress
             if (achievement.getCriterium().progressing && !completedAchievements.contains(genericAchievement)) {
                 if (achievementProgress.containsKey(genericAchievement)) {
-                    ArrayList<Long> objects = (ArrayList<Long>) achievementProgress.get(genericAchievement).clone();
+                    ArrayList<Long> objects = (ArrayList<Long>) achievementProgress.get(genericAchievement);
                     for (Long o : achievement.getOptions()) {
                         if (!objects.contains(o)) {
                             objects.add(o);
@@ -304,7 +297,6 @@ public class PlayerAchievements implements ItemMenu {
     /**
      * Awards player with milestone
      *
-     * @param milestone
      */
     public void awardMilestone(SimpleMilestone milestone) {
         for (AchievementMilestone mile : getSimiliarMilestones(milestone)) {
@@ -361,6 +353,9 @@ public class PlayerAchievements implements ItemMenu {
                 meta = item.getItemMeta();
                 meta.setDisplayName(Parkour.getString("achievement.inventory.achievement.achieved", current.getName(), current.getType().color.getChar()));
             } else {
+                if(current.getType()== ParkourAchievement.AchievementType.HIDDEN) {
+                    continue;
+                }
                 item = Item.ACHIEVEMENT.getItem();
                 meta = item.getItemMeta();
                 meta.setDisplayName(Parkour.getString("achievement.inventory.achievement.not_achieved", current.getName(), current.getType().color.getChar()));
@@ -382,11 +377,11 @@ public class PlayerAchievements implements ItemMenu {
             if (completedMilestones.contains(current)) {
                 item = Item.MILESTONE_ACHIEVED.getItem();
                 meta = item.getItemMeta();
-                meta.setDisplayName(Parkour.getString("achievement.inventory.milestone.achieved", current.getName()));
+                meta.setDisplayName(ChatColor.translateAlternateColorCodes('&',Parkour.getString("achievement.inventory.milestone.achieved", current.getName())));
             } else {
                 item = Item.MILESTONE.getItem();
                 meta = item.getItemMeta();
-                meta.setDisplayName(Parkour.getString("achievement.inventory.milestone.not_achieved", current.getName()));
+                meta.setDisplayName(ChatColor.translateAlternateColorCodes('&',Parkour.getString("achievement.inventory.milestone.not_achieved", current.getName())));
             }
             ArrayList<String> desc = (ArrayList<String>) current.getDescription().clone();
             desc.add(Parkour.getString("achievement.inventory.milestone.modifier", current.getRatioModifier()));
@@ -396,14 +391,6 @@ public class PlayerAchievements implements ItemMenu {
         }
 
         player.openInventory(inv);
-    }
-
-    public void setPage(int page) {
-        this.page = page;
-    }
-
-    public int getPage() {
-        return page;
     }
 
     public void handleSelection(int page, int slot, ClickType click, Inventory inv) {

@@ -46,6 +46,7 @@ import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import me.cmastudios.mcparkour.data.SimpleAchievement.AchievementCriteria;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -177,6 +178,13 @@ public class ParkourListener implements Listener {
                             player.sendMessage(Parkour.getString("course.end", new Object[]{df.format(completionTimeSeconds)}));
                             List<PlayerHighScore> scores = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), endData.course.getId(), 10);
                             PlayerHighScore bestScore = scores.get(0);
+                            for(PlayerHighScore hs : scores) {
+                                if(hs.getPlayer().getName().equals(event.getPlayer().getName())) {
+                                    plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.TOP_10));
+                                    plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.TOP_10_ON_CERTAIN_PARKOUR,(long)highScore.getCourse()));
+                                    break;
+                                }
+                            }
                             if (highScore.equals(bestScore) && highScore.getTime() == completionTime) {
                                 plugin.getServer().broadcastMessage(Parkour.getString("course.end.best", player.getDisplayName() + ChatColor.RESET, endData.course.getId(), df.format(completionTimeSeconds)));
                                 plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.BEST_HIGHSCORE));
@@ -202,9 +210,7 @@ public class ParkourListener implements Listener {
                             } catch (NumberFormatException | IndexOutOfBoundsException e) { // No XP gain for this course
                             }
                             int afterLevel = plugin.getLevel(playerXp.getExperience());
-                            if (prevLevel < afterLevel) {
-                                plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.LEVEL_ACQUIRE, (long) afterLevel));
-                            }
+                            plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.LEVEL_ACQUIRE, (long) afterLevel));
                             plugin.playerCheckpoints.remove(player);
                             plugin.completedCourseTracker.put(player, endData);
                             if (!plugin.disabledScoreboards.contains(player)) {
@@ -420,7 +426,6 @@ public class ParkourListener implements Listener {
                             plugin.pendingFavs.put(event.getPlayer(), favs);
                         }
                         favs.addParkour(parkID);
-                        plugin.getPlayerAchievements(event.getPlayer()).awardAchievement(new SimpleAchievement(AchievementCriteria.FAVORITES_NUMBER, (long) favs.size()));
                         favs.save();
                         event.setCancelled(true);
                     } catch (IndexOutOfBoundsException | NumberFormatException | NullPointerException ignored) {
@@ -574,10 +579,18 @@ public class ParkourListener implements Listener {
         }
 
         for (Item item : Item.getItemsByType(Item.ItemType.SPAWN)) {
-            if (!event.getPlayer().getInventory().contains(item.getItem().getType()) || (event.getPlayer().getInventory().contains(item.getItem().getType()) && event.getPlayer().getInventory().all(item.getItem()).isEmpty())) {
-                if(Item.GUIDE_BOOK == item) {
-                    continue;
+            if (!event.getPlayer().getInventory().contains(item.getItem().getType())) {
+                if (event.getPlayer().getInventory().contains(item.getItem().getType())) {
+                    if (Item.GUIDE_BOOK == item) {
+                        continue;
+                    }
+                    for (Map.Entry<Integer, ? extends ItemStack> entry : event.getPlayer().getInventory().all(item.getItem().getType()).entrySet()) {
+                        if (item.isSimilar(entry.getValue())) {
+                            continue;
+                        }
+                    }
                 }
+
                 event.getPlayer().getInventory().addItem(item.getItem());
             }
         }

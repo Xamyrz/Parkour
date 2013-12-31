@@ -27,7 +27,7 @@ public class ParkourAchievement extends SimpleAchievement {
 
     private int id; // Just for saving purposes
     private String name;
-    private ArrayList<String> description;
+    private ArrayList<String> description = new ArrayList<>();
     private AchievementType type;
 
     /**
@@ -43,7 +43,9 @@ public class ParkourAchievement extends SimpleAchievement {
         super(criteria, options);
         this.id = id;
         this.name = name;
-        this.description = description;
+        for(String s : description) {
+            this.description.add(ChatColor.translateAlternateColorCodes('&',s));
+        }
         this.type = type;
     }
 

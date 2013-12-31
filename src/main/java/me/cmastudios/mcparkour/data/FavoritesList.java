@@ -223,6 +223,7 @@ public class FavoritesList implements ItemMenu {
         }
         player.sendMessage(Parkour.getString("favorites.added"));
         favorites.add(i);
+        plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(SimpleAchievement.AchievementCriteria.FAVORITES_NUMBER, (long) favorites.size()));
     }
 
     @Override

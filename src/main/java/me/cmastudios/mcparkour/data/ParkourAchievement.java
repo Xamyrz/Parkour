@@ -34,7 +34,7 @@ public class ParkourAchievement extends SimpleAchievement {
      * 
      * @param id - id for this achievement
      * @param name - name for this achievement
-     * @param description
+     * @param description - achievement description
      * @param criteria - AchievementCriteria for this achievement
      * @param type - AchievementType for this achievement
      * @param options - Options that must be fullfilled to complete this achievement

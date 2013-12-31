@@ -71,7 +71,7 @@ public class SimpleMilestone {
         for (ParkourAchievement criterium : criterias) {
             //Iterates through player achievements to check if it has certain achievement
             for (ParkourAchievement ach : completed) {
-                if (criterium.isSimiliar(ach)) {
+                if (criterium==ach) {
                     size--;
                 }
             }

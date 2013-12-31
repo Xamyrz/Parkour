@@ -56,7 +56,7 @@ public enum Item {
     V_HARD(ItemType.MISC,Material.EXPLOSIVE_MINECART, 1),
     THEMATIC(ItemType.MISC,Material.BOAT, 1),
     ADVENTURE(ItemType.MISC,Material.SADDLE, 1),
-    ACHIEVEMENT(ItemType.MISC,Material.COAL, 1),
+    ACHIEVEMENT(ItemType.MISC,Material.COAL, Parkour.getString("achievement.hidden"), 1,(short) 0),
     ACHIEVEMENT_ACHIEVED(ItemType.MISC,Material.DIAMOND, 1),
     MILESTONE(ItemType.MISC,Material.COAL, 1, (short) 1),
     MILESTONE_ACHIEVED(ItemType.MISC,Material.EMERALD, 1),
@@ -67,10 +67,16 @@ public enum Item {
     private final ItemType type;
 
     private Item(ItemType type, Material material, String name, int amount, short data, String... desc) {
+        this(type,material,name,amount,data);
+        ItemMeta meta = this.item.getItemMeta();
+        meta.setLore(Arrays.asList(desc));
+        item.setItemMeta(meta);
+    }
+
+    private Item(ItemType type, Material material, String name, int amount, short data) {
         this(type,material,amount,data);
         ItemMeta meta = this.item.getItemMeta();
         meta.setDisplayName(name);
-        meta.setLore(Arrays.asList(desc));
         item.setItemMeta(meta);
     }
 

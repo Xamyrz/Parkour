@@ -19,9 +19,12 @@ package me.cmastudios.mcparkour.commands;
 
 import java.sql.SQLException;
 import java.util.List;
+
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.PlayerHighScore;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -48,12 +51,22 @@ public class TopScoresCommand implements CommandExecutor {
                 sender.sendMessage(Parkour.getString("error.course404", new Object[]{}));
                 return true;
             }
+            if (args.length == 2) {
+                OfflinePlayer player = Bukkit.getOfflinePlayer(args[1]);
+                if (player.hasPlayedBefore()) {
+                    PlayerHighScore highScores = PlayerHighScore.loadHighScore(plugin.getCourseDatabase(), player, id);
+                    if (highScores.getPlays() > 0) {
+                        sender.sendMessage(Parkour.getString("topscores.player", player.getName(), id, highScores.getTime()));
+                    }
+                    return true;
+                }
+            }
             List<PlayerHighScore> highScores = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), id);
             StringBuilder scores = new StringBuilder();
             for (PlayerHighScore highScore : highScores) {
                 double completionTimeSeconds = ((double) highScore.getTime()) / 1000;
                 int index = highScores.indexOf(highScore) + 1;
-                scores.append(Parkour.getString("topscores.format", new Object[] {index, completionTimeSeconds, highScore.getPlayer().getName()})).append('\n');
+                scores.append(Parkour.getString("topscores.format", new Object[]{index, completionTimeSeconds, highScore.getPlayer().getName()})).append('\n');
             }
             int pageId = 1;
             if (args.length == 2) {
@@ -66,6 +79,7 @@ public class TopScoresCommand implements CommandExecutor {
             sender.sendMessage(Parkour.getString("topscores.start", new Object[]{id}));
             sender.sendMessage(page.getLines());
             sender.sendMessage(Parkour.getString("topscores.end", new Object[]{page.getPageNumber(), page.getTotalPages()}));
+
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         } catch (NumberFormatException ex) {

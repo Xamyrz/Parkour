@@ -161,11 +161,11 @@ public class ParkourListener implements Listener {
                             endData.restoreState(player);
                             PlayerHighScore highScore = PlayerHighScore.loadHighScore(plugin.getCourseDatabase(), player, endData.course.getId());
                             long completionTime = now - endData.startTime;
-                            if (highScore.getTime() > completionTime) {
-                                highScore.setTime(completionTime);
+                            if (highScore.getTime() > completionTime&&highScore.getPlays()>0) {
                                 player.sendMessage(Parkour.getString("course.end.personalbest", new Object[]{endData.course.getId()}));
                                 plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.BEAT_PREVIOUS_SCORE));
                             }
+                            highScore.setTime(completionTime);
                             highScore.setPlays(highScore.getPlays() + 1);
 
                             plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PLAYS_ON_CERTAIN_PARKOUR, (long) highScore.getCourse(), (long) highScore.getPlays()));

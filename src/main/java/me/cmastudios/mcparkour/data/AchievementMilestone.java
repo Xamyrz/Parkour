@@ -16,13 +16,15 @@
  */
 package me.cmastudios.mcparkour.data;
 
+import org.bukkit.ChatColor;
+
 import java.util.ArrayList;
 
 public class AchievementMilestone extends SimpleMilestone {
 
     private int id;
     private String name;
-    private ArrayList<String> desc;
+    private ArrayList<String> desc = new ArrayList<>();
 
     /**
      * Creates AchievementMilestone from params
@@ -35,7 +37,9 @@ public class AchievementMilestone extends SimpleMilestone {
         super(conds);
         this.id = id;
         this.name = name;
-        this.desc = desc;
+        for(String s : desc) {
+            this.desc.add(ChatColor.translateAlternateColorCodes('&', s));
+        }
     }
     
     /**
@@ -46,10 +50,7 @@ public class AchievementMilestone extends SimpleMilestone {
      * @param desc - description of this Milestone
      */
     public AchievementMilestone(SimpleMilestone mile, int id, String name, ArrayList<String> desc) {
-        super(mile.getCriterias());
-        this.id = id;
-        this.name = name;
-        this.desc = desc;
+        this(id,name,desc,mile.getCriterias());
     }
 
     

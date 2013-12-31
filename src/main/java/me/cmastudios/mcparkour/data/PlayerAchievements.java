@@ -63,7 +63,7 @@ public class PlayerAchievements implements ItemMenu {
     public static List<AchievementMilestone> getSimiliarMilestones(SimpleMilestone milestone) {
         List<AchievementMilestone> result = new ArrayList<>();
         for (AchievementMilestone mile : milestones) {
-            if (mile.isSimiliar(milestone)) {
+            if (mile==milestone) {
                 result.add(mile);
             }
         }
@@ -94,7 +94,7 @@ public class PlayerAchievements implements ItemMenu {
 
         for (String sctn : sects) {
             ConfigurationSection section = config.getConfigurationSection("achievements." + sctn);
-            if (!section.contains("options") || !section.contains("criteria") || !section.contains("type") || !section.contains("name")) {
+            if (!section.contains("criteria") || !section.contains("type") || !section.contains("name")) {
                 Bukkit.getLogger().log(Level.WARNING, Parkour.getString("achievement.error.loading.missing", section.getCurrentPath()));
                 continue;
             }
@@ -133,6 +133,7 @@ public class PlayerAchievements implements ItemMenu {
                         opts.add(section.getLong("options.required_amount"));
                         break;
                     case PLAYS_ON_CERTAIN_PARKOUR:
+                    case PARKOUR_COMPLETED_IN_TIME:
                         if (!section.contains("options.parkour")) {
                             continue;
                         }
@@ -296,7 +297,6 @@ public class PlayerAchievements implements ItemMenu {
 
     /**
      * Awards player with milestone
-     *
      */
     public void awardMilestone(SimpleMilestone milestone) {
         for (AchievementMilestone mile : getSimiliarMilestones(milestone)) {
@@ -351,16 +351,18 @@ public class PlayerAchievements implements ItemMenu {
             if (completedAchievements.contains(current)) {
                 item = Item.ACHIEVEMENT_ACHIEVED.getItem();
                 meta = item.getItemMeta();
+                meta.setLore(current.getDescription());
                 meta.setDisplayName(Parkour.getString("achievement.inventory.achievement.achieved", current.getName(), current.getType().color.getChar()));
             } else {
-                if(current.getType()== ParkourAchievement.AchievementType.HIDDEN) {
-                    continue;
-                }
                 item = Item.ACHIEVEMENT.getItem();
                 meta = item.getItemMeta();
-                meta.setDisplayName(Parkour.getString("achievement.inventory.achievement.not_achieved", current.getName(), current.getType().color.getChar()));
+                meta.setDisplayName(Parkour.getString("achievement.inventory.achievement.not_achieved", meta.getDisplayName(), current.getType().color.getChar()));
+                if (current.getType() != ParkourAchievement.AchievementType.HIDDEN) {
+                    meta.setLore(current.getDescription());
+                    meta.setDisplayName(Parkour.getString("achievement.inventory.achievement.not_achieved", current.getName(), current.getType().color.getChar()));
+                }
             }
-            meta.setLore(current.getDescription());
+
             item.setItemMeta(meta);
             inv.setItem(i, item);
         }
@@ -377,11 +379,11 @@ public class PlayerAchievements implements ItemMenu {
             if (completedMilestones.contains(current)) {
                 item = Item.MILESTONE_ACHIEVED.getItem();
                 meta = item.getItemMeta();
-                meta.setDisplayName(ChatColor.translateAlternateColorCodes('&',Parkour.getString("achievement.inventory.milestone.achieved", current.getName())));
+                meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', Parkour.getString("achievement.inventory.milestone.achieved", current.getName())));
             } else {
                 item = Item.MILESTONE.getItem();
                 meta = item.getItemMeta();
-                meta.setDisplayName(ChatColor.translateAlternateColorCodes('&',Parkour.getString("achievement.inventory.milestone.not_achieved", current.getName())));
+                meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', Parkour.getString("achievement.inventory.milestone.not_achieved", current.getName())));
             }
             ArrayList<String> desc = (ArrayList<String>) current.getDescription().clone();
             desc.add(Parkour.getString("achievement.inventory.milestone.modifier", current.getRatioModifier()));

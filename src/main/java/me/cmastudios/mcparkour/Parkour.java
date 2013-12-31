@@ -27,6 +27,7 @@ import me.cmastudios.mcparkour.data.ParkourCourse.CourseDifficulty;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
 
@@ -253,6 +254,37 @@ public class Parkour extends JavaPlugin {
             }
         }
     }
+
+    public void updateBook(Player player) {
+        for(ItemStack es : player.getInventory().all(Item.GUIDE_BOOK.getItem().getType()).values()) {
+            if (Item.GUIDE_BOOK.isSimilar(es)) {
+                BookMeta book = (BookMeta) es.getItemMeta();
+                book.setAuthor(Parkour.getString("guide.author"));
+                book.setTitle(Parkour.getString("guide.title"));
+                for(String s : getStringListFromPrefix("guide.content")) {
+                    book.setPages(getString(s,getPlayerAchievements(player).getModifier(),player.getName()));
+                }
+                es.setItemMeta(book);
+                return;
+            }
+        }
+        player.getInventory().addItem(Item.GUIDE_BOOK.getItem());
+        updateBook(player);
+    }
+
+    public static List<String> getStringListFromPrefix(String prefix) {
+        Enumeration<String> keys = messages.getKeys();
+        ArrayList<String> res = new ArrayList<String>();
+
+        for (Enumeration<String> element = keys; keys.hasMoreElements();) {
+            String key = element.nextElement();
+            if (key.startsWith(prefix)) {
+                res.add(key);
+            }
+        }
+        return res;
+    }
+
 
     public void refreshHand(Player player) {
         boolean inHand = player.getItemInHand().getType() == Material.ENDER_PEARL || player.getItemInHand().getType() == Material.EYE_OF_ENDER;

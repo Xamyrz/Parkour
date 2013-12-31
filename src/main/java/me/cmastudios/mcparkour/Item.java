@@ -49,18 +49,19 @@ public enum Item {
     FAVORITES(ItemType.SPAWN,Material.EMERALD, Parkour.getString("favorites.item.base"), 1, (short) 0, Parkour.getString("favorites.item.base.lore0")),
     NEXT_PAGE(ItemType.MISC,Material.ACTIVATOR_RAIL, Parkour.getString("favorites.item.next"), 1, (short) 0),
     PREV_PAGE(ItemType.MISC,Material.RAILS, Parkour.getString("favorites.item.prev"), 1, (short) 0),
-    EASY(ItemType.MISC,Material.MINECART, 1, (short) 0),
-    MEDIUM(ItemType.MISC,Material.STORAGE_MINECART, 1, (short) 0),
-    HIDDEN(ItemType.MISC,Material.HOPPER_MINECART, 1, (short) 0),
-    HARD(ItemType.MISC,Material.POWERED_MINECART, 1, (short) 0),
-    V_HARD(ItemType.MISC,Material.EXPLOSIVE_MINECART, 1, (short) 0),
-    THEMATIC(ItemType.MISC,Material.BOAT, 1, (short) 0),
-    ADVENTURE(ItemType.MISC,Material.SADDLE, 1, (short) 0),
-    ACHIEVEMENT(ItemType.MISC,Material.COAL, 1, (short) 0),
-    ACHIEVEMENT_ACHIEVED(ItemType.MISC,Material.DIAMOND, 1, (short) 0),
+    EASY(ItemType.MISC,Material.MINECART, 1),
+    MEDIUM(ItemType.MISC,Material.STORAGE_MINECART, 1),
+    HIDDEN(ItemType.MISC,Material.HOPPER_MINECART, 1),
+    HARD(ItemType.MISC,Material.POWERED_MINECART, 1),
+    V_HARD(ItemType.MISC,Material.EXPLOSIVE_MINECART, 1),
+    THEMATIC(ItemType.MISC,Material.BOAT, 1),
+    ADVENTURE(ItemType.MISC,Material.SADDLE, 1),
+    ACHIEVEMENT(ItemType.MISC,Material.COAL, 1),
+    ACHIEVEMENT_ACHIEVED(ItemType.MISC,Material.DIAMOND, 1),
     MILESTONE(ItemType.MISC,Material.COAL, 1, (short) 1),
-    MILESTONE_ACHIEVED(ItemType.MISC,Material.EMERALD, 1, (short) 0),
-    ACHIEVEMENTS_MENU(ItemType.SPAWN,Material.EXP_BOTTLE, Parkour.getString("achievement.inventory.opener"), 1, (short) 0);
+    MILESTONE_ACHIEVED(ItemType.MISC,Material.EMERALD, 1),
+    ACHIEVEMENTS_MENU(ItemType.SPAWN,Material.EXP_BOTTLE, Parkour.getString("achievement.inventory.opener"), 1, (short) 0),
+    GUIDE_BOOK(ItemType.SPAWN,Material.WRITTEN_BOOK, Parkour.getString("item.guide"),1,(short) 0);
 
     private final ItemStack item;
     private final ItemType type;
@@ -86,6 +87,10 @@ public enum Item {
         this.item = new ItemStack(material, amount, data);
     }
 
+    private Item(ItemType type, Material material, int amount) {
+        this(type,material,amount,(short)0);
+    }
+
     public ItemStack getItem() {
         return item.clone();
     }
@@ -102,6 +107,10 @@ public enum Item {
             }
         }
         return items;
+    }
+
+    public boolean isSimilar(ItemStack is) {
+        return getItem().getType()==is.getType()&&getItem().getDurability()==is.getDurability()&&getItem().getEnchantments().equals(is.getEnchantments())&&((is.getItemMeta().hasDisplayName()&&getItem().getItemMeta().hasDisplayName())||(!is.getItemMeta().hasDisplayName()&&!getItem().getItemMeta().hasDisplayName()));
     }
 
     public enum ItemType {

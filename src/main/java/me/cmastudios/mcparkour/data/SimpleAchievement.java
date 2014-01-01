@@ -163,9 +163,14 @@ public class SimpleAchievement {
         GUILD_MEMBERSHIP(false, Option.NONE),
         /**
          * Achievement fired when someone's gets the best highscore on parkour.
-         * It doesn't take any params (will take parkour id in the future maybe)
+         * It doesn't take any params
          */
         BEST_HIGHSCORE(false, Option.NONE),
+        /**
+         * Achievement fired when someone's gets the best highscore on certain parkour.
+         * It takes parkour id as first param
+         */
+        BEST_HIGHSCORE_ON_CERTAIN_PARKOUR(false, Option.NONE),
         /**
          * Achievement fired when someone gets to TOP_10. It doesn't
          * take any params (will take parkour id in the future maybe)
@@ -178,10 +183,13 @@ public class SimpleAchievement {
         TOP_10_ON_CERTAIN_PARKOUR(false,Option.NONE),
         /**
          * Achievement fired when someone beats his previous score. It doesn't
-         * take any params (will take parkour id in the future maybe)
+         * take any params
          */
-        BEAT_PREVIOUS_SCORE(false, Option.NONE);
-
+        BEAT_PREVIOUS_SCORE(false, Option.NONE),
+        /**
+         * Fired when someone beats his previous score on certain parkour, it takes parkour id as the first param.
+         */
+        BEAT_PREVIOUS_SCORE_ON_CERTAIN_PARKOUR(false,Option.NONE);
         /**
          * if true it means that the orded of params is not checked and they're
          * expandable.

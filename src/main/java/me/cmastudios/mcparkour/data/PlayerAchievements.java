@@ -110,6 +110,8 @@ public class PlayerAchievements implements ItemMenu {
                     case PARKOUR_COMPLETE:
                     case TOP_10_ON_CERTAIN_PARKOUR:
                     case PARKOUR_COMPLETED_WITHOUT_CHECKPOINTS:
+                    case BEAT_PREVIOUS_SCORE_ON_CERTAIN_PARKOUR:
+                    case BEST_HIGHSCORE_ON_CERTAIN_PARKOUR:
                         if (!section.contains("options.parkour")) {
                             continue;
                         }

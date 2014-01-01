@@ -161,15 +161,14 @@ public class ParkourListener implements Listener {
                             endData.restoreState(player);
                             PlayerHighScore highScore = PlayerHighScore.loadHighScore(plugin.getCourseDatabase(), player, endData.course.getId());
                             long completionTime = now - endData.startTime;
-                            if(highScore.getTime() > completionTime||highScore.getTime()==-1) {
-                                highScore.setTime(completionTime);
-                            }
-
-                            if (highScore.getTime() > completionTime&&highScore.getPlays()>0) {
+                            if (highScore.getTime() > completionTime && highScore.getPlays() > 0) {
                                 player.sendMessage(Parkour.getString("course.end.personalbest", new Object[]{endData.course.getId()}));
                                 plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.BEAT_PREVIOUS_SCORE));
+                                plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.BEAT_PREVIOUS_SCORE_ON_CERTAIN_PARKOUR,(long) highScore.getCourse()));
                             }
-
+                            if (highScore.getTime() > completionTime || highScore.getTime() == -1) {
+                                highScore.setTime(completionTime);
+                            }
                             highScore.setPlays(highScore.getPlays() + 1);
 
                             plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PLAYS_ON_CERTAIN_PARKOUR, (long) highScore.getCourse(), (long) highScore.getPlays()));
@@ -182,16 +181,17 @@ public class ParkourListener implements Listener {
                             player.sendMessage(Parkour.getString("course.end", new Object[]{df.format(completionTimeSeconds)}));
                             List<PlayerHighScore> scores = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), endData.course.getId(), 10);
                             PlayerHighScore bestScore = scores.get(0);
-                            for(PlayerHighScore hs : scores) {
-                                if(hs.getPlayer().getName().equals(event.getPlayer().getName())) {
+                            for (PlayerHighScore hs : scores) {
+                                if (hs.getPlayer().getName().equals(event.getPlayer().getName())) {
                                     plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.TOP_10));
-                                    plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.TOP_10_ON_CERTAIN_PARKOUR,(long)highScore.getCourse()));
+                                    plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.TOP_10_ON_CERTAIN_PARKOUR, (long) highScore.getCourse()));
                                     break;
                                 }
                             }
                             if (highScore.equals(bestScore) && highScore.getTime() == completionTime) {
                                 plugin.getServer().broadcastMessage(Parkour.getString("course.end.best", player.getDisplayName() + ChatColor.RESET, endData.course.getId(), df.format(completionTimeSeconds)));
                                 plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.BEST_HIGHSCORE));
+                                plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.BEST_HIGHSCORE_ON_CERTAIN_PARKOUR,(long) highScore.getCourse()));
                             }
 
                             Duel duel = plugin.getDuel(player);
@@ -441,7 +441,7 @@ public class ParkourListener implements Listener {
         }
         if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_AIR
                 || event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) {
-            if(!event.hasItem()) {
+            if (!event.hasItem()) {
                 return;
             }
             if (event.getItem().getType() == Material.ENDER_PEARL) {

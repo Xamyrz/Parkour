@@ -70,6 +70,9 @@ public class HighscoresCommand implements CommandExecutor {
                     }
                     pe.setExperience(xp);
                     pe.save(plugin.getCourseDatabase());
+                    if(target.isOnline()) {
+                        target.getPlayer().sendMessage(Parkour.getString("highscores.set.target", xp));
+                    }
                     player.sendMessage(Parkour.getString("highscores.set.success", target.getName(), xp));
 
         }catch(NumberFormatException ex){

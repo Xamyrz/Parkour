@@ -16,7 +16,7 @@
  */
 package me.cmastudios.mcparkour;
 
-import com.google.common.collect.Lists;
+import java.io.File;
 import me.cmastudios.mcparkour.commands.*;
 import me.cmastudios.mcparkour.data.EffectHead;
 import me.cmastudios.mcparkour.data.Guild;
@@ -27,7 +27,7 @@ import me.cmastudios.mcparkour.data.ParkourCourse.CourseDifficulty;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
 
@@ -42,14 +42,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import me.cmastudios.mcparkour.data.FavoritesList;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
+import me.cmastudios.mcparkour.data.PlayerAchievements;
 import me.cmastudios.mcparkour.data.PlayerExperience;
 import org.bukkit.FireworkEffect.Type;
-import org.bukkit.command.SimpleCommandMap;
-import org.bukkit.enchantments.Enchantment;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.metadata.FixedMetadataValue;
 
 /**
  * Main class for mcparkour Bukkit plugin.
@@ -61,6 +63,7 @@ public class Parkour extends JavaPlugin {
     private static ResourceBundle messages = ResourceBundle.getBundle("messages");
     private Connection courseDatabase;
     private boolean chat = true;
+    private double ratio = 1;
     public List<Player> blindPlayers = new ArrayList<>();
     public final List<Player> deafPlayers = new ArrayList<>();
     public Map<Player, Checkpoint> playerCheckpoints = new HashMap<>();
@@ -74,26 +77,7 @@ public class Parkour extends JavaPlugin {
     public List<Player> disabledScoreboards = new ArrayList<>();
     public List<Duel> activeDuels = new ArrayList<>();
     public List<GuildWar> activeWars = new ArrayList<>();
-    public final ItemStack VISION = new ItemStack(Material.EYE_OF_ENDER);
-    public final ItemStack CHAT = new ItemStack(Material.PAPER);
-    public final ItemStack SPAWN = new ItemStack(Material.NETHER_STAR);
-    public final ItemStack POINT = new ItemStack(Material.STICK);
-    public final ItemStack HELMET = new ItemStack(Material.GOLD_HELMET);
-    public final ItemStack CHESTPLATE = new ItemStack(Material.GOLD_CHESTPLATE);
-    public final ItemStack LEGGINGS = new ItemStack(Material.GOLD_LEGGINGS);
-    public final ItemStack BOOTS = new ItemStack(Material.GOLD_BOOTS);
-    public final ItemStack FIREWORK_SPAWNER = new ItemStack(Material.FIREWORK);
-    public final ItemStack SCOREBOARD = new ItemStack(Material.BOOK);
-    public final ItemStack FAVORITES = new ItemStack(Material.EMERALD);
-    public final ItemStack NEXT_PAGE = new ItemStack(Material.ACTIVATOR_RAIL);
-    public final ItemStack PREV_PAGE = new ItemStack(Material.RAILS);
-    public final ItemStack EASY = new ItemStack(Material.MINECART);
-    public final ItemStack MEDIUM = new ItemStack(Material.STORAGE_MINECART);
-    public final ItemStack HARD = new ItemStack(Material.POWERED_MINECART);
-    public final ItemStack HIDDEN = new ItemStack(Material.HOPPER_MINECART);
-    public final ItemStack V_HARD = new ItemStack(Material.EXPLOSIVE_MINECART);
-    public final ItemStack THEMATIC = new ItemStack(Material.BOAT);
-    public final ItemStack ADVENTURE = new ItemStack(Material.SADDLE);
+    private FileConfiguration achievements;
     private final Random random = new Random();
 
     @Override
@@ -112,19 +96,37 @@ public class Parkour extends JavaPlugin {
         this.getCommand("highscores").setExecutor(new HighscoresCommand(this));
         this.getCommand("chat").setExecutor(new ChatCommand(this));
         this.getCommand("pkroom").setExecutor(new PkRoomCommand(this));
+        this.getCommand("ratio").setExecutor(new RatioCommand(this));
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.saveDefaultConfig();
         this.connectDatabase();
-        setupItems();
+        if (!new File(this.getDataFolder(), "achievements.yml").exists()) {
+            this.saveResource("achievements.yml", false); //That's silly it's te second argument is senseless, because when the file exists it gives warning on console that it can't save file -.-
+        }
+        this.achievements = YamlConfiguration.loadConfiguration(new File(this.getDataFolder(), "achievements.yml"));
+        PlayerAchievements.setupAchievements(achievements);
         try {
             this.rebuildHeads();
         } catch (SQLException e) {
             this.getLogger().log(Level.WARNING, "Failed loading effect heads", e);
         }
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (p.hasMetadata("achievements")) {
+                p.removeMetadata("achievements", this);
+            }
+            p.setMetadata("achievements", new FixedMetadataValue(this, PlayerAchievements.loadPlayerAchievements(p.getPlayer(), this)));
+        }
     }
 
     @Override
     public void onDisable() {
+        for(Player p : Bukkit.getOnlinePlayers()) {
+            if(p.hasMetadata("achievements")) {
+                PlayerAchievements achievement = (PlayerAchievements) p.getMetadata("achievements").get(0).value();
+                achievement.save();
+                p.removeMetadata("achievements",this);
+            }
+        }
         if (this.courseDatabase != null) {
             try {
                 this.courseDatabase.close();
@@ -152,58 +154,6 @@ public class Parkour extends JavaPlugin {
         completedCourseTracker.clear();
         blindPlayerExempts.clear();
         pendingFavs.clear();
-
-    }
-
-    private void setupItems() {
-        ItemMeta meta = VISION.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.vision"));
-        VISION.setItemMeta(meta);
-
-        meta = FIREWORK_SPAWNER.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.firework"));
-        FIREWORK_SPAWNER.setItemMeta(meta);
-
-        meta = CHAT.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.chat"));
-        CHAT.setItemMeta(meta);
-
-        meta = SPAWN.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.spawn"));
-        SPAWN.setItemMeta(meta);
-
-        meta = POINT.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.point"));
-        String[] lore = {
-            Parkour.getString("item.point.description.0"),
-            Parkour.getString("item.point.description.1"),
-            Parkour.getString("item.point.description.2")};
-        meta.setLore(Arrays.asList(lore));
-        POINT.setItemMeta(meta);
-
-        meta = SCOREBOARD.getItemMeta();
-        meta.setDisplayName(Parkour.getString("item.scoreboard"));
-        SCOREBOARD.setItemMeta(meta);
-
-        meta = NEXT_PAGE.getItemMeta();
-        meta.setDisplayName(Parkour.getString("favorites.item.next"));
-        NEXT_PAGE.setItemMeta(meta);
-
-        meta = PREV_PAGE.getItemMeta();
-        meta.setDisplayName(Parkour.getString("favorites.item.prev"));
-        PREV_PAGE.setItemMeta(meta);
-
-        meta = FAVORITES.getItemMeta();
-        meta.setDisplayName(Parkour.getString("favorites.item.base"));
-        String[] favlore = {
-            Parkour.getString("favorites.item.base.lore0")};
-        meta.setLore(Arrays.asList(favlore));
-        FAVORITES.setItemMeta(meta);
-
-        HELMET.addEnchantment(Enchantment.DURABILITY, 3);
-        CHESTPLATE.addEnchantment(Enchantment.DURABILITY, 3);
-        LEGGINGS.addEnchantment(Enchantment.DURABILITY, 3);
-        BOOTS.addEnchantment(Enchantment.DURABILITY, 3);
     }
 
     public static String getString(String key, Object... args) {
@@ -233,6 +183,7 @@ public class Parkour extends JavaPlugin {
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courseheads (world_name varchar(32), x INTEGER, y INTEGER, z INTEGER, course_id INTEGER, skull_type_name varchar(32))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS gameresults (time TIMESTAMP, type enum('duel','guildwar'), winner varchar(16), loser varchar(16))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS favorites (`player` varchar(16) NOT NULL,`favorites` text NOT NULL, PRIMARY KEY (`player`))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS playerachievements (`player` varchar(16) NOT NULL,`completed` text NOT NULL,`progress` mediumtext NOT NULL,`milestones` text NOT NULL, PRIMARY KEY (`player`))");
             }
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load database driver", ex);
@@ -304,9 +255,40 @@ public class Parkour extends JavaPlugin {
         }
     }
 
+    public void updateBook(Player player) {
+        for(ItemStack es : player.getInventory().all(Item.GUIDE_BOOK.getItem().getType()).values()) {
+            if (Item.GUIDE_BOOK.isSimilar(es)) {
+                BookMeta book = (BookMeta) es.getItemMeta();
+                book.setAuthor(Parkour.getString("guide.author"));
+                book.setTitle(Parkour.getString("guide.title"));
+                for(String s : getStringListFromPrefix("guide.content")) {
+                    book.setPages(getString(s,getPlayerAchievements(player).getModifier(),player.getName()));
+                }
+                es.setItemMeta(book);
+                return;
+            }
+        }
+        player.getInventory().addItem(Item.GUIDE_BOOK.getItem());
+        updateBook(player);
+    }
+
+    public static List<String> getStringListFromPrefix(String prefix) {
+        Enumeration<String> keys = messages.getKeys();
+        ArrayList<String> res = new ArrayList<String>();
+
+        for (Enumeration<String> element = keys; keys.hasMoreElements();) {
+            String key = element.nextElement();
+            if (key.startsWith(prefix)) {
+                res.add(key);
+            }
+        }
+        return res;
+    }
+
+
     public void refreshHand(Player player) {
         boolean inHand = player.getItemInHand().getType() == Material.ENDER_PEARL || player.getItemInHand().getType() == Material.EYE_OF_ENDER;
-        ItemStack item = VISION.clone();
+        ItemStack item = Item.VISION.getItem();
         item.setType(blindPlayers.contains(player) ? Material.ENDER_PEARL : Material.EYE_OF_ENDER);
         player.getInventory().remove(Material.ENDER_PEARL);
         player.getInventory().remove(Material.EYE_OF_ENDER);
@@ -400,6 +382,14 @@ public class Parkour extends JavaPlugin {
         return false;
     }
 
+    public double getRatio() {
+        return ratio;
+    }
+    
+    public void setRatio(double ratio) {
+        this.ratio = ratio;
+    }
+    
     public static void broadcast(List<Player> list, String message) {
         for (Player recipient : list) {
             recipient.sendMessage(message);
@@ -523,6 +513,19 @@ public class Parkour extends JavaPlugin {
 
     public void setChat(boolean state) {
         chat = state;
+    }
+
+    public PlayerAchievements getPlayerAchievements(Player p) {
+        PlayerAchievements achs = null;
+        if (p.hasMetadata("achievements")) {
+            achs = (PlayerAchievements) p.getMetadata("achievements").get(0).value();
+        }
+        if (achs == null) {
+            PlayerAchievements newAchievements = PlayerAchievements.loadPlayerAchievements(p, this);
+            achs = newAchievements;
+            p.setMetadata("achievements", new FixedMetadataValue(this, achs));
+        }
+        return achs;
     }
 
     public static class PlayerCourseData {

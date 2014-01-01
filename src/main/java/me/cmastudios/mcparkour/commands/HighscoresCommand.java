@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.PlayerExperience;
@@ -31,10 +32,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-/**
- *
- * @author maciekmm
- */
 public class HighscoresCommand implements CommandExecutor {
 
     private Parkour plugin;
@@ -56,6 +53,8 @@ public class HighscoresCommand implements CommandExecutor {
         }
         switch (args[0]) {
             case "set":
+            case "add":
+                try {
                 if (args.length < 3) {
                     return false;
                 }
@@ -64,56 +63,64 @@ public class HighscoresCommand implements CommandExecutor {
                     sender.sendMessage(Parkour.getString("error.player404", args[1]));
                     return true;
                 }
-                try {
-                    int xp = Integer.parseInt(args[2]);
+
                     PlayerExperience pe = PlayerExperience.loadExperience(plugin.getCourseDatabase(), target);
+                    int xp;
+
+                    if (args[0].equalsIgnoreCase("set")) {
+                        xp = Integer.parseInt(args[2]);
+                    } else {
+                        xp = pe.getExperience() + Integer.parseInt(args[2]);
+                    }
                     pe.setExperience(xp);
                     pe.save(plugin.getCourseDatabase());
-                    player.sendMessage(Parkour.getString("highscores.set.success", target.getName(), args[2]));
-                } catch (NumberFormatException ex) {
-                    sender.sendMessage(Parkour.getString("error.invalidint"));
+                    player.sendMessage(Parkour.getString("highscores.set.success", target.getName(), xp));
 
+        }catch(NumberFormatException ex){
+            sender.sendMessage(Parkour.getString("error.invalidint"));
+
+        }catch(SQLException ex){
+            Logger.getLogger(HighscoresCommand.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return true;
+        case "reset":
+        target = Bukkit.getOfflinePlayer(args[1]);
+        if (!target.hasPlayedBefore()) {
+            if (args.length >= 2) {
+                try {
+                    int parkId = Integer.parseInt(args[1]);
+                    ParkourCourse pc = ParkourCourse.loadCourse(plugin.getCourseDatabase(), parkId);
+                    if (pc == null) {
+                        sender.sendMessage(Parkour.getString("error.playerorcourse404", args[1]));
+                        return true;
+                    }
+                    if (args.length > 2) {
+                        target = Bukkit.getOfflinePlayer(args[2]);
+
+                    }
+                    pc.resetScores(plugin.getCourseDatabase(), target);
+                    sender.sendMessage(Parkour.getString("highscores.reset.success", parkId));
+                    return true;
                 } catch (SQLException ex) {
                     Logger.getLogger(HighscoresCommand.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (NumberFormatException ex) {
+                    sender.sendMessage(Parkour.getString("error.playerorcourse404", args[1]));
                 }
+            }
+            break;
+        } else {
+            try (PreparedStatement stmt = plugin.getCourseDatabase().prepareStatement("UPDATE `highscores` SET time=-1 WHERE `player`=?")) {
+                stmt.setString(1, target.getName());
+                stmt.executeUpdate();
+                sender.sendMessage(Parkour.getString("highscores.reset.success", target.getName()));
                 return true;
-            case "reset":
-                target = Bukkit.getOfflinePlayer(args[1]);
-                if (!target.hasPlayedBefore()) {
-                    if (args.length >= 2) {
-                        try {
-                            int parkId = Integer.parseInt(args[1]);
-                            ParkourCourse pc = ParkourCourse.loadCourse(plugin.getCourseDatabase(), parkId);
-                            if (pc == null) {
-                                sender.sendMessage(Parkour.getString("error.playerorcourse404", args[1]));
-                                return true;
-                            }
-                            if (args.length > 2) {
-                                target = Bukkit.getOfflinePlayer(args[2]);
-                                pc.resetScores(plugin.getCourseDatabase(), target);
-                            }
-                            
-                            sender.sendMessage(Parkour.getString("highscores.reset.success", parkId));
-                            return true;
-                        } catch (SQLException ex) {
-                            Logger.getLogger(HighscoresCommand.class.getName()).log(Level.SEVERE, null, ex);
-                        } catch (NumberFormatException ex) {
-                            sender.sendMessage(Parkour.getString("error.playerorcourse404", args[1]));
-                        }
-                    }
-                    break;
-                } else {
-                    try (PreparedStatement stmt = plugin.getCourseDatabase().prepareStatement("DELETE FROM `highscores` WHERE `player`=?")) {
-                        stmt.setString(1, target.getName());
-                        stmt.executeUpdate();
-                        sender.sendMessage(Parkour.getString("highscores.reset.success", target.getName()));
-                        return true;
-                    } catch (SQLException ex) {
-                        Logger.getLogger(HighscoresCommand.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-
+            } catch (SQLException ex) {
+                Logger.getLogger(HighscoresCommand.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
-        return false;
+
     }
+
+    return false;
+}
 }

@@ -108,13 +108,13 @@ public class ParkourCourse {
     public void resetScores(Connection conn, OfflinePlayer player) throws SQLException {
         if (player != null) {
             String pl = player.getName();
-            try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM `highscores` WHERE `course`=? AND `player` LIKE ?")) {
+            try (PreparedStatement stmt = conn.prepareStatement("UPDATE `highscores` SET time=-1 WHERE `course`=? AND `player` LIKE ?")) {
                 stmt.setInt(1, id);
                 stmt.setString(2, pl);
                 stmt.executeUpdate();
             }
         } else {
-            try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM `highscores` WHERE `course`=?")) {
+            try (PreparedStatement stmt = conn.prepareStatement("UPDATE `highscores` SET time=-1 WHERE `course`=?")) {
                 stmt.setInt(1, id);
                 stmt.executeUpdate();
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 maciekmm
+ * Copyright (C) 2013 Maciej Mionskowski
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import me.cmastudios.mcparkour.Item;
 import me.cmastudios.mcparkour.Parkour;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -35,10 +37,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-/**
- *
- * @author maciekmm
- */
 public class FavoritesList implements ItemMenu {
 
     private Player player;
@@ -59,6 +57,7 @@ public class FavoritesList implements ItemMenu {
                         try {
                             favorites.add(Integer.parseInt(s));
                         } catch (NumberFormatException e) {
+                            Bukkit.getLogger().log(Level.WARNING,Parkour.getString("error.invalidint"));
                         }
                     }
                 }
@@ -78,17 +77,15 @@ public class FavoritesList implements ItemMenu {
         }
         Inventory inv = Bukkit.createInventory(player, 54, Parkour.getString("favorites.inventory.name"));
         Collections.sort(favorites);
-        if (favorites.size() > 45 * page) {
-            if (page > 1) {
-                ItemStack prev = plugin.PREV_PAGE;
-                prev.setAmount(page - 1);
-                inv.setItem(46, prev);
-            }
-            if (favorites.size() / 45 > 1) {
-                ItemStack next = plugin.NEXT_PAGE;
-                next.setAmount(page + 1);
-                inv.setItem(53, next);
-            }
+        if (favorites.size() > 45*page) {
+            ItemStack next = Item.NEXT_PAGE.getItem();
+            next.setAmount(page + 1);
+            inv.setItem(53, next);
+        }
+        if (page > 1) {
+            ItemStack prev = Item.PREV_PAGE.getItem();
+            prev.setAmount(page - 1);
+            inv.setItem(45, prev);
         }
 
         int target = favorites.size();
@@ -99,6 +96,9 @@ public class FavoritesList implements ItemMenu {
             try {
                 ItemStack item = null;
                 ItemMeta meta;
+                if(favorites.size()<45 * (page - 1) + i + 1) {
+                    break;
+                }
                 int courseId = favorites.get(45 * (page - 1) + i);
                 ParkourCourse current = ParkourCourse.loadCourse(conn, courseId);
 
@@ -106,25 +106,25 @@ public class FavoritesList implements ItemMenu {
                     case NORMAL:
                         switch (current.getDifficulty()) {
                             case EASY:
-                                item = plugin.EASY;
+                                item = Item.EASY.getItem();
                                 meta = item.getItemMeta();
                                 meta.setDisplayName(Parkour.getString("favorites.item.easy", current.getId()));
                                 item.setItemMeta(meta);
                                 break;
                             case MEDIUM:
-                                item = plugin.MEDIUM;
+                                item = Item.MEDIUM.getItem();
                                 meta = item.getItemMeta();
                                 meta.setDisplayName(Parkour.getString("favorites.item.medium", current.getId()));
                                 item.setItemMeta(meta);
                                 break;
                             case HARD:
-                                item = plugin.HARD;
+                                item = Item.HARD.getItem();
                                 meta = item.getItemMeta();
                                 meta.setDisplayName(Parkour.getString("favorites.item.hard", current.getId()));
                                 item.setItemMeta(meta);
                                 break;
                             case VERYHARD:
-                                item = plugin.V_HARD;
+                                item = Item.V_HARD.getItem();
                                 meta = item.getItemMeta();
                                 meta.setDisplayName(Parkour.getString("favorites.item.vhard", current.getId()));
                                 item.setItemMeta(meta);
@@ -132,19 +132,19 @@ public class FavoritesList implements ItemMenu {
                         }
                         break;
                     case HIDDEN:
-                        item = plugin.HIDDEN;
+                        item = Item.HIDDEN.getItem();
                         meta = item.getItemMeta();
                         meta.setDisplayName(Parkour.getString("favorites.item.hidden", current.getId()));
                         item.setItemMeta(meta);
                         break;
                     case ADVENTURE:
-                        item = plugin.ADVENTURE;
+                        item = Item.ADVENTURE.getItem();
                         meta = item.getItemMeta();
                         meta.setDisplayName(Parkour.getString("favorites.item.adventure", current.getId()));
                         item.setItemMeta(meta);
                         break;
                     case VIP:
-                        item = plugin.THEMATIC;
+                        item = Item.THEMATIC.getItem();
                         meta = item.getItemMeta();
                         meta.setDisplayName(Parkour.getString("favorites.item.thematic", current.getId()));
                         item.setItemMeta(meta);
@@ -169,17 +169,27 @@ public class FavoritesList implements ItemMenu {
     }
 
     public void handleSelection(int page, int slot, ClickType click, Inventory inv) {
-        int pos = page * slot;
+        int pos = (page-1) * 45 + slot;
         if (click.isLeftClick()) {
-            if (slot == 46 && inv.getItem(46) != null) {
-                setPage(page--);
+            if (slot == 45 && inv.getItem(45) != null) {
+                this.page--;
                 destroyMenu();
-                openMenu();
+                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+                    @Override
+                    public void run() {
+                        openMenu();
+                    }
+                }, 2L);
                 return;
             } else if (slot == 53 && inv.getItem(53) != null) {
-                setPage(page++);
+                this.page++;
                 destroyMenu();
-                openMenu();
+                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+                    @Override
+                    public void run() {
+                        openMenu();
+                    }
+                }, 2L);
                 return;
             }
             if (favorites.get(pos) != null) {
@@ -213,6 +223,7 @@ public class FavoritesList implements ItemMenu {
         }
         player.sendMessage(Parkour.getString("favorites.added"));
         favorites.add(i);
+        plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(SimpleAchievement.AchievementCriteria.FAVORITES_NUMBER, (long) favorites.size()));
     }
 
     @Override
@@ -238,5 +249,9 @@ public class FavoritesList implements ItemMenu {
 
     public void setPage(int page) {
         this.page = page;
+    }
+    
+    public int size() {
+        return favorites.size();
     }
 }

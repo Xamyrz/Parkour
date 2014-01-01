@@ -28,8 +28,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.util.List;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.scoreboard.Team;
 
 /**
  * Playable parkour course.
@@ -177,25 +179,34 @@ public class ParkourCourse {
         Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
         Objective obj = sb.registerNewObjective("scores", "dummy");
         obj.setDisplayName(Parkour.getString("scoreboard.title", id));
+
         for (int count = 0; count < 10; count++) {
             if (highScores.size() <= count) {
                 break;
             }
+
             PlayerHighScore highScore = highScores.get(count);
             String name = highScore.getPlayer().getName();
+            Team team = sb.registerNewTeam(name);
+            ChatColor color = ChatColor.WHITE;
             if (count == 0) {
-                name = ChatColor.YELLOW + name;
+                color = ChatColor.YELLOW;
             } else if (count == 1) {
-                name = ChatColor.GRAY + name;
+                color = ChatColor.GRAY;
             } else if (count == 2) {
-                name = ChatColor.GOLD + name;
+                color = ChatColor.GOLD;
             }
-            double score = ((double) highScore.getTime()) / 1000.0D;
-            String oplr = Parkour.getString("scoreboard.format", score, name);
+
+            DecimalFormat df = new DecimalFormat("#.###");
+
+            OfflinePlayer result = Bukkit.getOfflinePlayer(name);
+            team.setPrefix(Parkour.getString("scoreboard.prefix", df.format(((double) highScore.getTime()) / 1000.0D),"\u00A7"+color.getChar()));
+            team.addPlayer(result);
+            String oplr = Parkour.getString("scoreboard.format", name);
             if (oplr.length() > 16) {
                 oplr = oplr.substring(0, 16);
             }
-            obj.getScore(Bukkit.getOfflinePlayer(oplr)).setScore(-(count + 1));
+            obj.getScore(result).setScore(-(count + 1));
         }
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
         return sb;

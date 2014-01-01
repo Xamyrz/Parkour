@@ -161,8 +161,6 @@ public class ParkourListener implements Listener {
                             endData.restoreState(player);
                             PlayerHighScore highScore = PlayerHighScore.loadHighScore(plugin.getCourseDatabase(), player, endData.course.getId());
                             long completionTime = now - endData.startTime;
-                            System.out.println(player.getName()+":"+completionTime);
-                            System.out.println(player.getName()+":"+highScore.getTime());
                             if(highScore.getTime() > completionTime||highScore.getTime()==-1) {
                                 highScore.setTime(completionTime);
                             }

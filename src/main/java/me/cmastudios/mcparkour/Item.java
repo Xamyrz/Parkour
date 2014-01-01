@@ -61,7 +61,7 @@ public enum Item {
     MILESTONE(ItemType.MISC,Material.COAL, 1, (short) 1),
     MILESTONE_ACHIEVED(ItemType.MISC,Material.EMERALD, 1),
     ACHIEVEMENTS_MENU(ItemType.SPAWN,Material.EXP_BOTTLE, Parkour.getString("achievement.inventory.opener"), 1, (short) 0),
-    GUIDE_BOOK(ItemType.SPAWN,Material.WRITTEN_BOOK, Parkour.getString("item.guide"),1,(short) 0);
+    GUIDE_BOOK(ItemType.MISC,Material.WRITTEN_BOOK, Parkour.getString("item.guide"),1,(short) 0);
 
     private final ItemStack item;
     private final ItemType type;

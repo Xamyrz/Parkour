@@ -161,11 +161,17 @@ public class ParkourListener implements Listener {
                             endData.restoreState(player);
                             PlayerHighScore highScore = PlayerHighScore.loadHighScore(plugin.getCourseDatabase(), player, endData.course.getId());
                             long completionTime = now - endData.startTime;
+                            System.out.println(player.getName()+":"+completionTime);
+                            System.out.println(player.getName()+":"+highScore.getTime());
+                            if(highScore.getTime() > completionTime||highScore.getTime()==-1) {
+                                highScore.setTime(completionTime);
+                            }
+
                             if (highScore.getTime() > completionTime&&highScore.getPlays()>0) {
                                 player.sendMessage(Parkour.getString("course.end.personalbest", new Object[]{endData.course.getId()}));
                                 plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.BEAT_PREVIOUS_SCORE));
                             }
-                            highScore.setTime(completionTime);
+
                             highScore.setPlays(highScore.getPlays() + 1);
 
                             plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PLAYS_ON_CERTAIN_PARKOUR, (long) highScore.getCourse(), (long) highScore.getPlays()));
@@ -437,6 +443,9 @@ public class ParkourListener implements Listener {
         }
         if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_AIR
                 || event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) {
+            if(!event.hasItem()) {
+                return;
+            }
             if (event.getItem().getType() == Material.ENDER_PEARL) {
                 ItemStack check = event.getItem().clone();
                 check.setType(Item.VISION.getItem().getType());
@@ -595,7 +604,7 @@ public class ParkourListener implements Listener {
             }
         }
 
-        plugin.updateBook(event.getPlayer());
+        //plugin.updateBook(event.getPlayer());
 
         if (event.getPlayer().hasPermission("parkour.vip")) {
             for (Item item : Item.getItemsByType(Item.ItemType.VIP)) {

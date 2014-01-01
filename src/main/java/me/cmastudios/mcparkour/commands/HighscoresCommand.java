@@ -59,10 +59,6 @@ public class HighscoresCommand implements CommandExecutor {
                     return false;
                 }
                 target = Bukkit.getOfflinePlayer(args[1]);
-                if (!target.hasPlayedBefore()) {
-                    sender.sendMessage(Parkour.getString("error.player404", args[1]));
-                    return true;
-                }
 
                     PlayerExperience pe = PlayerExperience.loadExperience(plugin.getCourseDatabase(), target);
                     int xp;
@@ -84,43 +80,41 @@ public class HighscoresCommand implements CommandExecutor {
         }
         return true;
         case "reset":
-        target = Bukkit.getOfflinePlayer(args[1]);
-        if (!target.hasPlayedBefore()) {
-            if (args.length >= 2) {
-                try {
-                    int parkId = Integer.parseInt(args[1]);
+            if(args.length<3) {
+                return false;
+            }
+            switch(args[1]) {
+                case "course":
+                    try {
+                    int parkId = Integer.parseInt(args[2]);
                     ParkourCourse pc = ParkourCourse.loadCourse(plugin.getCourseDatabase(), parkId);
                     if (pc == null) {
-                        sender.sendMessage(Parkour.getString("error.playerorcourse404", args[1]));
+                        sender.sendMessage(Parkour.getString("error.playerorcourse404", args[2]));
                         return true;
                     }
-                    if (args.length > 2) {
-                        target = Bukkit.getOfflinePlayer(args[2]);
-
-                    }
-                    pc.resetScores(plugin.getCourseDatabase(), target);
+                    pc.resetScores(plugin.getCourseDatabase(), args.length>3 ? Bukkit.getOfflinePlayer(args[3]) : null);
                     sender.sendMessage(Parkour.getString("highscores.reset.success", parkId));
-                    return true;
-                } catch (SQLException ex) {
-                    Logger.getLogger(HighscoresCommand.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (NumberFormatException ex) {
-                    sender.sendMessage(Parkour.getString("error.playerorcourse404", args[1]));
-                }
+                        return true;
+                    } catch (SQLException ex) {
+                        Logger.getLogger(HighscoresCommand.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (NumberFormatException ex) {
+                        sender.sendMessage(Parkour.getString("error.playerorcourse404", args[2]));
+                    }
+                    break;
+                case "player":
+                    try (PreparedStatement stmt = plugin.getCourseDatabase().prepareStatement("UPDATE `highscores` SET time=-1 WHERE `player` LIKE ?")) {
+                        stmt.setString(1, args[2]);
+                        stmt.executeUpdate();
+                        sender.sendMessage(Parkour.getString("highscores.reset.success", args[2]));
+                        return true;
+                    } catch (SQLException ex) {
+                        Logger.getLogger(HighscoresCommand.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    break;
             }
-            break;
-        } else {
-            try (PreparedStatement stmt = plugin.getCourseDatabase().prepareStatement("UPDATE `highscores` SET time=-1 WHERE `player`=?")) {
-                stmt.setString(1, target.getName());
-                stmt.executeUpdate();
-                sender.sendMessage(Parkour.getString("highscores.reset.success", target.getName()));
-                return true;
-            } catch (SQLException ex) {
-                Logger.getLogger(HighscoresCommand.class.getName()).log(Level.SEVERE, null, ex);
-            }
+
+
         }
-
-    }
-
     return false;
 }
 }

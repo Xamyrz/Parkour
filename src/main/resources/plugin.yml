@@ -35,9 +35,9 @@ commands:
     usage: |
       /<command> set <player> <xp> - set player's xp
       /<command> add <player> <xp> - add xp to player
-      /<command> reset <player> - resets player's highscores
-      /<command> reset <course> - resets all highscores on specified course
-      /<command> reset <course> <player> - resets all player's highscores on specified course
+      /<command> reset player <player> - resets player's highscores
+      /<command> reset course <course> - resets all highscores on specified course
+      /<command> reset course <course> <player> - resets all player's highscores on specified course
     aliases: [highscore, wyniki,hs]
     permission: parkour.highscores
   checkpoint:

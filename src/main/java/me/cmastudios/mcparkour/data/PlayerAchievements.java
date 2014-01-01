@@ -109,6 +109,7 @@ public class PlayerAchievements implements ItemMenu {
                 switch (criteria) {
                     case PARKOUR_COMPLETE:
                     case TOP_10_ON_CERTAIN_PARKOUR:
+                    case PARKOUR_COMPLETED_WITHOUT_CHECKPOINTS:
                         if (!section.contains("options.parkour")) {
                             continue;
                         }

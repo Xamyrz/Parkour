@@ -41,7 +41,7 @@ public class PlayerHighScore {
 
     public static PlayerHighScore loadHighScore(Connection conn, OfflinePlayer player, int course) throws SQLException {
         PlayerHighScore ret = new PlayerHighScore(course, player.getName(), Long.MAX_VALUE, 0);
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE player = ? AND time>0 AND course = ?")) {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE player = ? AND course = ?")) {
             stmt.setString(1, player.getName());
             stmt.setInt(2, course);
             try (ResultSet result = stmt.executeQuery()) {

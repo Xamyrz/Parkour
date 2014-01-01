@@ -117,6 +117,10 @@ public class SimpleAchievement {
          */
         PARKOUR_COMPLETED_IN_TIME(false, Option.LESS_THAN, 1),
         /**
+         * Parkour completed without checkpoints.
+         */
+        PARKOUR_COMPLETED_WITHOUT_CHECKPOINTS(false, Option.NONE,0),
+        /**
          * TODO still, will be fired on quit(?) or in scheduler. As the first
          * param it takes total playtime on server.
          */

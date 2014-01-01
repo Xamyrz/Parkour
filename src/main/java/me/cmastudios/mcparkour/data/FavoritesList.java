@@ -154,9 +154,9 @@ public class FavoritesList implements ItemMenu {
                 if (item != null) {
                     meta = item.getItemMeta();
                     String[] lore = {
-                        Parkour.getString("favorites.item.diffs.lore0"),
-                        Parkour.getString("favorites.item.diffs.lore1", current.getId()),
-                        Parkour.getString("favorites.item.diffs.lore2")};
+                        Parkour.getString("favorites.item.diffs.lore.0"),
+                        Parkour.getString("favorites.item.diffs.lore.1", current.getId()),
+                        Parkour.getString("favorites.item.diffs.lore.2")};
                     meta.setLore(Arrays.asList(lore));
                     item.setItemMeta(meta);
                 }

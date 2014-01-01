@@ -74,7 +74,6 @@ public class Parkour extends JavaPlugin {
     public Map<String, Long> fireworkCooldown = new HashMap<>();
     public Map<String, Long> favoritesCooldown = new HashMap<>();
     public Map<Player, FavoritesList> pendingFavs = new HashMap<>();
-    public List<Player> disabledScoreboards = new ArrayList<>();
     public List<Duel> activeDuels = new ArrayList<>();
     public List<GuildWar> activeWars = new ArrayList<>();
     private FileConfiguration achievements;
@@ -158,6 +157,32 @@ public class Parkour extends JavaPlugin {
 
     public static String getString(String key, Object... args) {
         return MessageFormat.format(messages.getString(key), args).replace("\u00A0", " ");
+    }
+
+    public static String[] getMessageArrayFromPrefix(String prefix) {
+        Enumeration<String> keys = messages.getKeys();
+        ArrayList<String> res = new ArrayList<String>();
+
+        for (Enumeration<String> element = keys; keys.hasMoreElements();) {
+            String key = element.nextElement();
+            if (key.startsWith(prefix)) {
+                res.add(Parkour.getString(key));
+            }
+        }
+        return res.toArray(new String[res.size()]);
+    }
+
+    public static String[] getStringArrayFromPrefix(String prefix) {
+        Enumeration<String> keys = messages.getKeys();
+        ArrayList<String> res = new ArrayList<String>();
+
+        for (Enumeration<String> element = keys; keys.hasMoreElements();) {
+            String key = element.nextElement();
+            if (key.startsWith(prefix)) {
+                res.add(key);
+            }
+        }
+        return res.toArray(new String[res.size()]);
     }
 
     public void connectDatabase() {
@@ -261,7 +286,7 @@ public class Parkour extends JavaPlugin {
                 BookMeta book = (BookMeta) es.getItemMeta();
                 book.setAuthor(Parkour.getString("guide.author"));
                 book.setTitle(Parkour.getString("guide.title"));
-                for(String s : getStringListFromPrefix("guide.content")) {
+                for(String s : getStringArrayFromPrefix("guide.content")) {
                     book.setPages(getString(s,getPlayerAchievements(player).getModifier(),player.getName()));
                 }
                 es.setItemMeta(book);
@@ -271,20 +296,6 @@ public class Parkour extends JavaPlugin {
         player.getInventory().addItem(Item.GUIDE_BOOK.getItem());
         updateBook(player);
     }
-
-    public static List<String> getStringListFromPrefix(String prefix) {
-        Enumeration<String> keys = messages.getKeys();
-        ArrayList<String> res = new ArrayList<String>();
-
-        for (Enumeration<String> element = keys; keys.hasMoreElements();) {
-            String key = element.nextElement();
-            if (key.startsWith(prefix)) {
-                res.add(key);
-            }
-        }
-        return res;
-    }
-
 
     public void refreshHand(Player player) {
         boolean inHand = player.getItemInHand().getType() == Material.ENDER_PEARL || player.getItemInHand().getType() == Material.EYE_OF_ENDER;

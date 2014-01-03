@@ -368,7 +368,7 @@ public class Parkour extends JavaPlugin {
                 player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
             } else {
 
-                if (tpCourse.getMode() == CourseMode.HIDDEN && teleport == TeleportCause.COMMAND && !player.hasPermission("parkour.vip")) {
+                if (tpCourse.getMode() == CourseMode.HIDDEN && teleport == TeleportCause.COMMAND) {
                     player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
                     return false;
                 }

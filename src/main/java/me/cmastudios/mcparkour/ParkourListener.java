@@ -219,7 +219,7 @@ public class ParkourListener implements Listener {
                             plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.LEVEL_ACQUIRE, (long) afterLevel));
                             plugin.playerCheckpoints.remove(player);
                             plugin.completedCourseTracker.put(player, endData);
-                            if (player.hasMetadata("disableScoreboard")) {
+                            if (!player.hasMetadata("disableScoreboard")) {
                                 player.setScoreboard(endData.course.getScoreboard(scores));
                             }
                             if (duel != null && duel.isAccepted() && duel.hasStarted()) {

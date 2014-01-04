@@ -21,6 +21,7 @@ import me.cmastudios.mcparkour.data.*;
 import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.Guild.GuildWar;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
+import me.cmastudios.mcparkour.events.*;
 import org.apache.commons.lang.Validate;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -110,6 +111,7 @@ public class ParkourListener implements Listener {
                             } else {
                                 // Remove players from a previous parkour course
                                 PlayerCourseData remove = plugin.playerCourseTracker.remove(player);
+                                Bukkit.getPluginManager().callEvent(new PlayerCancelParkourEvent(PlayerCancelParkourEvent.CancelReason.STARTING_OTHER,remove,event.getPlayer()));
                                 player.setLevel(remove.previousLevel);
                             }
                         }
@@ -149,6 +151,7 @@ public class ParkourListener implements Listener {
                         }
                         PlayerCourseData data = new PlayerCourseData(course, player, now);
                         plugin.playerCourseTracker.put(player, data);
+                        Bukkit.getPluginManager().callEvent(new PlayerStartParkourEvent(player,exp,data));
                         break;
                     case "[end]":
                         if (plugin.playerCourseTracker.containsKey(player)) {
@@ -159,11 +162,14 @@ public class ParkourListener implements Listener {
                                 }
                             } catch (NumberFormatException | IndexOutOfBoundsException e) { // No course constraint
                             }
+
                             PlayerCourseData endData = plugin.playerCourseTracker.remove(player); // They have ended their course anyhow
                             endData.restoreState(player);
                             PlayerHighScore highScore = PlayerHighScore.loadHighScore(plugin.getCourseDatabase(), player, endData.course.getId());
                             long completionTime = now - endData.startTime;
+                            PlayerCompleteParkourEventBuilder eventBuilder = new PlayerCompleteParkourEventBuilder(endData,highScore,completionTime);
                             if (highScore.getTime() > completionTime && highScore.getPlays() > 0) {
+                                eventBuilder.setPersonalBest(true);
                                 player.sendMessage(Parkour.getString("course.end.personalbest", new Object[]{endData.course.getId()}));
                                 plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.BEAT_PREVIOUS_SCORE));
                                 plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.BEAT_PREVIOUS_SCORE_ON_CERTAIN_PARKOUR, (long) highScore.getCourse()));
@@ -185,12 +191,14 @@ public class ParkourListener implements Listener {
                             PlayerHighScore bestScore = scores.get(0);
                             for (PlayerHighScore hs : scores) {
                                 if (hs.getPlayer().getName().equals(event.getPlayer().getName())) {
+                                    eventBuilder.setTopTen(true);
                                     plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.TOP_10));
                                     plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.TOP_10_ON_CERTAIN_PARKOUR, (long) highScore.getCourse()));
                                     break;
                                 }
                             }
                             if (highScore.equals(bestScore) && highScore.getTime() == completionTime) {
+                                eventBuilder.setBest(true);
                                 plugin.getServer().broadcastMessage(Parkour.getString("course.end.best", player.getDisplayName() + ChatColor.RESET, endData.course.getId(), df.format(completionTimeSeconds)));
                                 plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.BEST_HIGHSCORE));
                                 plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.BEST_HIGHSCORE_ON_CERTAIN_PARKOUR, (long) highScore.getCourse()));
@@ -198,7 +206,6 @@ public class ParkourListener implements Listener {
 
                             Duel duel = plugin.getDuel(player);
                             PlayerExperience playerXp = PlayerExperience.loadExperience(plugin.getCourseDatabase(), player);
-                            int prevLevel = plugin.getLevel(playerXp.getExperience());
                             try {
                                 int courseXp = Integer.parseInt(sign.getLine(1));
                                 Checkpoint cp = plugin.playerCheckpoints.get(player);
@@ -210,6 +217,7 @@ public class ParkourListener implements Listener {
                                     throw new IndexOutOfBoundsException(); // Skip XP gain
                                 }
                                 courseXp *= (plugin.getPlayerAchievements(player).getModifier() + (player.hasPermission("parkour.vip") ? plugin.getRatio() > 2 ? plugin.getRatio() : 2 : plugin.getRatio()));
+                                eventBuilder.setReducedXp(courseXp);
                                 playerXp.setExperience(playerXp.getExperience() + courseXp);
                                 playerXp.save(plugin.getCourseDatabase());
                                 player.sendMessage(Parkour.getString("xp.gain", new Object[]{courseXp, playerXp.getExperience()}));
@@ -226,12 +234,14 @@ public class ParkourListener implements Listener {
                                 duel.win(player, plugin);
                                 plugin.activeDuels.remove(duel);
                                 event.setTo(duel.getCourse().getTeleport());
+                                Bukkit.getPluginManager().callEvent(new PlayerCompleteDuelEvent(duel,player,completionTime));
                             }
                             GuildPlayer gp = GuildPlayer.loadGuildPlayer(plugin.getCourseDatabase(), player);
                             GuildWar war = plugin.getWar(player);
                             if (gp != null && war != null && war.isAccepted()) {
                                 war.handleFinish(gp, plugin);
                             }
+                            Bukkit.getPluginManager().callEvent(eventBuilder.getEvent());
                         }
                         break;
                     case "[vwall]":
@@ -253,6 +263,7 @@ public class ParkourListener implements Listener {
                     case "[cancel]":
                         if (plugin.playerCourseTracker.containsKey(player)) {
                             PlayerCourseData cancelData = plugin.playerCourseTracker.remove(event.getPlayer());
+                            Bukkit.getPluginManager().callEvent(new PlayerCancelParkourEvent(PlayerCancelParkourEvent.CancelReason.SIGN,cancelData,event.getPlayer()));
                             cancelData.restoreState(event.getPlayer());
                             event.setTo(cancelData.course.getTeleport());
                             plugin.playerCheckpoints.remove(player);
@@ -317,6 +328,7 @@ public class ParkourListener implements Listener {
                     event.setTo(cp.getLocation());
                     return;
                 }
+                Bukkit.getPluginManager().callEvent(new PlayerCancelParkourEvent(PlayerCancelParkourEvent.CancelReason.SIGN,data,event.getPlayer()));
                 plugin.playerCourseTracker.remove(player);
                 data.restoreState(event.getPlayer());
                 event.setTo(data.course.getTeleport());
@@ -688,7 +700,9 @@ public class ParkourListener implements Listener {
             }
         }
         if (plugin.playerCourseTracker.containsKey(event.getPlayer())) {
-            plugin.playerCourseTracker.remove(event.getPlayer()).leave(event.getPlayer());
+            PlayerCourseData courseData = plugin.playerCourseTracker.remove(event.getPlayer());
+            courseData.leave(event.getPlayer());
+            Bukkit.getPluginManager().callEvent(new PlayerCancelParkourEvent(PlayerCancelParkourEvent.CancelReason.LEAVE,courseData,event.getPlayer()));
         }
         Duel duel = plugin.getDuel(event.getPlayer());
         if (duel != null) {

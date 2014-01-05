@@ -19,6 +19,8 @@ package me.cmastudios.experience;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.ServicePriority;
@@ -28,12 +30,14 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.MessageFormat;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 public class Experience extends JavaPlugin {
-
+    private static ResourceBundle messages = ResourceBundle.getBundle("messages");
     private Connection experienceDatabase;
     private ExperienceManager manager;
     ConcurrentHashMap<OfflinePlayer, PlayerExperience> playerExperience = new ConcurrentHashMap<>();
@@ -64,6 +68,10 @@ public class Experience extends JavaPlugin {
             }
         }
 
+    }
+
+    public static String getString(String key, Object... args) {
+        return MessageFormat.format(messages.getString(key), args).replace("\u00A0", " ");
     }
 
     @EventHandler
@@ -99,6 +107,47 @@ public class Experience extends JavaPlugin {
             this.getLogger().log(Level.SEVERE, "Failed to load course database", ex);
         }
     }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command arg1, String arg2, String[] args) {
+        OfflinePlayer target;
+        if (args.length < 2) {
+            return false;
+        }
+        switch (args[0]) {
+            case "set":
+            case "add":
+                try {
+                    if (args.length < 3) {
+                        return false;
+                    }
+                    target = Bukkit.getOfflinePlayer(args[1]);
+
+                    IPlayerExperience pe = manager.getPlayerExperience(target);
+                    int xp;
+
+                    if (args[0].equalsIgnoreCase("set")) {
+                        xp = Integer.parseInt(args[2]);
+                    } else {
+                        xp = pe.getExperience() + Integer.parseInt(args[2]);
+                    }
+                    pe.setExperience(xp);
+                    if (target.isOnline()) {
+                        target.getPlayer().sendMessage(getString("experience.set.target", xp));
+                    }
+                    sender.sendMessage(getString("experience.set.success", target.getName(), xp));
+
+                } catch (NumberFormatException ex) {
+                    sender.sendMessage(getString("error.invalidint"));
+
+                } catch (SQLException ex) {
+                    Bukkit.getLogger().log(Level.SEVERE, null, ex);
+                }
+                return true;
+        }
+        return false;
+    }
+
 
     // TODO replace with connection pool
     public Connection getExperienceDatabase() {

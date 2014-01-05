@@ -1,0 +1,16 @@
+name: ${project.name}
+version: ${project.version}
+description: ${project.description}
+author: cmastudios
+authors: [maciekmm]
+website: ${project.url}
+softdepend: [Experience]
+main: ${main.class}
+commands:
+  exp:
+    description: Manage player''s experience
+    usage: |
+          /<command> set <player> <xp> - set player's xp
+          /<command> add <player> <xp> - add xp to player
+    aliases: [experience]
+    permission: experience.admin

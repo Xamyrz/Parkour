@@ -52,6 +52,7 @@ public class Experience extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        this.getServer().getServicesManager().unregisterAll(this);
         if (this.experienceDatabase != null) {
             try {
                 this.experienceDatabase.close();
@@ -109,41 +110,57 @@ public class Experience extends JavaPlugin {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command arg1, String arg2, String[] args) {
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         OfflinePlayer target;
-        if (args.length < 2) {
-            return false;
-        }
-        switch (args[0]) {
-            case "set":
-            case "add":
-                try {
-                    if (args.length < 3) {
-                        return false;
+        if (cmd.getName().equalsIgnoreCase("exp")) {
+            if (args.length < 2) {
+                return false;
+            }
+            switch (args[0]) {
+                case "set":
+                case "add":
+                    try {
+                        if (args.length < 3) {
+                            return false;
+                        }
+                        target = Bukkit.getOfflinePlayer(args[1]);
+
+                        IPlayerExperience pe = manager.getPlayerExperience(target);
+                        int xp;
+
+                        if (args[0].equalsIgnoreCase("set")) {
+                            xp = Integer.parseInt(args[2]);
+                        } else {
+                            xp = pe.getExperience() + Integer.parseInt(args[2]);
+                        }
+                        pe.setExperience(xp, false);
+                        if (target.isOnline()) {
+                            target.getPlayer().sendMessage(getString("experience.set.target", xp));
+                        }
+                        sender.sendMessage(getString("experience.set.success", target.getName(), xp));
+
+                    } catch (NumberFormatException ex) {
+                        sender.sendMessage(getString("error.invalidint"));
+
+                    } catch (SQLException ex) {
+                        Bukkit.getLogger().log(Level.SEVERE, null, ex);
                     }
-                    target = Bukkit.getOfflinePlayer(args[1]);
-
-                    IPlayerExperience pe = manager.getPlayerExperience(target);
-                    int xp;
-
-                    if (args[0].equalsIgnoreCase("set")) {
-                        xp = Integer.parseInt(args[2]);
-                    } else {
-                        xp = pe.getExperience() + Integer.parseInt(args[2]);
-                    }
-                    pe.setExperience(xp);
-                    if (target.isOnline()) {
-                        target.getPlayer().sendMessage(getString("experience.set.target", xp));
-                    }
-                    sender.sendMessage(getString("experience.set.success", target.getName(), xp));
-
-                } catch (NumberFormatException ex) {
-                    sender.sendMessage(getString("error.invalidint"));
-
-                } catch (SQLException ex) {
-                    Bukkit.getLogger().log(Level.SEVERE, null, ex);
-                }
-                return true;
+                    return true;
+            }
+        } else if (cmd.getName().equalsIgnoreCase("lvl")) {
+            target = Bukkit.getOfflinePlayer(sender.getName());
+            if (args.length >= 1) {
+                target = Bukkit.getOfflinePlayer(args[0]);
+            }
+            try {
+                IPlayerExperience xp = manager.getPlayerExperience(target);
+                int experience = xp.getExperience();
+                sender.sendMessage(Experience.getString("xp.has", target.getName(),
+                        manager.getLevel(experience), experience, manager.getNextLevelRequiredXp(experience)));
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            return true;
         }
         return false;
     }

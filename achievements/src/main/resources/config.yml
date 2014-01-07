@@ -1,0 +1,91 @@
+mysql:
+  enabled: false
+  host: 127.0.0.1
+  port: 3306
+  database: mcparkour
+  username: root
+  password: meow
+criterias:
+  PARKOUR_COMPLETE:
+    progressing: false
+    option: NONE
+    affected: []
+    options:
+    - parkour
+  PARKOURS_COMPLETED:
+    progressing: true
+    option: NONE
+    affected: []
+    options:
+    - parkours
+  PARKOUR_COMPLETED_IN_TIME:
+    progressing: false
+    option: LESS_THAN
+    affected:
+    - 1
+    options:
+    - parkour
+    - required_amount
+  PLAYS_ON_CERTAIN_PARKOUR:
+    progressing: false
+    option: MORE_THAN
+    affected:
+    - 1
+    options:
+    - parkour
+    - required_amount
+  PARKOUR_COMPLETED_IN_TIME:
+    progressing: false
+    option: LESS_THAN
+    affected:
+    - 1
+    options:
+    - parkour
+    - required_amount
+  LEVEL_ACQUIRE:
+    progressing: false
+    option: MORE_THAN
+    affected:
+    - 0
+    options:
+    - required_amount
+  FAVORITES_NUMBER:
+    progressing: false
+    option: MORE_THAN
+    affected:
+    - 0
+    options:
+    - required_amount
+  BEST_HIGHSCORE:
+    progressing: false
+    option: NONE
+    affected: []
+    options: []
+  BEST_HIGHSCORE_ON_CERTAIN_PARKOUR:
+    progressing: false
+    option: NONE
+    affected: []
+    options:
+    - parkour
+  TOP_10:
+    progressing: false
+    option: NONE
+    affected: []
+    options: []
+  TOP_10_ON_CERTAIN_PARKOUR:
+    progressing: false
+    option: NONE
+    affected: []
+    options:
+    - parkour
+  BEAT_PREVIOUS_SCORE:
+    progressing: false
+    option: NONE
+    affected: []
+    options: []
+  BEAT_PREVIOUS_SCORE_ON_CERTAIN_PARKOUR:
+    progressing: false
+    option: NONE
+    affected: []
+    options:
+    - parkour

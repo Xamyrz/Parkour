@@ -17,12 +17,14 @@
 
 package me.cmastudios.mcparkour.events;
 
+import me.cmastudios.experience.IPlayerExperience;
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.data.PlayerHighScore;
 
 public class PlayerCompleteParkourEventBuilder {
     private Parkour.PlayerCourseData endData;
     private PlayerHighScore highScore;
+    private IPlayerExperience experience;
     private long completionTime;
     private boolean isPersonalBest;
     private boolean isBest;
@@ -30,8 +32,9 @@ public class PlayerCompleteParkourEventBuilder {
     private boolean isTopTen;
 
 
-    public PlayerCompleteParkourEventBuilder(Parkour.PlayerCourseData endData,PlayerHighScore highScore,long completionTime) {
+    public PlayerCompleteParkourEventBuilder(Parkour.PlayerCourseData endData,IPlayerExperience experience, PlayerHighScore highScore,long completionTime) {
         this.endData = endData;
+        this.experience = experience;
         this.highScore = highScore;
         this.completionTime = completionTime;
     }
@@ -45,7 +48,7 @@ public class PlayerCompleteParkourEventBuilder {
     }
 
     public PlayerCompleteParkourEvent getEvent() {
-        return new PlayerCompleteParkourEvent(endData,highScore,completionTime,isPersonalBest,isBest,xp,isTopTen);
+        return new PlayerCompleteParkourEvent(endData,experience,highScore,completionTime,isPersonalBest,isBest,xp,isTopTen);
     }
 
     public void setReducedXp(double xp) {

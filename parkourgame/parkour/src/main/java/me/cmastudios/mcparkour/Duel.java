@@ -121,11 +121,11 @@ public class Duel {
         IPlayerExperience initXp = Parkour.experience.getPlayerExperience(initiator);
         IPlayerExperience compXp = Parkour.experience.getPlayerExperience(competitor);
         if (winner == initiator) {
-            initXp.setExperience(initXp.getExperience() + bounty);
-            compXp.setExperience(compXp.getExperience() - bounty);
+            initXp.setExperience(initXp.getExperience() + bounty,false);
+            compXp.setExperience(compXp.getExperience() - bounty,false);
         } else {
-            initXp.setExperience(initXp.getExperience() - bounty);
-            compXp.setExperience(compXp.getExperience() + bounty);
+            initXp.setExperience(initXp.getExperience() - bounty,false);
+            compXp.setExperience(compXp.getExperience() + bounty,false);
         }
         if (plugin.playerCourseTracker.containsKey(initiator)) {
             plugin.playerCourseTracker.remove(initiator).leave(initiator);

@@ -30,7 +30,6 @@ import me.cmastudios.mcparkour.data.ParkourCourse.CourseDifficulty;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
@@ -44,17 +43,14 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import me.cmastudios.mcparkour.data.FavoritesList;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
-import me.cmastudios.mcparkour.data.PlayerAchievements;
 import org.bukkit.FireworkEffect.Type;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.meta.FireworkMeta;
-import org.bukkit.metadata.FixedMetadataValue;
 
 /**
  * Main class for mcparkour Bukkit plugin.
@@ -91,7 +87,6 @@ public class Parkour extends JavaPlugin {
         this.getCommand("topscores").setExecutor(new TopScoresCommand(this));
         this.getCommand("checkpoint").setExecutor(new SetCheckpointCommand(this));
         this.getCommand("duel").setExecutor(new DuelCommand(this));
-        this.getCommand("lvl").setExecutor(new LevelCommand(this));
         this.getCommand("guild").setExecutor(new GuildCommand(this));
         this.getCommand("adventure").setExecutor(new AdventureCommand(this));
         this.getCommand("see").setExecutor(new BlindCommand(this));
@@ -103,26 +98,14 @@ public class Parkour extends JavaPlugin {
         this.setupExperience();
         this.saveDefaultConfig();
         this.connectDatabase();
-        if (!new File(this.getDataFolder(), "achievements.yml").exists()) {
-            this.saveResource("achievements.yml", false); //That's silly it's te second argument is senseless, because when the file exists it gives warning on console that it can't save file -.-
-        }
-        FileConfiguration achievements = YamlConfiguration.loadConfiguration(new File(this.getDataFolder(), "achievements.yml"));
-        PlayerAchievements.setupAchievements(achievements);
         try {
             this.rebuildHeads();
         } catch (SQLException e) {
             this.getLogger().log(Level.WARNING, "Failed loading effect heads", e);
         }
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            if (p.hasMetadata("achievements")) {
-                p.removeMetadata("achievements", this);
-            }
-            p.setMetadata("achievements", new FixedMetadataValue(this, PlayerAchievements.loadPlayerAchievements(p.getPlayer(), this)));
-        }
     }
 
-    private boolean setupExperience()
-    {
+    private boolean setupExperience() {
         RegisteredServiceProvider<ExperienceManager> xpProvider = getServer().getServicesManager().getRegistration(me.cmastudios.experience.ExperienceManager.class);
         if (xpProvider != null) {
             experience = xpProvider.getProvider();
@@ -134,20 +117,14 @@ public class Parkour extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        for(Player p : Bukkit.getOnlinePlayers()) {
-            if(p.hasMetadata("achievements")) {
-                PlayerAchievements achievement = (PlayerAchievements) p.getMetadata("achievements").get(0).value();
-                achievement.save();
-                p.removeMetadata("achievements",this);
-            }
-        }
+        this.getServer().getServicesManager().unregisterAll(this);
         if (this.courseDatabase != null) {
             try {
                 this.courseDatabase.close();
             } catch (SQLException ignored) {
             }
         }
-        for (Iterator<Player> it = blindPlayers.iterator(); it.hasNext();) {
+        for (Iterator<Player> it = blindPlayers.iterator(); it.hasNext(); ) {
             Player player = it.next();
             it.remove();
             refreshVision(player);
@@ -157,7 +134,7 @@ public class Parkour extends JavaPlugin {
             deafPlayers.clear();
         }
         playerCheckpoints.clear();
-        for (Iterator<Entry<Player, PlayerCourseData>> it = playerCourseTracker.entrySet().iterator(); it.hasNext();) {
+        for (Iterator<Entry<Player, PlayerCourseData>> it = playerCourseTracker.entrySet().iterator(); it.hasNext(); ) {
             Entry<Player, PlayerCourseData> entry = it.next();
             it.remove();
             entry.getValue().leave(entry.getKey());
@@ -168,6 +145,7 @@ public class Parkour extends JavaPlugin {
         completedCourseTracker.clear();
         blindPlayerExempts.clear();
         pendingFavs.clear();
+        experience = null;
     }
 
     public static String getString(String key, Object... args) {
@@ -178,7 +156,7 @@ public class Parkour extends JavaPlugin {
         Enumeration<String> keys = messages.getKeys();
         ArrayList<String> res = new ArrayList<>();
 
-        for (Enumeration<String> element = keys; keys.hasMoreElements();) {
+        for (Enumeration<String> element = keys; keys.hasMoreElements(); ) {
             String key = element.nextElement();
             if (key.startsWith(prefix)) {
                 res.add(Parkour.getString(key));
@@ -187,11 +165,11 @@ public class Parkour extends JavaPlugin {
         return res.toArray(new String[res.size()]);
     }
 
-    public static String[] getStringArrayFromPrefix(String prefix) {
+    public static String[] getKeysArrayFromPrefix(String prefix) {
         Enumeration<String> keys = messages.getKeys();
         ArrayList<String> res = new ArrayList<>();
 
-        for (Enumeration<String> element = keys; keys.hasMoreElements();) {
+        for (Enumeration<String> element = keys; keys.hasMoreElements(); ) {
             String key = element.nextElement();
             if (key.startsWith(prefix)) {
                 res.add(key);
@@ -259,23 +237,6 @@ public class Parkour extends JavaPlugin {
                 player.showPlayer(onlinePlayer);
             }
         }
-    }
-
-    public void updateBook(Player player) {
-        for(ItemStack es : player.getInventory().all(Item.GUIDE_BOOK.getItem().getType()).values()) {
-            if (Item.GUIDE_BOOK.isSimilar(es)) {
-                BookMeta book = (BookMeta) es.getItemMeta();
-                book.setAuthor(Parkour.getString("guide.author"));
-                book.setTitle(Parkour.getString("guide.title"));
-                for(String s : getStringArrayFromPrefix("guide.content")) {
-                    book.setPages(getString(s,getPlayerAchievements(player).getModifier(),player.getName()));
-                }
-                es.setItemMeta(book);
-                return;
-            }
-        }
-        player.getInventory().addItem(Item.GUIDE_BOOK.getItem());
-        updateBook(player);
     }
 
     public void refreshHand(Player player) {
@@ -377,11 +338,11 @@ public class Parkour extends JavaPlugin {
     public double getRatio() {
         return ratio;
     }
-    
+
     public void setRatio(double ratio) {
         this.ratio = ratio;
     }
-    
+
     public static void broadcast(List<Player> list, String message) {
         for (Player recipient : list) {
             recipient.sendMessage(message);
@@ -505,18 +466,6 @@ public class Parkour extends JavaPlugin {
 
     public void setChat(boolean state) {
         chat = state;
-    }
-
-    public PlayerAchievements getPlayerAchievements(Player p) {
-        PlayerAchievements achs = null;
-        if (p.hasMetadata("achievements")) {
-            achs = (PlayerAchievements) p.getMetadata("achievements").get(0).value();
-        }
-        if (achs == null) {
-            achs = PlayerAchievements.loadPlayerAchievements(p, this);
-            p.setMetadata("achievements", new FixedMetadataValue(this, achs));
-        }
-        return achs;
     }
 
     public static class PlayerCourseData {

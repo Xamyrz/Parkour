@@ -1,9 +1,10 @@
 name: ${project.name}
 version: ${project.version}
 description: ${project.description}
-author: cmastudios
-authors: [maciekmm]
+author: maciekmm
+authors: [cmastudios]
 website: ${project.url}
+depend: [Parkour,Experience]
 main: ${main.class}
 commands:
   exp:
@@ -13,10 +14,3 @@ commands:
           /<command> add <player> <xp> - add xp to player
     aliases: [experience]
     permission: experience.admin
-  lvl:
-    description: View player level and experience.
-    usage: |
-      /<command> - wyswietla statystyki doswiadczenia
-      /<command> <nick-gracza> - Wyswietla statystyki innego gracza
-    aliases: [level, poziom]
-    permission: parkour.play

@@ -17,6 +17,7 @@
 
 package me.cmastudios.mcparkour.events;
 
+import me.cmastudios.experience.IPlayerExperience;
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.data.PlayerHighScore;
 import org.bukkit.event.Event;
@@ -26,15 +27,18 @@ public class PlayerCompleteParkourEvent extends Event {
     private static final HandlerList handlers = new HandlerList();
     private Parkour.PlayerCourseData endData;
     private PlayerHighScore highScore;
+    private IPlayerExperience experience;
     private long completionTime;
     private boolean isPersonalBest;
     private boolean isBest;
     private double xp;
     private boolean isTopTen;
 
-    public PlayerCompleteParkourEvent(Parkour.PlayerCourseData endData, PlayerHighScore highScore, long completionTime, boolean isPersonalBest, boolean isBest, double xp, boolean isTopTen) {
+    public PlayerCompleteParkourEvent(Parkour.PlayerCourseData endData, IPlayerExperience experience, PlayerHighScore highScore, long completionTime, boolean isPersonalBest, boolean isBest, double xp, boolean isTopTen) {
         this.completionTime = completionTime;
+        this.endData = endData;
         this.highScore = highScore;
+        this.experience = experience;
         this.isPersonalBest = isPersonalBest;
         this.isBest = isBest;
         this.xp = xp;
@@ -55,6 +59,10 @@ public class PlayerCompleteParkourEvent extends Event {
 
     public PlayerHighScore getHighScore() {
         return highScore;
+    }
+
+    public IPlayerExperience getPlayerExperience() {
+        return experience;
     }
 
     public boolean isPersonalBest() {

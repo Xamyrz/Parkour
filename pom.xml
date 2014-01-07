@@ -22,6 +22,7 @@
 
     <modules>
         <module>parkourgame</module>
+        <module>achievements</module>
         <module>experience</module>
     </modules>
 

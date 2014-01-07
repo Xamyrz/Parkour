@@ -29,6 +29,7 @@ import java.util.logging.Logger;
 
 import me.cmastudios.mcparkour.Item;
 import me.cmastudios.mcparkour.Parkour;
+import me.cmastudios.mcparkour.events.FavoritesAddParkourEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -40,29 +41,35 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class FavoritesList implements ItemMenu {
 
     private Player player;
-    private List<Integer> favorites = new ArrayList<>();
-    private Connection conn;
+    private List<Integer> favorites;
     private Parkour plugin;
+    private Connection conn;
     private int page = 1;
 
-    public FavoritesList(Player player, Parkour plugin) throws SQLException {
-        this.player = player;
-        this.conn = plugin.getCourseDatabase();
-        this.plugin = plugin;
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM favorites WHERE player = ?")) {
+    public static FavoritesList loadFavoritesList(Player player, Parkour plugin) throws SQLException {
+        ArrayList<Integer> favs = new ArrayList<>();
+        try (PreparedStatement stmt = plugin.getCourseDatabase().prepareStatement("SELECT * FROM favorites WHERE player = ?")) {
             stmt.setString(1, player.getName());
             try (ResultSet result = stmt.executeQuery()) {
                 if (result.next()) {
                     for (String s : result.getString("favorites").split(",")) {
                         try {
-                            favorites.add(Integer.parseInt(s));
+                            favs.add(Integer.parseInt(s));
                         } catch (NumberFormatException e) {
-                            Bukkit.getLogger().log(Level.WARNING,Parkour.getString("error.invalidint"));
+                            Bukkit.getLogger().log(Level.WARNING, Parkour.getString("error.invalidint"));
                         }
                     }
                 }
             }
         }
+        return new FavoritesList(player, plugin, favs);
+    }
+
+    public FavoritesList(Player player, Parkour plugin, List<Integer> favorites) throws SQLException {
+        this.player = player;
+        this.conn = plugin.getCourseDatabase();
+        this.plugin = plugin;
+        this.favorites = favorites;
     }
 
     @Override
@@ -77,7 +84,7 @@ public class FavoritesList implements ItemMenu {
         }
         Inventory inv = Bukkit.createInventory(player, 54, Parkour.getString("favorites.inventory.name"));
         Collections.sort(favorites);
-        if (favorites.size() > 45*page) {
+        if (favorites.size() > 45 * page) {
             ItemStack next = Item.NEXT_PAGE.getItem();
             next.setAmount(page + 1);
             inv.setItem(53, next);
@@ -96,7 +103,7 @@ public class FavoritesList implements ItemMenu {
             try {
                 ItemStack item = null;
                 ItemMeta meta;
-                if(favorites.size()<45 * (page - 1) + i + 1) {
+                if (favorites.size() < 45 * (page - 1) + i + 1) {
                     break;
                 }
                 int courseId = favorites.get(45 * (page - 1) + i);
@@ -154,9 +161,9 @@ public class FavoritesList implements ItemMenu {
                 if (item != null) {
                     meta = item.getItemMeta();
                     String[] lore = {
-                        Parkour.getString("favorites.item.diffs.lore.0"),
-                        Parkour.getString("favorites.item.diffs.lore.1", current.getId()),
-                        Parkour.getString("favorites.item.diffs.lore.2")};
+                            Parkour.getString("favorites.item.diffs.lore.0"),
+                            Parkour.getString("favorites.item.diffs.lore.1", current.getId()),
+                            Parkour.getString("favorites.item.diffs.lore.2")};
                     meta.setLore(Arrays.asList(lore));
                     item.setItemMeta(meta);
                 }
@@ -169,7 +176,7 @@ public class FavoritesList implements ItemMenu {
     }
 
     public void handleSelection(int page, int slot, ClickType click, Inventory inv) {
-        int pos = (page-1) * 45 + slot;
+        int pos = (page - 1) * 45 + slot;
         if (click.isLeftClick()) {
             if (slot == 45 && inv.getItem(45) != null) {
                 this.page--;
@@ -221,9 +228,12 @@ public class FavoritesList implements ItemMenu {
             player.sendMessage(Parkour.getString("favorites.alreadyadded"));
             return;
         }
-        player.sendMessage(Parkour.getString("favorites.added"));
-        favorites.add(i);
-        plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(SimpleAchievement.AchievementCriteria.FAVORITES_NUMBER, (long) favorites.size()));
+        FavoritesAddParkourEvent event = new FavoritesAddParkourEvent(this, i, player);
+        Bukkit.getPluginManager().callEvent(event);
+        if (!event.isCancelled()) {
+            player.sendMessage(Parkour.getString("favorites.added"));
+            favorites.add(i);
+        }
     }
 
     @Override
@@ -250,7 +260,7 @@ public class FavoritesList implements ItemMenu {
     public void setPage(int page) {
         this.page = page;
     }
-    
+
     public int size() {
         return favorites.size();
     }

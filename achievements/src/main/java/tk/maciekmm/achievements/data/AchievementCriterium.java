@@ -15,18 +15,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.cmastudios.experience;
+package tk.maciekmm.achievements.data;
 
-import org.bukkit.OfflinePlayer;
+import java.util.List;
 
-import java.sql.SQLException;
+public class AchievementCriterium {
+    public final String name;
+    public final boolean progressing;
+    public final Option option;
+    public final List<Integer> optionsAffected;
+    public final List<String> options;
 
-public interface IPlayerExperience {
-    public int getExperience();
+    public AchievementCriterium(String name, boolean progressing, Option option,List<String> options, List<Integer> optionsAffected) {
+        this.name = name;
+        this.options = options;
+        this.progressing = progressing;
+        this.option = option;
+        this.optionsAffected = optionsAffected;
+    }
 
-    public void setExperience(int experience,boolean allowChange) throws SQLException;
-
-    public OfflinePlayer getPlayer();
-
-    public long getLastUsed();
+    public enum Option {
+        MORE_THAN,
+        LESS_THAN,
+        NONE
+    }
 }

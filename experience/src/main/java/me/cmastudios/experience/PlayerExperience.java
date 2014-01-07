@@ -17,6 +17,8 @@
 
 package me.cmastudios.experience;
 
+import me.cmastudios.experience.events.ChangeExperienceEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import java.sql.Connection;
@@ -56,10 +58,20 @@ public class PlayerExperience implements IPlayerExperience {
         return experience;
     }
 
-    public void setExperience(int experience) throws SQLException {
+    public void setExperience(int experience, boolean fireEvent) throws SQLException {
         this.lastUsed = System.currentTimeMillis();
-        this.experience = experience;
-        this.save();
+        if (fireEvent) {
+            ChangeExperienceEvent event = new ChangeExperienceEvent(this.experience, experience,this);
+            Bukkit.getPluginManager().callEvent(event);
+            player.getPlayer().sendMessage(Experience.getString("xp.gain", event.getXp()-this.experience, this.experience));
+            this.experience = event.getXp();
+        } else {
+            this.experience = experience;
+            player.getPlayer().sendMessage(Experience.getString("xp.gain", experience, this.experience));
+        }
+        if(!player.isOnline()) {
+            save();  // To be 100% sure that if we change experience while offline the player will get that if log in on other server
+        }
     }
 
     public OfflinePlayer getPlayer() {
@@ -78,9 +90,5 @@ public class PlayerExperience implements IPlayerExperience {
                 return result.next();
             }
         }
-    }
-
-    public IPlayerExperience getApiInstance() {
-        return this;
     }
 }

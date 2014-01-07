@@ -52,7 +52,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import me.cmastudios.mcparkour.data.SimpleAchievement.AchievementCriteria;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 
@@ -168,22 +167,17 @@ public class ParkourListener implements Listener {
                             endData.restoreState(player);
                             PlayerHighScore highScore = PlayerHighScore.loadHighScore(plugin.getCourseDatabase(), player, endData.course.getId());
                             long completionTime = now - endData.startTime;
-                            PlayerCompleteParkourEventBuilder eventBuilder = new PlayerCompleteParkourEventBuilder(endData,highScore,completionTime);
+                            IPlayerExperience playerXp = Parkour.experience.getPlayerExperience(player);
+                            PlayerCompleteParkourEventBuilder eventBuilder = new PlayerCompleteParkourEventBuilder(endData,playerXp,highScore,completionTime);
                             if (highScore.getTime() > completionTime && highScore.getPlays() > 0) {
                                 eventBuilder.setPersonalBest(true);
                                 player.sendMessage(Parkour.getString("course.end.personalbest", new Object[]{endData.course.getId()}));
-                                plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.BEAT_PREVIOUS_SCORE));
-                                plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.BEAT_PREVIOUS_SCORE_ON_CERTAIN_PARKOUR, (long) highScore.getCourse()));
                             }
                             if (highScore.getTime() > completionTime || highScore.getTime() == -1) {
                                 highScore.setTime(completionTime);
                             }
                             highScore.setPlays(highScore.getPlays() + 1);
 
-                            plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PLAYS_ON_CERTAIN_PARKOUR, (long) highScore.getCourse(), (long) highScore.getPlays()));
-                            plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PARKOUR_COMPLETE, (long) highScore.getCourse()));
-                            plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PARKOURS_COMPLETED, (long) highScore.getCourse()));
-                            plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.PARKOUR_COMPLETED_IN_TIME, (long) highScore.getCourse(), highScore.getTime()));
                             highScore.save(plugin.getCourseDatabase());
                             DecimalFormat df = new DecimalFormat("#.###");
                             double completionTimeSeconds = ((double) completionTime) / 1000;
@@ -193,20 +187,15 @@ public class ParkourListener implements Listener {
                             for (PlayerHighScore hs : scores) {
                                 if (hs.getPlayer().getName().equals(event.getPlayer().getName())) {
                                     eventBuilder.setTopTen(true);
-                                    plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.TOP_10));
-                                    plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.TOP_10_ON_CERTAIN_PARKOUR, (long) highScore.getCourse()));
                                     break;
                                 }
                             }
                             if (highScore.equals(bestScore) && highScore.getTime() == completionTime) {
                                 eventBuilder.setBest(true);
                                 plugin.getServer().broadcastMessage(Parkour.getString("course.end.best", player.getDisplayName() + ChatColor.RESET, endData.course.getId(), df.format(completionTimeSeconds)));
-                                plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.BEST_HIGHSCORE));
-                                plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.BEST_HIGHSCORE_ON_CERTAIN_PARKOUR, (long) highScore.getCourse()));
                             }
 
                             Duel duel = plugin.getDuel(player);
-                            IPlayerExperience playerXp = Parkour.experience.getPlayerExperience(player);
                             try {
                                 int courseXp = Integer.parseInt(sign.getLine(1));
                                 Checkpoint cp = plugin.playerCheckpoints.get(player);
@@ -217,14 +206,13 @@ public class ParkourListener implements Listener {
                                 if (duel != null && duel.hasStarted()) {
                                     throw new IndexOutOfBoundsException(); // Skip XP gain
                                 }
-                                courseXp *= (plugin.getPlayerAchievements(player).getModifier() + (player.hasPermission("parkour.vip") ? plugin.getRatio() > 2 ? plugin.getRatio() : 2 : plugin.getRatio()));
+                                courseXp *= (player.hasPermission("parkour.vip") ? plugin.getRatio() > 2 ? plugin.getRatio() : 2 : plugin.getRatio());
                                 eventBuilder.setReducedXp(courseXp);
-                                playerXp.setExperience(playerXp.getExperience() + courseXp);
-                                player.sendMessage(Parkour.getString("xp.gain", new Object[]{courseXp, playerXp.getExperience()}));
+                                playerXp.setExperience(playerXp.getExperience() + courseXp,true);
+
                             } catch (NumberFormatException | IndexOutOfBoundsException e) { // No XP gain for this course
                             }
-                            int afterLevel = Parkour.experience.getLevel(playerXp.getExperience());
-                            plugin.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(AchievementCriteria.LEVEL_ACQUIRE, (long) afterLevel));
+
                             plugin.playerCheckpoints.remove(player);
                             plugin.completedCourseTracker.put(player, endData);
                             if (!player.hasMetadata("disableScoreboard")) {
@@ -400,13 +388,11 @@ public class ParkourListener implements Listener {
             if (plugin.pendingFavs.containsKey(event.getWhoClicked())) {
                 favs = plugin.pendingFavs.get(event.getWhoClicked());
             } else {
-                favs = new FavoritesList((Player) event.getWhoClicked(), plugin);
+                favs = FavoritesList.loadFavoritesList((Player) event.getWhoClicked(), plugin);
             }
             if (event.getCurrentItem() != null && event.getCurrentItem().getType() != Material.AIR) {
                 favs.handleSelection(favs.getCurrentPage(), event.getSlot(), event.getClick(), event.getInventory());
             }
-        } else if (event.getInventory().getName().equalsIgnoreCase(Parkour.getString("achievement.inventory.name"))) {
-            event.setCancelled(true);
         } else if (event.getInventory().getName().equalsIgnoreCase(Parkour.getString("settings.inventory.name"))) {
             event.setCancelled(true);
             if (event.getCurrentItem() == null) {
@@ -468,7 +454,7 @@ public class ParkourListener implements Listener {
                         if (plugin.pendingFavs.containsKey(event.getPlayer())) {
                             favs = plugin.pendingFavs.get(event.getPlayer());
                         } else {
-                            favs = new FavoritesList(event.getPlayer(), plugin);
+                            favs = FavoritesList.loadFavoritesList(event.getPlayer(), plugin);
                             plugin.pendingFavs.put(event.getPlayer(), favs);
                         }
                         favs.addParkour(parkID);
@@ -514,13 +500,6 @@ public class ParkourListener implements Listener {
                     inv.addItem(item.getItem());
                 }
                 event.getPlayer().openInventory(inv);
-            } else if (Item.ACHIEVEMENTS_MENU.isSimilar(event.getItem())) {
-                event.setCancelled(true);
-                PlayerAchievements ach;
-                if (event.getPlayer().hasMetadata("achievements")) {
-                    ach = (PlayerAchievements) event.getPlayer().getMetadata("achievements").get(0).value();
-                    ach.openMenu();
-                }
             } else if (Item.FAVORITES.isSimilar(event.getItem())) {
                 event.setCancelled(true);
                 if (!plugin.favoritesCooldown.containsKey(event.getPlayer().getName())) {
@@ -533,7 +512,7 @@ public class ParkourListener implements Listener {
                 if (plugin.pendingFavs.containsKey(event.getPlayer())) {
                     favs = plugin.pendingFavs.get(event.getPlayer());
                 } else {
-                    favs = new FavoritesList(event.getPlayer(), plugin);
+                    favs = FavoritesList.loadFavoritesList(event.getPlayer(), plugin);
                     plugin.pendingFavs.put(event.getPlayer(), favs);
                 }
                 favs.openMenu();
@@ -615,24 +594,19 @@ public class ParkourListener implements Listener {
             event.getPlayer().getInventory().remove(Material.ENDER_PEARL);
         }
 
+        parent:
         for (Item item : Item.getItemsByType(Item.ItemType.SPAWN)) {
             if (!event.getPlayer().getInventory().contains(item.getItem().getType())) {
                 if (event.getPlayer().getInventory().contains(item.getItem().getType())) {
-                    if (Item.GUIDE_BOOK == item) {
-                        continue;
-                    }
                     for (Map.Entry<Integer, ? extends ItemStack> entry : event.getPlayer().getInventory().all(item.getItem().getType()).entrySet()) {
                         if (item.isSimilar(entry.getValue())) {
-                            continue;
+                            continue parent;
                         }
                     }
                 }
-
                 event.getPlayer().getInventory().addItem(item.getItem());
             }
         }
-
-        //plugin.updateBook(event.getPlayer());
 
         if (event.getPlayer().hasPermission("parkour.vip")) {
             for (Item item : Item.getItemsByType(Item.ItemType.VIP)) {
@@ -662,11 +636,6 @@ public class ParkourListener implements Listener {
             event.getPlayer().teleport(plugin.getSpawn());
         }
 
-
-        if (event.getPlayer().hasMetadata("achievements")) {
-            event.getPlayer().removeMetadata("achievement", plugin);
-        }
-        event.getPlayer().setMetadata("achievements", new FixedMetadataValue(plugin, PlayerAchievements.loadPlayerAchievements(event.getPlayer(), plugin)));
         GuildPlayer gp = GuildPlayer.loadGuildPlayer(plugin.getCourseDatabase(), event.getPlayer());
         GuildWar war = plugin.getWar(gp.getGuild());
         if (war != null) {
@@ -712,16 +681,6 @@ public class ParkourListener implements Listener {
         if (war != null) {
             GuildPlayer gp = war.getPlayer(event.getPlayer());
             war.handleDisconnect(gp, plugin);
-        }
-        if (event.getPlayer().hasMetadata("achievements")) {
-            MetadataValue val = event.getPlayer().getMetadata("achievements").get(0);
-            if (val != null) {
-                if (val.value() instanceof PlayerAchievements) {
-                    PlayerAchievements achievements = (PlayerAchievements) val.value();
-                    achievements.save();
-                    event.getPlayer().removeMetadata("achievements", plugin);
-                }
-            }
         }
     }
 

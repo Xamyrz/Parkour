@@ -14,19 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+package tk.maciekmm.achievements.data;
 
-package me.cmastudios.experience;
+public interface ItemMenu {
 
-import org.bukkit.OfflinePlayer;
+    public void openMenu();
 
-import java.sql.SQLException;
+    public void destroyMenu();
 
-public interface IPlayerExperience {
-    public int getExperience();
-
-    public void setExperience(int experience,boolean allowChange) throws SQLException;
-
-    public OfflinePlayer getPlayer();
-
-    public long getLastUsed();
+    public void save();
 }

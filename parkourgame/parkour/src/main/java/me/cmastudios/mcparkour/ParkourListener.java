@@ -466,6 +466,9 @@ public class ParkourListener implements Listener {
                 }
 
             }
+            if(plugin.playerCourseTracker.containsKey(event.getPlayer())&&(event.getClickedBlock().getType()==Material.ANVIL||event.getClickedBlock().getType()==Material.ENCHANTMENT_TABLE)) {
+                event.setCancelled(true);
+            }
         }
         if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_AIR
                 || event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) {
@@ -491,6 +494,7 @@ public class ParkourListener implements Listener {
                 event.getPlayer().sendMessage(Parkour.getString("blind.enable", new Object[]{}));
 
             } else if (Item.SPAWN.isSimilar(event.getItem())) {
+                event.setCancelled(true);
                 event.getPlayer().teleport(plugin.getSpawn(), TeleportCause.COMMAND);
             } else if (Item.SETTINGS.isSimilar(event.getItem())) {
                 event.setCancelled(true);
@@ -518,6 +522,7 @@ public class ParkourListener implements Listener {
                 favs.openMenu();
                 plugin.favoritesCooldown.put(event.getPlayer().getName(), System.currentTimeMillis());
             } else if (Item.POINT.isSimilar(event.getItem())) {
+                event.setCancelled(true);
                 event.getPlayer().performCommand("cp");
 
             } else if (Item.FIREWORK_SPAWNER.isSimilar(event.getItem())) {
@@ -538,6 +543,7 @@ public class ParkourListener implements Listener {
         }
         if ((event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK)
                 && event.getPlayer().getItemInHand().getType() == Material.POTION) {
+            event.setCancelled(true);
             PotionMeta potion = (PotionMeta) event.getPlayer().getItemInHand().getItemMeta();
             event.getPlayer().addPotionEffects(potion.getCustomEffects());
             event.getPlayer().getInventory().remove(event.getPlayer().getItemInHand());

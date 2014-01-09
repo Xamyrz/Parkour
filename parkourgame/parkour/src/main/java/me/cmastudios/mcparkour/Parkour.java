@@ -16,8 +16,6 @@
  */
 package me.cmastudios.mcparkour;
 
-import java.io.File;
-
 import me.cmastudios.experience.ExperienceManager;
 import me.cmastudios.experience.IPlayerExperience;
 import me.cmastudios.mcparkour.commands.*;
@@ -156,23 +154,10 @@ public class Parkour extends JavaPlugin {
         Enumeration<String> keys = messages.getKeys();
         ArrayList<String> res = new ArrayList<>();
 
-        for (Enumeration<String> element = keys; keys.hasMoreElements(); ) {
-            String key = element.nextElement();
+        for (; keys.hasMoreElements(); ) {
+            String key = keys.nextElement();
             if (key.startsWith(prefix)) {
                 res.add(Parkour.getString(key));
-            }
-        }
-        return res.toArray(new String[res.size()]);
-    }
-
-    public static String[] getKeysArrayFromPrefix(String prefix) {
-        Enumeration<String> keys = messages.getKeys();
-        ArrayList<String> res = new ArrayList<>();
-
-        for (Enumeration<String> element = keys; keys.hasMoreElements(); ) {
-            String key = element.nextElement();
-            if (key.startsWith(prefix)) {
-                res.add(key);
             }
         }
         return res.toArray(new String[res.size()]);
@@ -201,7 +186,6 @@ public class Parkour extends JavaPlugin {
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courseheads (world_name varchar(32), x INTEGER, y INTEGER, z INTEGER, course_id INTEGER, skull_type_name varchar(32))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS gameresults (time TIMESTAMP, type enum('duel','guildwar'), winner varchar(16), loser varchar(16))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS favorites (`player` varchar(16) NOT NULL,`favorites` text NOT NULL, PRIMARY KEY (`player`))");
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS playerachievements (`player` varchar(16) NOT NULL,`completed` text NOT NULL,`progress` mediumtext NOT NULL,`milestones` text NOT NULL, PRIMARY KEY (`player`))");
             }
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load database driver", ex);

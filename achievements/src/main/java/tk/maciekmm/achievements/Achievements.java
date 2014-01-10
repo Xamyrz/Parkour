@@ -22,6 +22,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import tk.maciekmm.achievements.data.PlayerAchievements;
@@ -115,5 +116,19 @@ public class Achievements extends JavaPlugin {
 
     public AchievementsManager getManager() {
         return manager;
+    }
+
+    public boolean canUse(Player player, String cooldown, long seconds) {
+        if(player.hasMetadata("achs"+cooldown)) {
+            for(MetadataValue val : player.getMetadata("achs"+cooldown)) {
+                if(val.getOwningPlugin()==this) {
+                    if(val.asLong()/1000 <= seconds) {
+                        return false;
+                    }
+                }
+            }
+        }
+        player.setMetadata("achs"+cooldown,new FixedMetadataValue(this,System.currentTimeMillis()));
+        return true;
     }
 }

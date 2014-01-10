@@ -23,6 +23,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import tk.maciekmm.achievements.Achievements;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -40,6 +41,7 @@ public class OfflinePlayerAchievements {
     ArrayList<ParkourAchievement> completedAchievements;
     HashMap<ParkourAchievement, ArrayList<Long>> achievementProgress;
     ArrayList<AchievementMilestone> completedMilestones;
+    private final OfflinePlayer player;
 
     public static List<ParkourAchievement> getSimiliarAchievements(SimpleAchievement ach) {
         List<ParkourAchievement> result = new ArrayList<>();
@@ -231,13 +233,14 @@ public class OfflinePlayerAchievements {
             Logger.getLogger(PlayerAchievements.class
                     .getName()).log(Level.SEVERE, null, ex);
         }
-        return new OfflinePlayerAchievements(completedMilestones, completedAchievements, progressAchievements);
+        return new OfflinePlayerAchievements(p, completedMilestones, completedAchievements, progressAchievements);
     }
 
-    public OfflinePlayerAchievements(ArrayList<AchievementMilestone> milestones, ArrayList<ParkourAchievement> achievements, HashMap<ParkourAchievement, ArrayList<Long>> progress) {
+    public OfflinePlayerAchievements(OfflinePlayer player, ArrayList<AchievementMilestone> milestones, ArrayList<ParkourAchievement> achievements, HashMap<ParkourAchievement, ArrayList<Long>> progress) {
         this.completedAchievements = achievements;
         this.completedMilestones = milestones;
         this.achievementProgress = progress;
+        this.player = player;
     }
 
     public double getModifier() {

@@ -44,6 +44,7 @@ public class AchievementsManager {
         p.getPlayer().setMetadata("achievements", new FixedMetadataValue(plugin, achs)); //Bug? returning null
         return achs;
     }
+
     public OfflinePlayerAchievements getOfflinePlayerAchievements(OfflinePlayer player) {
         if(player.isOnline()) {
             return getPlayerAchievements(player.getPlayer());
@@ -51,4 +52,11 @@ public class AchievementsManager {
             return OfflinePlayerAchievements.loadPlayerAchievements(player,plugin);
         }
     }
+
+    public void removePlayerAchievementsCache(Player p) {
+        if(p.hasMetadata("achievements")) {
+            p.removeMetadata("achievements",plugin);
+        }
+    }
+
 }

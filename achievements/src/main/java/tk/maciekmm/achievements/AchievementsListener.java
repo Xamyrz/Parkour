@@ -17,6 +17,7 @@
 
 package tk.maciekmm.achievements;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -73,16 +74,8 @@ public class AchievementsListener implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        if (event.getPlayer().hasMetadata("achievements")) {
-            MetadataValue val = event.getPlayer().getMetadata("achievements").get(0);
-            if (val != null) {
-                if (val.value() instanceof PlayerAchievements) {
-                    PlayerAchievements achievements = (PlayerAchievements) val.value();
-                    achievements.save();
-                    event.getPlayer().removeMetadata("achievements", plugin);
-                }
-            }
-        }
+        plugin.getManager().getPlayerAchievements(event.getPlayer()).save();
+        plugin.getManager().removePlayerAchievementsCache(event.getPlayer());
     }
 
     @EventHandler
@@ -92,7 +85,12 @@ public class AchievementsListener implements Listener {
         }
         if (Item.ACHIEVEMENTS_MENU.isSimilar(event.getItem())) {
             event.setCancelled(true);
-            plugin.getManager().getPlayerAchievements(event.getPlayer()).openMenu();
+            if(plugin.canUse(event.getPlayer(),"menu",1)) {
+               plugin.getManager().getPlayerAchievements(event.getPlayer()).openMenu();
+            } else {
+              event.getPlayer().sendMessage(Achievements.getString("achievement.inventory.cooldown"));
+            }
+
         }
     }
 }

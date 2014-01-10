@@ -16,6 +16,7 @@
  */
 package tk.maciekmm.achievements.data;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.common.collect.ImmutableList;
 import tk.maciekmm.achievements.Achievements;
 import tk.maciekmm.achievements.Item;
 import org.bukkit.Bukkit;
@@ -33,20 +35,21 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import tk.maciekmm.achievements.SaveTask;
 
-public class PlayerAchievements extends OfflinePlayerAchievements implements ItemMenu  {
+public class PlayerAchievements extends OfflinePlayerAchievements implements ItemMenu {
     private Player player;
     private int page = 1;
     private final Achievements plugin;
 
     public PlayerAchievements(Achievements plugin, Player p, ArrayList<AchievementMilestone> milestones, ArrayList<ParkourAchievement> achievements, HashMap<ParkourAchievement, ArrayList<Long>> progress) {
-        super(milestones,achievements,progress);
+        super(p, milestones,achievements,progress);
         this.plugin = plugin;
         this.player = p;
     }
 
     public PlayerAchievements(OfflinePlayerAchievements playerAchievements,Achievements plugin,Player player) {
-        super(playerAchievements.completedMilestones,playerAchievements.completedAchievements,playerAchievements.achievementProgress);
+        super(player,playerAchievements.completedMilestones,playerAchievements.completedAchievements,playerAchievements.achievementProgress);
         this.plugin = plugin;
         this.player = player;
     }
@@ -227,40 +230,11 @@ public class PlayerAchievements extends OfflinePlayerAchievements implements Ite
         }, 1L);
     }
 
-    @Override
-    public void save() {
-        try {
-            StringBuilder sbach = new StringBuilder();
-            for (ParkourAchievement ach : completedAchievements) {
-                sbach.append(ach.getId()).append(",");
-            }
-            StringBuilder sbprogress = new StringBuilder();
-            for (ParkourAchievement ach : achievementProgress.keySet()) {
-                sbprogress.append(ach.getId()).append("/");
-                for (long i : achievementProgress.get(ach)) {
-                    sbprogress.append(i).append(",");
-                }
-                sbprogress.append(";");
-            }
-            StringBuilder sbmilestones = new StringBuilder();
-            for (AchievementMilestone mile : completedMilestones) {
-                sbmilestones.append(mile.getId()).append(",");
-            }
-            PreparedStatement stmt = plugin.getAchievementsDatabase().prepareStatement("INSERT INTO playerachievements (`player`,`completed`,`progress`,`milestones`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `completed`=VALUES(completed), `progress`=VALUES(progress), `milestones`=VALUES(milestones)");
-            stmt.setString(1, player.getName());
-            stmt.setString(2, sbach.toString());
-            stmt.setString(3, sbprogress.toString());
-            stmt.setString(4, sbmilestones.toString());
-            stmt.executeUpdate();
-
-        } catch (SQLException ex) {
-            Logger.getLogger(PlayerAchievements.class
-                    .getName()).log(Level.SEVERE, null, ex);
-        }
-
-    }
-
     public int getPage() {
         return page;
+    }
+
+    public void save() {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin,new SaveTask(player.getName(),ImmutableList.copyOf(completedAchievements),ImmutableList.copyOf(completedMilestones),achievementProgress,plugin.getAchievementsDatabase()));
     }
 }

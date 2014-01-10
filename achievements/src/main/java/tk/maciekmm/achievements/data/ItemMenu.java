@@ -21,6 +21,4 @@ public interface ItemMenu {
     public void openMenu();
 
     public void destroyMenu();
-
-    public void save();
 }

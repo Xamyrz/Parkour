@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Maciej Mionskowski
+ * Copyright (C) 2014 Maciej Mionskowski
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
 
 package tk.maciekmm.achievements;
 
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -62,6 +64,10 @@ public class AchievementsListener implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         if (event.getInventory().getName().equalsIgnoreCase(Achievements.getString("achievement.inventory.name"))) {
             event.setCancelled(true);
+            PlayerAchievements achs = this.plugin.getManager().getPlayerAchievements((Player) event.getWhoClicked());
+            if (event.getCurrentItem() != null && event.getCurrentItem().getType() != Material.AIR) {
+                achs.handleSelection(achs.getPage(), event.getSlot(), event.getClick(), event.getInventory());
+            }
         }
     }
 

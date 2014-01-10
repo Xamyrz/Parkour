@@ -259,4 +259,8 @@ public class PlayerAchievements extends OfflinePlayerAchievements implements Ite
         }
 
     }
+
+    public int getPage() {
+        return page;
+    }
 }

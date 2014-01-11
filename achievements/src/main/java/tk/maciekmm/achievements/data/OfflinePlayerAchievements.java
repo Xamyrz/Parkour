@@ -129,7 +129,7 @@ public class OfflinePlayerAchievements {
                 Bukkit.getLogger().log(Level.WARNING, Achievements.getString("achievement.error.loading.missing", section.getCurrentPath()));
                 continue;
             }
-            List<Long> opts = new ArrayList<>();
+            ArrayList<Long> opts = new ArrayList<>();
             ArrayList<String> desc = new ArrayList<>();
             if (section.contains("description")) {
                 desc = new ArrayList(section.getStringList("description"));
@@ -140,7 +140,13 @@ public class OfflinePlayerAchievements {
                     if (!section.contains("options." + option)) {
                         continue;
                     }
-                    opts.add(section.getLong("options." + option));
+                    if (!section.isList("options." + option)) {
+                        opts.add(section.getLong("options." + option));
+                    } else {
+                        for (Long val : section.getLongList("options." + option)) {
+                            opts.add(val);
+                        }
+                    }
                 }
                 achievements.add(new ParkourAchievement(Integer.valueOf(sctn), section.getString("name"), desc, criteria, ParkourAchievement.AchievementType.valueOf(section.getString("type")), opts.toArray(new Long[opts.size()])));
             } catch (Exception e) { //CONFUSED AchievementCriteria.valueOf can throw IllegalArgumentException i believe but netbeans doesn't let me put it here

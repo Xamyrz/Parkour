@@ -16,10 +16,13 @@
  */
 package me.cmastudios.mcparkour.data;
 
+import me.cmastudios.experience.IPlayerExperience;
 import me.cmastudios.mcparkour.Parkour;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
@@ -30,6 +33,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.bukkit.OfflinePlayer;
 import org.bukkit.scoreboard.Team;
 
@@ -104,23 +110,6 @@ public class ParkourCourse {
                 "DELETE FROM courseheads WHERE course_id = ?")) {
             stmt.setInt(1, id);
             stmt.executeUpdate();
-        }
-    }
-
-    public void resetScores(Connection conn, OfflinePlayer player) throws SQLException {
-        if (player != null) {
-            String pl = player.getName();
-            try (PreparedStatement stmt = conn.prepareStatement("UPDATE `highscores` SET time=-1 WHERE `course`=? AND `player` LIKE ?")) {
-                stmt.setInt(1, id);
-                stmt.setString(2, pl);
-                stmt.executeUpdate();
-            }
-        } else {
-            try (PreparedStatement stmt = conn.prepareStatement("UPDATE `highscores` SET time=-1 WHERE `course`=?")) {
-                stmt.setInt(1, id);
-                stmt.executeUpdate();
-            }
-
         }
     }
 
@@ -217,5 +206,4 @@ public class ParkourCourse {
 
         EASY, MEDIUM, HARD, VERYHARD
     }
-
 }

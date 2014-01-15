@@ -80,6 +80,25 @@ public class PlayerHighScore {
         return ret;
     }
 
+    public static void resetHighScores(Connection conn, int course, boolean hard, OfflinePlayer player) throws SQLException {
+        StringBuilder qs = new StringBuilder();
+        if (hard) {
+            qs.append("DELETE `highscores` WHERE course=?");
+        } else {
+            qs.append("UPDATE `highscores` SET time=-1 WHERE course=?");
+        }
+        if (player != null) {
+            qs.append("AND player LIKE ?");
+        }
+        try (PreparedStatement stmt = conn.prepareStatement(qs.toString())) {
+            stmt.setInt(1, course);
+            if (player != null) {
+                stmt.setString(2, player.getName());
+            }
+            stmt.executeQuery();
+        }
+    }
+
     public PlayerHighScore(int course, String player, long time, int plays) {
         this.course = course;
         this.player = player;

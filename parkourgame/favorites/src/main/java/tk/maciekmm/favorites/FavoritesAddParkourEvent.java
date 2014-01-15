@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.cmastudios.mcparkour.events;
+package tk.maciekmm.favorites;
 
-import me.cmastudios.mcparkour.data.FavoritesList;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;

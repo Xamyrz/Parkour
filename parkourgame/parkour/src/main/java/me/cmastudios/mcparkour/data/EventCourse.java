@@ -14,13 +14,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package me.cmastudios.mcparkour.data;
 
-public interface ItemMenu {
+import java.util.ArrayList;
+import java.util.List;
 
-    public void openMenu();
+public class EventCourse {
+    private final ParkourCourse course;
+    private EventType eventType;
+    private final String name;
+    private final long startingTime;
 
-    public void destroyMenu();
+    public EventCourse(ParkourCourse course,String name, long startingTime) {
+        this.course = course;
+        this.name = name;
+        this.startingTime = startingTime;
+    }
 
-    public void save();
+    public ParkourCourse getCourse() {
+        return course;
+    }
+
+    public EventType getEventType() {
+        return eventType;
+    }
+
+    public enum EventType {
+        TIME_RUSH, POSITION_RUSH, PLAYS_RUSH, FALL_RUSH
+    }
 }

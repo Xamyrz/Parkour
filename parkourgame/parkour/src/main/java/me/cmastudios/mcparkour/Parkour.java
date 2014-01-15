@@ -19,11 +19,9 @@ package me.cmastudios.mcparkour;
 import me.cmastudios.experience.ExperienceManager;
 import me.cmastudios.experience.IPlayerExperience;
 import me.cmastudios.mcparkour.commands.*;
-import me.cmastudios.mcparkour.data.EffectHead;
-import me.cmastudios.mcparkour.data.Guild;
+import me.cmastudios.mcparkour.data.*;
 import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.Guild.GuildWar;
-import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseDifficulty;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
@@ -42,7 +40,6 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import me.cmastudios.mcparkour.data.FavoritesList;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
 import org.bukkit.FireworkEffect.Type;
 import org.bukkit.entity.EntityType;
@@ -61,6 +58,7 @@ public class Parkour extends JavaPlugin {
     private Connection courseDatabase;
     private boolean chat = true;
     private double ratio = 1;
+    public List<EventCourse> events = new ArrayList<>();
     public List<Player> blindPlayers = new ArrayList<>();
     public final List<Player> deafPlayers = new ArrayList<>();
     public Map<Player, Checkpoint> playerCheckpoints = new HashMap<>();
@@ -70,7 +68,6 @@ public class Parkour extends JavaPlugin {
     public Map<Player, List<Player>> blindPlayerExempts = new HashMap<>();
     public Map<String, Long> fireworkCooldown = new HashMap<>();
     public Map<String, Long> favoritesCooldown = new HashMap<>();
-    public Map<Player, FavoritesList> pendingFavs = new HashMap<>();
     public List<Duel> activeDuels = new ArrayList<>();
     public List<GuildWar> activeWars = new ArrayList<>();
     public static ExperienceManager experience;
@@ -142,7 +139,6 @@ public class Parkour extends JavaPlugin {
         }
         completedCourseTracker.clear();
         blindPlayerExempts.clear();
-        pendingFavs.clear();
         experience = null;
     }
 
@@ -185,7 +181,6 @@ public class Parkour extends JavaPlugin {
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS adventures (name varchar(32), course INTEGER)");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courseheads (world_name varchar(32), x INTEGER, y INTEGER, z INTEGER, course_id INTEGER, skull_type_name varchar(32))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS gameresults (time TIMESTAMP, type enum('duel','guildwar'), winner varchar(16), loser varchar(16))");
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS favorites (`player` varchar(16) NOT NULL,`favorites` text NOT NULL, PRIMARY KEY (`player`))");
             }
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load database driver", ex);
@@ -276,11 +271,26 @@ public class Parkour extends JavaPlugin {
     }
 
     public boolean canDuel(int exp) {
-        return Parkour.experience.getLevel(exp) >= 8;
+        return Parkour.experience.getLevel(exp) >= this.getConfig().getInt("restriction.duel");
     }
 
-    public boolean canPlay(int exp, CourseDifficulty diff) {
-        return Parkour.experience.getLevel(exp) >= getLevelRequiredToPlay(diff);
+    public PlayResult canPlay(Player player,int exp, CourseDifficulty diff, CourseMode mode) {
+        if ((mode == CourseMode.VIP || mode == CourseMode.ADVENTURE) && !player.hasPermission("parkour.vip")) {
+            return PlayResult.VIP_NOT_BOUGHT;
+        } else if(Parkour.experience.getLevel(exp) < getLevelRequiredToPlay(diff)&&!player.hasPermission("parkour.bypasslevel")) {
+            return PlayResult.INSUFFICIENT_XP;
+        } else {
+            return PlayResult.ALLOWED;
+        }
+    }
+
+    public enum PlayResult {
+        ALLOWED(null), VIP_NOT_BOUGHT("vip.notbought"), INSUFFICIENT_XP("xp.insufficient");
+        public final String key;
+
+        private PlayResult(String messageKey) {
+            this.key = messageKey;
+        }
     }
 
     public int getLevelRequiredToPlay(CourseDifficulty diff) {
@@ -290,21 +300,13 @@ public class Parkour extends JavaPlugin {
     public boolean teleportToCourse(Player player, int tpParkourId, TeleportCause teleport) {
         try {
             ParkourCourse tpCourse = ParkourCourse.loadCourse(this.getCourseDatabase(), tpParkourId);
-            if (tpCourse == null) {
+            if (tpCourse == null||(tpCourse.getMode() == CourseMode.HIDDEN && teleport == TeleportCause.COMMAND)) {
                 player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
             } else {
-
-                if (tpCourse.getMode() == CourseMode.HIDDEN && teleport == TeleportCause.COMMAND) {
-                    player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
-                    return false;
-                }
-                if ((tpCourse.getMode() == CourseMode.VIP || tpCourse.getMode() == CourseMode.ADVENTURE) && !player.hasPermission("parkour.vip")) {
-                    player.sendMessage(Parkour.getString("vip.notbought", new Object[]{}));
-                    return false;
-                }
                 IPlayerExperience pcd = experience.getPlayerExperience(player);
-                if (!this.canPlay(pcd.getExperience(), tpCourse.getDifficulty()) && !player.hasPermission("parkour.bypasslevel")) {
-                    player.sendMessage(Parkour.getString("xp.insufficient"));
+                PlayResult result = this.canPlay(player,pcd.getExperience(), tpCourse.getDifficulty(), tpCourse.getMode());
+                if (result!=PlayResult.ALLOWED) {
+                    player.sendMessage(Parkour.getString(result.key));
                 } else {
                     player.teleport(tpCourse.getTeleport());
                     if (tpCourse.getMode() != CourseMode.ADVENTURE) {

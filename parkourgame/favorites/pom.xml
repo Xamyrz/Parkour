@@ -9,12 +9,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>tk.maciekmm</groupId>
-    <artifactId>achievements-wrapper</artifactId>
-    <name>Achievements-Wrapper</name>
-    <description>Achievements management plugin</description>
+    <artifactId>favorites</artifactId>
+    <name>Favorites</name>
+    <description>Favorites parkours list for parkour plugin</description>
 
     <properties>
-        <main.class>tk.maciekmm.achievements.wrapper.AchievementsWrapper</main.class>
+        <main.class>tk.maciekmm.favorites.Favorites</main.class>
     </properties>
 
     <repositories>
@@ -33,16 +33,6 @@
         <dependency>
             <groupId>me.cmastudios</groupId>
             <artifactId>parkour</artifactId>
-            <version>0.2-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>tk.maciekmm</groupId>
-            <artifactId>achievements</artifactId>
-            <version>0.2-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>tk.maciekmm</groupId>
-            <artifactId>favorites</artifactId>
             <version>0.2-SNAPSHOT</version>
         </dependency>
     </dependencies>

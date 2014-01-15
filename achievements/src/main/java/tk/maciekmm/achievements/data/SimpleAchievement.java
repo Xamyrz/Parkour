@@ -63,7 +63,7 @@ public class SimpleAchievement {
             return false;
         }
         if (this.criterium.progressing) { // Check if achievement is progressing
-            //Check if the simpleachievement contains all things from generic (this) achievement 
+            //Check if the simpleachievement contains all things from generic (this) achievement
             for (Long ac : options) {
                 if (!achievement.getOptions().contains(ac)) {
                     return false;

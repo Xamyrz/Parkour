@@ -18,13 +18,13 @@
 package tk.maciekmm.achievements.wrapper;
 
 import me.cmastudios.experience.events.ChangeExperienceEvent;
-import me.cmastudios.mcparkour.events.FavoritesAddParkourEvent;
 import me.cmastudios.mcparkour.events.PlayerCompleteParkourEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import tk.maciekmm.achievements.data.PlayerAchievements;
 import tk.maciekmm.achievements.data.SimpleAchievement;
+import tk.maciekmm.favorites.FavoritesAddParkourEvent;
 
 public class AchievementsListener implements Listener {
     private final AchievementsWrapper plugin;

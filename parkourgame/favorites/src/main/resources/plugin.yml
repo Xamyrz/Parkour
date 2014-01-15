@@ -1,0 +1,8 @@
+name: ${project.name}
+version: ${project.version}
+description: ${project.description}
+author: maciekmm
+authors: [cmastudios]
+website: ${project.url}
+depend: [Parkour]
+main: ${main.class}

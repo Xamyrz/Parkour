@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.cmastudios.mcparkour;
+package tk.maciekmm.favorites;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -28,25 +28,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum Item {
-    VISION(ItemType.SPAWN,Material.EYE_OF_ENDER, Parkour.getString("item.vision"), 1, (short) 0),
-    CHAT(ItemType.SETTINGS,Material.PAPER, Parkour.getString("item.chat"), 1, (short) 0, Parkour.getMessageArrayFromPrefix("item.chat.description")),
-    SPAWN(ItemType.SPAWN,Material.NETHER_STAR, Parkour.getString("item.spawn"), 1, (short) 0),
-    POINT(ItemType.SPAWN,Material.STICK, Parkour.getString("item.point"), 1, (short) 0, Parkour.getMessageArrayFromPrefix("item.point.description")),
-    HELMET(ItemType.VIP,Material.GOLD_HELMET, 1, (short) 0, new HashMap<Enchantment, Integer>() {{
-        put(Enchantment.DURABILITY, 3);
-    }}),
-    CHESTPLATE(ItemType.VIP,Material.GOLD_CHESTPLATE, 1, (short) 0, new HashMap<Enchantment, Integer>() {{
-        put(Enchantment.DURABILITY, 3);
-    }}),
-    LEGGINGS(ItemType.VIP,Material.GOLD_LEGGINGS, 1, (short) 0, new HashMap<Enchantment, Integer>() {{
-        put(Enchantment.DURABILITY, 3);
-    }}),
-    BOOTS(ItemType.VIP,Material.GOLD_BOOTS, 1, (short) 0, new HashMap<Enchantment, Integer>() {{
-        put(Enchantment.DURABILITY, 3);
-    }}),
-    FIREWORK_SPAWNER(ItemType.VIP,Material.FIREWORK, Parkour.getString("item.firework"), 1, (short) 0),
-    SCOREBOARD(ItemType.SETTINGS,Material.BOOK, Parkour.getString("item.scoreboard"), 1, (short) 0, Parkour.getMessageArrayFromPrefix("item.scoreboard.description")),
-    SETTINGS(ItemType.SPAWN,Material.REDSTONE, Parkour.getString("item.settings"),1,(short) 0);
+    FAVORITES(ItemType.SPAWN,Material.EMERALD, Favorites.getString("favorites.item.base"), 1, (short) 0, Favorites.getMessageArrayFromPrefix("favorites.item.base.lore")),
+    NEXT_PAGE(ItemType.MISC,Material.ACTIVATOR_RAIL, Favorites.getString("favorites.item.next"), 1, (short) 0),
+    PREV_PAGE(ItemType.MISC,Material.RAILS, Favorites.getString("favorites.item.prev"), 1, (short) 0),
+    EASY(ItemType.MISC,Material.MINECART, 1),
+    MEDIUM(ItemType.MISC,Material.STORAGE_MINECART, 1),
+    HIDDEN(ItemType.MISC,Material.HOPPER_MINECART, 1),
+    HARD(ItemType.MISC,Material.POWERED_MINECART, 1),
+    V_HARD(ItemType.MISC,Material.EXPLOSIVE_MINECART, 1),
+    THEMATIC(ItemType.MISC,Material.BOAT, 1),
+    ADVENTURE(ItemType.MISC,Material.SADDLE, 1);
 
     private final ItemStack item;
     private final ItemType type;
@@ -106,8 +97,6 @@ public enum Item {
 
     public enum ItemType {
         SPAWN,
-        VIP,
         MISC,
-        SETTINGS
     }
 }

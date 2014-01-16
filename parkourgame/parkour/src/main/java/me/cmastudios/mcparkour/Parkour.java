@@ -300,7 +300,7 @@ public class Parkour extends JavaPlugin {
     public boolean teleportToCourse(Player player, int tpParkourId, TeleportCause teleport) {
         try {
             ParkourCourse tpCourse = ParkourCourse.loadCourse(this.getCourseDatabase(), tpParkourId);
-            if (tpCourse == null||(tpCourse.getMode() == CourseMode.HIDDEN && teleport == TeleportCause.COMMAND)) {
+            if ((tpCourse == null||(tpCourse.getMode() == CourseMode.HIDDEN && teleport == TeleportCause.COMMAND))&&!player.hasPermission("parkour.teleport")) {
                 player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
             } else {
                 IPlayerExperience pcd = experience.getPlayerExperience(player);

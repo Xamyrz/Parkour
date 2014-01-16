@@ -100,6 +100,8 @@ permissions:
     description: Required in order to play parkour
   parkour.set:
     description: Required in order to set teleports for courses or to create control signs
+  parkour.teleport:
+    description: Required in order to teleport to hidden parkours
   parkour.tpexempt:
     description: Exempt a player from being teleported back to spawn on join.
   parkour.guild.create:

@@ -95,7 +95,7 @@ public class PlayerHighScore {
             if (player != null) {
                 stmt.setString(2, player.getName());
             }
-            stmt.executeQuery();
+            stmt.executeUpdate();
         }
     }
 

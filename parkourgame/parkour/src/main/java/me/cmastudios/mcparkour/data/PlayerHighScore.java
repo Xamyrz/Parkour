@@ -88,7 +88,7 @@ public class PlayerHighScore {
             qs.append("UPDATE `highscores` SET time=-1 WHERE course=?");
         }
         if (player != null) {
-            qs.append("AND player LIKE ?");
+            qs.append(" AND player LIKE ?");
         }
         try (PreparedStatement stmt = conn.prepareStatement(qs.toString())) {
             stmt.setInt(1, course);

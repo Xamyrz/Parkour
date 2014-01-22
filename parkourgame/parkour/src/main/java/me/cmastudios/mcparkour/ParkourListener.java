@@ -23,6 +23,7 @@ import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.Guild.GuildWar;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
 import me.cmastudios.mcparkour.events.*;
+import me.cmastudios.mcparkour.tasks.ParkourCompleteTask;
 import org.apache.commons.lang.Validate;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -128,8 +129,8 @@ public class ParkourListener implements Listener {
                         return;
                     }
                     IPlayerExperience exp = Parkour.experience.getPlayerExperience(player);
-                    Parkour.PlayResult result = plugin.canPlay(player,exp.getExperience(),course.getDifficulty(),course.getMode());
-                    if (result!=result.ALLOWED) {
+                    Parkour.PlayResult result = plugin.canPlay(player, exp.getExperience(), course.getDifficulty(), course.getMode());
+                    if (result != result.ALLOWED) {
                         player.sendMessage(Parkour.getString(result.key));
                         event.setTo(plugin.getSpawn());
                         return;
@@ -166,72 +167,23 @@ public class ParkourListener implements Listener {
                         PlayerCourseData endData = plugin.playerCourseTracker.remove(player); // They have ended their course anyhow
                         endData.restoreState(player);
                         long completionTime = now - endData.startTime;
-                        //TODO: Make most of that async.
-                        PlayerHighScore highScore = PlayerHighScore.loadHighScore(plugin.getCourseDatabase(), player, endData.course.getId());
-                        IPlayerExperience playerXp = Parkour.experience.getPlayerExperience(player);
-
-                        PlayerCompleteParkourEventBuilder eventBuilder = new PlayerCompleteParkourEventBuilder(endData, playerXp, highScore, completionTime);
-                        if (highScore.getTime() > completionTime && highScore.getPlays() > 0) {
-                            eventBuilder.setPersonalBest(true);
-                            player.sendMessage(Parkour.getString("course.end.personalbest", new Object[]{endData.course.getId()}));
-                        }
-                        if (highScore.getTime() > completionTime || highScore.getTime() == -1) {
-                            highScore.setTime(completionTime);
-                        }
-                        highScore.setPlays(highScore.getPlays() + 1);
-
-                        highScore.save(plugin.getCourseDatabase());
-                        DecimalFormat df = new DecimalFormat("#.###");
-                        double completionTimeSeconds = ((double) completionTime) / 1000;
-                        player.sendMessage(Parkour.getString("course.end", new Object[]{df.format(completionTimeSeconds)}));
-                        List<PlayerHighScore> scores = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), endData.course.getId(), 10);
-                        PlayerHighScore bestScore = scores.get(0);
-                        for (PlayerHighScore hs : scores) {
-                            if (hs.getPlayer().getName().equals(event.getPlayer().getName())) {
-                                eventBuilder.setTopTen(true);
-                                break;
-                            }
-                        }
-                        if (highScore.equals(bestScore) && highScore.getTime() == completionTime) {
-                            eventBuilder.setBest(true);
-                            plugin.getServer().broadcastMessage(Parkour.getString("course.end.best", player.getDisplayName() + ChatColor.RESET, endData.course.getId(), df.format(completionTimeSeconds)));
-                        }
-
                         Duel duel = plugin.getDuel(player);
-                        try {
-                            int courseXp = Integer.parseInt(sign.getLine(1));
-                            Checkpoint cp = plugin.playerCheckpoints.get(player);
-                            if (cp != null && cp.getCourse().getId() == endData.course.getId()) {
-                                courseXp = cp.getReducedExp(courseXp);
-                            }
-                            courseXp = highScore.getReducedXp(courseXp);
-                            if (duel != null && duel.hasStarted()) {
-                                throw new IndexOutOfBoundsException(); // Skip XP gain
-                            }
-                            courseXp *= (player.hasPermission("parkour.vip") ? plugin.getRatio() > 2 ? plugin.getRatio() : 2 : plugin.getRatio());
-                            eventBuilder.setReducedXp(courseXp);
-                            playerXp.setExperience(playerXp.getExperience() + courseXp, true);
-
-                        } catch (NumberFormatException | IndexOutOfBoundsException e) { // No XP gain for this course
-                        }
-
                         plugin.playerCheckpoints.remove(player);
                         plugin.completedCourseTracker.put(player, endData);
-                        if (!player.hasMetadata("disableScoreboard")) {
-                            player.setScoreboard(endData.course.getScoreboard(scores));
-                        }
+                        Bukkit.getScheduler().runTaskAsynchronously(plugin, new ParkourCompleteTask(player, plugin, endData.course, endData, completionTime, duel != null && duel.hasStarted(), sign.getLine(1)));
                         if (duel != null && duel.isAccepted() && duel.hasStarted()) {
                             duel.win(player, plugin);
                             plugin.activeDuels.remove(duel);
                             event.setTo(duel.getCourse().getTeleport());
                             Bukkit.getPluginManager().callEvent(new PlayerCompleteDuelEvent(duel, player, completionTime));
                         }
+
                         GuildPlayer gp = GuildPlayer.loadGuildPlayer(plugin.getCourseDatabase(), player);
                         GuildWar war = plugin.getWar(player);
                         if (gp != null && war != null && war.isAccepted()) {
                             war.handleFinish(gp, plugin);
                         }
-                        Bukkit.getPluginManager().callEvent(eventBuilder.getEvent());
+
                     }
                     break;
                 case "[vwall]":

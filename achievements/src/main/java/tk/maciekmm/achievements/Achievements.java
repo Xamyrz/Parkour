@@ -67,7 +67,7 @@ public class Achievements extends JavaPlugin {
         for(Player p : Bukkit.getOnlinePlayers()) {
             if(p.hasMetadata("achievements")) {
                 PlayerAchievements achievement = (PlayerAchievements) p.getMetadata("achievements").get(0).value();
-                achievement.save();
+                achievement.save(false);
                 p.removeMetadata("achievements",this);
             }
         }

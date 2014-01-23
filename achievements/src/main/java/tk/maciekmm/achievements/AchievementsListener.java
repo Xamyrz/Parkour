@@ -74,7 +74,7 @@ public class AchievementsListener implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        plugin.getManager().getPlayerAchievements(event.getPlayer()).save();
+        plugin.getManager().getPlayerAchievements(event.getPlayer()).save(true);
         plugin.getManager().removePlayerAchievementsCache(event.getPlayer());
     }
 

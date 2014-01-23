@@ -43,13 +43,13 @@ public class PlayerAchievements extends OfflinePlayerAchievements implements Ite
     private final Achievements plugin;
 
     public PlayerAchievements(Achievements plugin, Player p, ArrayList<AchievementMilestone> milestones, ArrayList<ParkourAchievement> achievements, HashMap<ParkourAchievement, ArrayList<Long>> progress) {
-        super(p, milestones,achievements,progress);
+        super(p, milestones, achievements, progress);
         this.plugin = plugin;
         this.player = p;
     }
 
-    public PlayerAchievements(OfflinePlayerAchievements playerAchievements,Achievements plugin,Player player) {
-        super(player,playerAchievements.completedMilestones,playerAchievements.completedAchievements,playerAchievements.achievementProgress);
+    public PlayerAchievements(OfflinePlayerAchievements playerAchievements, Achievements plugin, Player player) {
+        super(player, playerAchievements.completedMilestones, playerAchievements.completedAchievements, playerAchievements.achievementProgress);
         this.plugin = plugin;
         this.player = player;
     }
@@ -234,7 +234,12 @@ public class PlayerAchievements extends OfflinePlayerAchievements implements Ite
         return page;
     }
 
-    public void save() {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin,new SaveTask(player.getName(),ImmutableList.copyOf(completedAchievements),ImmutableList.copyOf(completedMilestones),achievementProgress,plugin.getAchievementsDatabase()));
+    public void save(boolean async) {
+        SaveTask task = new SaveTask(player.getName(), ImmutableList.copyOf(completedAchievements), ImmutableList.copyOf(completedMilestones), achievementProgress, plugin.getAchievementsDatabase());
+        if (async) {
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, task);
+        } else {
+            task.run();
+        }
     }
 }

@@ -37,6 +37,7 @@ import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,7 +62,7 @@ public class Parkour extends JavaPlugin {
     public List<EventCourse> events = new ArrayList<>();
     public List<Player> blindPlayers = new ArrayList<>();
     public final List<Player> deafPlayers = new ArrayList<>();
-    public Map<Player, Checkpoint> playerCheckpoints = new HashMap<>();
+    public ConcurrentHashMap<Player, Checkpoint> playerCheckpoints = new ConcurrentHashMap<>();
     public Map<Player, PlayerCourseData> playerCourseTracker = new HashMap<>();
     public Map<Player, PlayerCourseData> completedCourseTracker = new HashMap<>();
     public Map<Player, GuildPlayer> guildChat = new HashMap<>();

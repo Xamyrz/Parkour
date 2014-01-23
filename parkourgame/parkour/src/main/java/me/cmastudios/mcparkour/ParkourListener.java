@@ -93,28 +93,12 @@ public class ParkourListener implements Listener {
             switch (controlLine) {
                 case "[start]":
                     plugin.completedCourseTracker.remove(player);
+                    plugin.playerCheckpoints.remove(player);
                     int startParkourId;
                     try {
                         startParkourId = Integer.parseInt(sign.getLine(1));
                     } catch (IndexOutOfBoundsException | NumberFormatException ex) {
                         return; // Prevent console spam
-                    }
-                    Checkpoint startCp = plugin.playerCheckpoints.get(player);
-                    if (plugin.playerCourseTracker.containsKey(player)) {
-                        if (plugin.playerCourseTracker.get(player).course.getId() == startParkourId) {
-                            if (startCp != null && startCp.getCourse().getId() == startParkourId) {
-                                ignoreTeleport = true;
-                                event.setTo(startCp.getLocation());
-                                return;
-                            }
-                            plugin.playerCourseTracker.put(player, new PlayerCourseData(plugin.playerCourseTracker.get(player).course, player, now));
-                            return;
-                        } else {
-                            // Remove players from a previous parkour course
-                            PlayerCourseData remove = plugin.playerCourseTracker.remove(player);
-                            Bukkit.getPluginManager().callEvent(new PlayerCancelParkourEvent(PlayerCancelParkourEvent.CancelReason.STARTING_OTHER, remove, event.getPlayer()));
-                            player.setLevel(remove.previousLevel);
-                        }
                     }
                     ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), startParkourId);
                     if (course == null) {
@@ -185,22 +169,6 @@ public class ParkourListener implements Listener {
                         }
 
                     }
-                    break;
-                case "[vwall]":
-                    if (!plugin.playerCourseTracker.containsKey(player)) {
-                        Location signFaceBlockV = event.getTo().getBlock().getRelative(((org.bukkit.material.Sign) sign.getData()).getFacing()).getLocation();
-                        signFaceBlockV.setPitch(event.getTo().getPitch());
-                        signFaceBlockV.setYaw(event.getTo().getYaw());
-                        signFaceBlockV.add(0.5, 0, 0.5);
-                        event.setTo(signFaceBlockV);
-                    }
-                    break;
-                case "[avwall]":
-                    Location signFaceBlockA = event.getTo().getBlock().getRelative(((org.bukkit.material.Sign) sign.getData()).getFacing()).getLocation();
-                    signFaceBlockA.setPitch(event.getTo().getPitch());
-                    signFaceBlockA.setYaw(event.getTo().getYaw());
-                    signFaceBlockA.add(0.5, 0, 0.5);
-                    event.setTo(signFaceBlockA);
                     break;
                 case "[cancel]":
                     if (plugin.playerCourseTracker.containsKey(player)) {

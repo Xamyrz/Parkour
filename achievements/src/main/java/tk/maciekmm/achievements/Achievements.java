@@ -122,7 +122,7 @@ public class Achievements extends JavaPlugin {
         if(player.hasMetadata("achs"+cooldown)) {
             for(MetadataValue val : player.getMetadata("achs"+cooldown)) {
                 if(val.getOwningPlugin()==this) {
-                    if(val.asLong()/1000 <= seconds) {
+                    if((System.currentTimeMillis()-val.asLong())/1000 <= seconds) {
                         return false;
                     }
                 }

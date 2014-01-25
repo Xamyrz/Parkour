@@ -18,6 +18,7 @@
 package me.cmastudios.experience;
 
 import me.cmastudios.experience.events.ChangeExperienceEvent;
+import me.cmastudios.experience.tasks.ExperienceSaveTask;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
@@ -31,25 +32,20 @@ public class PlayerExperience implements IPlayerExperience {
     private final OfflinePlayer player;
     private int experience;
     private long lastUsed;
-    private final Connection connection;
+    private final Experience plugin;
 
-    public PlayerExperience(OfflinePlayer player, int experience, Connection conn) {
-        this.connection = conn;
+    public PlayerExperience(OfflinePlayer player, int experience, Experience plugin) {
+        this.plugin = plugin;
         this.player = player;
         this.experience = experience;
     }
 
-    public void save() throws SQLException {
-        final String stmtText;
-        if (exists()) {
-            stmtText = "UPDATE experience SET xp = ? WHERE player = ?";
+    public void save(boolean async) throws SQLException {
+        ExperienceSaveTask task = new ExperienceSaveTask(plugin,player,experience);
+        if(async) {
+            task.runTaskAsynchronously(plugin);
         } else {
-            stmtText = "INSERT INTO experience (xp, player) VALUES (?, ?)";
-        }
-        try (PreparedStatement stmt = connection.prepareStatement(stmtText)) {
-            stmt.setLong(1, experience);
-            stmt.setString(2, player.getName());
-            stmt.executeUpdate();
+            task.run();
         }
     }
 
@@ -70,7 +66,7 @@ public class PlayerExperience implements IPlayerExperience {
             player.getPlayer().sendMessage(Experience.getString("xp.gain", experience, this.experience));
         }
         if(!player.isOnline()) {
-            save();  // To be 100% sure that if we change experience while offline the player will get that if log in on other server
+            save(true);  // To be 100% sure that if we change experience while offline the player will get that if log in on other server
         }
     }
 
@@ -81,14 +77,5 @@ public class PlayerExperience implements IPlayerExperience {
 
     public long getLastUsed() {
         return lastUsed;
-    }
-
-    public boolean exists() throws SQLException {
-        try (PreparedStatement stmt = connection.prepareStatement("SELECT xp FROM experience WHERE player = ?")) {
-            stmt.setString(1, player.getName());
-            try (ResultSet result = stmt.executeQuery()) {
-                return result.next();
-            }
-        }
     }
 }

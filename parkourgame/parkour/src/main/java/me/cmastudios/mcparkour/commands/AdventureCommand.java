@@ -23,6 +23,8 @@ import me.cmastudios.mcparkour.data.AdventureCourse;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.PlayerHighScore;
 
+import me.cmastudios.mcparkour.tasks.TeleportToCourseTask;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -90,7 +92,7 @@ public class AdventureCommand implements CommandExecutor {
                     sender.sendMessage(Parkour.getString("adv.tp", chapter, course.getName()));
                 }
             } else {
-                plugin.teleportToCourse(((Player) sender),course.getCourses().get(0).getId(),TeleportCause.COMMAND);
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, new TeleportToCourseTask(plugin,((Player) sender),TeleportCause.COMMAND,course.getCourses().get(0).getId()));
                 sender.sendMessage(Parkour.getString("adv.tp", 1, course.getName()));
             }
         } catch (SQLException e) {

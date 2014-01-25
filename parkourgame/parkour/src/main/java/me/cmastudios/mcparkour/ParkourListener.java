@@ -23,7 +23,7 @@ import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.Guild.GuildWar;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
 import me.cmastudios.mcparkour.events.*;
-import me.cmastudios.mcparkour.tasks.ParkourCompleteTask;
+import me.cmastudios.mcparkour.tasks.*;
 import org.apache.commons.lang.Validate;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -100,47 +100,11 @@ public class ParkourListener implements Listener {
                     } catch (IndexOutOfBoundsException | NumberFormatException ex) {
                         return; // Prevent console spam
                     }
-                    ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), startParkourId);
-                    if (course == null) {
-                        event.setTo(plugin.getSpawn());
-                        player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
-                        return; // Prevent console spam
-                    }
-                    if (course.getMode() == CourseMode.GUILDWAR && plugin.getWar(player) == null) {
-                        // Player trying to play in a guild war course but they are not in a guild
-                        player.sendMessage(Parkour.getString("guild.war.notin"));
-                        event.setTo(plugin.getSpawn());
-                        return;
-                    }
-                    IPlayerExperience exp = Parkour.experience.getPlayerExperience(player);
-                    Parkour.PlayResult result = plugin.canPlay(player, exp.getExperience(), course.getDifficulty(), course.getMode());
-                    if (result != result.ALLOWED) {
-                        player.sendMessage(Parkour.getString(result.key));
-                        event.setTo(plugin.getSpawn());
-                        return;
-                    }
-                    AdventureCourse adv = AdventureCourse.loadAdventure(plugin.getCourseDatabase(), course);
-                    if (adv != null && adv.getChapter(course) > 1) {
-                        ParkourCourse parent = adv.getCourses().get(adv.getChapter(course) - 2);
-                        PlayerHighScore score = PlayerHighScore.loadHighScore(plugin.getCourseDatabase(), player, parent.getId());
-                        if (score.getTime() == Long.MAX_VALUE) {
-                            player.sendMessage(Parkour.getString("adv.notplayed"));
-                            event.setTo(plugin.getSpawn());
-                            return;
-                        }
-                    }
-                    List<PlayerHighScore> startScores = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), course.getId(), 10);
-                    if (!player.hasMetadata("disableScoreboard")) {
-                        player.setScoreboard(course.getScoreboard(startScores));
-                    } else {
-                        player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-                    }
-                    PlayerCourseData data = new PlayerCourseData(course, player, now);
-                    plugin.playerCourseTracker.put(player, data);
-                    Bukkit.getPluginManager().callEvent(new PlayerStartParkourEvent(player, exp, data));
+                    Bukkit.getScheduler().runTaskAsynchronously(plugin,new ParkourStartTask(startParkourId,player,plugin,now));
                     break;
                 case "[end]":
                     if (plugin.playerCourseTracker.containsKey(player)) {
+
                         try {
                             int courseCons = Integer.parseInt(sign.getLine(2));
                             if (plugin.playerCourseTracker.get(player).course.getId() != courseCons) {
@@ -148,6 +112,7 @@ public class ParkourListener implements Listener {
                             }
                         } catch (NumberFormatException | IndexOutOfBoundsException e) { // No course constraint
                         }
+
                         PlayerCourseData endData = plugin.playerCourseTracker.remove(player); // They have ended their course anyhow
                         endData.restoreState(player);
                         long completionTime = now - endData.startTime;
@@ -161,13 +126,7 @@ public class ParkourListener implements Listener {
                             event.setTo(duel.getCourse().getTeleport());
                             Bukkit.getPluginManager().callEvent(new PlayerCompleteDuelEvent(duel, player, completionTime));
                         }
-
-                        GuildPlayer gp = GuildPlayer.loadGuildPlayer(plugin.getCourseDatabase(), player);
-                        GuildWar war = plugin.getWar(player);
-                        if (gp != null && war != null && war.isAccepted()) {
-                            war.handleFinish(gp, plugin);
-                        }
-
+                        Bukkit.getScheduler().runTaskAsynchronously(plugin,new GuildFinishHandling(plugin,player,now));
                     }
                     break;
                 case "[cancel]":
@@ -187,27 +146,7 @@ public class ParkourListener implements Listener {
                     } catch (IndexOutOfBoundsException | NumberFormatException ex) {
                         return; // Prevent console spam
                     }
-                    if (!plugin.teleportToCourse(player, tpParkourId, TeleportCause.PLUGIN)) {
-                        double xDiff = event.getFrom().getX() - event.getTo().getX();
-                        double zDiff = event.getFrom().getZ() - event.getTo().getZ();
-                        if (Math.abs(xDiff) >= Math.abs(zDiff)) {
-                            if (xDiff < 0) {
-                                xDiff -= 1;
-                            } else {
-                                xDiff += 1;
-                            }
-                            event.setTo(event.getPlayer().getLocation().add(xDiff, 0, 0)); // Prevent console spam
-                        } else {
-                            if (zDiff < 0) {
-                                zDiff -= 1;
-                            } else {
-                                zDiff += 1;
-                            }
-                            event.setTo(event.getPlayer().getLocation().add(0, 0, zDiff)); // Prevent console spam
-                        }
-
-                        return;
-                    }
+                    Bukkit.getScheduler().runTaskAsynchronously(plugin, new TeleportToCourseTask(plugin,player,TeleportCause.PLUGIN,tpParkourId));
                     break;
                 case "[portal]":
                     try {
@@ -347,7 +286,7 @@ public class ParkourListener implements Listener {
                     try {
                         int parkourNumber = Integer.parseInt(sign.getLine(1));
                         event.setCancelled(true);
-                        plugin.teleportToCourse(event.getPlayer(), parkourNumber, TeleportCause.PLUGIN);
+                        Bukkit.getScheduler().runTaskAsynchronously(plugin, new TeleportToCourseTask(plugin,event.getPlayer(),TeleportCause.PLUGIN,parkourNumber));
                     } catch (IndexOutOfBoundsException | NumberFormatException | NullPointerException ignored) {
                     }
                     return;
@@ -511,12 +450,7 @@ public class ParkourListener implements Listener {
         if (!event.getPlayer().hasPermission("parkour.tpexempt")) {
             event.getPlayer().teleport(plugin.getSpawn());
         }
-
-        GuildPlayer gp = GuildPlayer.loadGuildPlayer(plugin.getCourseDatabase(), event.getPlayer());
-        GuildWar war = plugin.getWar(gp.getGuild());
-        if (war != null) {
-            war.handleRejoin(event.getPlayer(), plugin);
-        }
+        Bukkit.getScheduler().runTaskAsynchronously(plugin,new GuildRejoinHandling(event.getPlayer(),plugin));
     }
 
     @EventHandler
@@ -674,11 +608,10 @@ public class ParkourListener implements Listener {
     }
 
     private class XpCounterTask extends BukkitRunnable {
-
         @Override
         public void run() {
             for (Player player : plugin.playerCourseTracker.keySet()) {
-                if (plugin.playerCourseTracker.get(player).course.getMode() == CourseMode.GUILDWAR) {
+                if (plugin.playerCourseTracker.get(player).course.getMode() == CourseMode.GUILDWAR || plugin.playerCourseTracker.get(player).course.getMode() == CourseMode.EVENT) {
                     continue;
                 }
                 int secondsPassed = (int) ((System.currentTimeMillis() - plugin.playerCourseTracker.get(player).startTime) / 1000);

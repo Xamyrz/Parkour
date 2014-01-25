@@ -38,7 +38,7 @@ public class ExperienceManager {
             public void run() {
                 for (Map.Entry<OfflinePlayer, PlayerExperience> entry : plugin.playerExperience.entrySet()) {
                     try {
-                        entry.getValue().save();
+                        entry.getValue().save(false);
                     } catch (SQLException e) {
                         Bukkit.getLogger().log(Level.SEVERE, "Error occured while saving player experience");
                     }
@@ -52,12 +52,12 @@ public class ExperienceManager {
     }
 
     private PlayerExperience loadExperience(Connection conn, OfflinePlayer player) throws SQLException {
-        PlayerExperience ret = new PlayerExperience(player, 0,plugin.getExperienceDatabase());
+        PlayerExperience ret = new PlayerExperience(player, 0,plugin);
         try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM experience WHERE player = ?")) {
             stmt.setString(1, player.getName());
             try (ResultSet result = stmt.executeQuery()) {
                 if (result.next()) {
-                    ret = new PlayerExperience(player, result.getInt("xp"),plugin.getExperienceDatabase());
+                    ret = new PlayerExperience(player, result.getInt("xp"),plugin);
                 }
             }
         }

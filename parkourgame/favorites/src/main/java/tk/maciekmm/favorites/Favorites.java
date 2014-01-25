@@ -55,10 +55,10 @@ public class Favorites extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        parkour = null;
         for(FavoritesList list : pendingFavs.values()) {
-            pendingFavs.remove(list).syncSave();
+            pendingFavs.remove(list).save(false);
         }
+        parkour = null;
     }
 
     public Parkour getParkour() {

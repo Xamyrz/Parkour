@@ -63,7 +63,7 @@ public class Experience extends JavaPlugin {
         for (Map.Entry<OfflinePlayer, PlayerExperience> entry : this.playerExperience.entrySet()) {
             try {
                 PlayerExperience exp = this.playerExperience.remove(entry.getKey());
-                exp.save();
+                exp.save(false);
             } catch (SQLException e) {
                 Bukkit.getLogger().log(Level.SEVERE, "Error occured while saving player experience");
             }
@@ -79,7 +79,7 @@ public class Experience extends JavaPlugin {
     public void onLeave(PlayerQuitEvent event) {
         if (this.playerExperience.containsKey(event.getPlayer())) {
             try {
-                this.playerExperience.remove(event.getPlayer()).save();
+                this.playerExperience.remove(event.getPlayer()).save(true);
             } catch (SQLException e) {
                 Bukkit.getLogger().log(Level.SEVERE, "Error occured while saving player experience");
             }

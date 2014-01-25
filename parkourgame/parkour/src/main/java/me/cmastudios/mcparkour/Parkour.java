@@ -23,9 +23,11 @@ import me.cmastudios.mcparkour.data.*;
 import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.Guild.GuildWar;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseDifficulty;
+import me.confuser.barapi.BarAPI;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
@@ -59,6 +61,7 @@ public class Parkour extends JavaPlugin {
     private Connection courseDatabase;
     private boolean chat = true;
     private double ratio = 1;
+    public static boolean isBarApiEnabled = false;
     public List<EventCourse> events = new ArrayList<>();
     public List<Player> blindPlayers = new ArrayList<>();
     public final List<Player> deafPlayers = new ArrayList<>();
@@ -98,6 +101,10 @@ public class Parkour extends JavaPlugin {
             this.rebuildHeads();
         } catch (SQLException e) {
             this.getLogger().log(Level.WARNING, "Failed loading effect heads", e);
+        }
+        Plugin pln = Bukkit.getPluginManager().getPlugin("BarAPI");
+        if (pln != null) {
+            isBarApiEnabled = true;
         }
     }
 
@@ -275,18 +282,30 @@ public class Parkour extends JavaPlugin {
         return Parkour.experience.getLevel(exp) >= this.getConfig().getInt("restriction.duel");
     }
 
-    public PlayResult canPlay(Player player,int exp, CourseDifficulty diff, CourseMode mode) {
-        if ((mode == CourseMode.VIP || mode == CourseMode.ADVENTURE) && !player.hasPermission("parkour.vip")) {
+    public PlayResult canPlay(Player player, int exp, ParkourCourse course) throws SQLException {
+        if (course == null) {
+            return PlayResult.NOT_FOUND;
+        } else if (course.getMode() == CourseMode.GUILDWAR && getWar(player) == null) {
+            return PlayResult.NOT_IN_GUILD_WAR;
+        } else if ((course.getMode() == CourseMode.VIP || course.getMode() == CourseMode.ADVENTURE) && !player.hasPermission("parkour.vip")) {
             return PlayResult.VIP_NOT_BOUGHT;
-        } else if(Parkour.experience.getLevel(exp) < getLevelRequiredToPlay(diff)&&!player.hasPermission("parkour.bypasslevel")) {
+        } else if (Parkour.experience.getLevel(exp) < getLevelRequiredToPlay(course.getDifficulty()) && !player.hasPermission("parkour.bypasslevel")) {
             return PlayResult.INSUFFICIENT_XP;
-        } else {
-            return PlayResult.ALLOWED;
+        } else if (course.getMode() == CourseMode.ADVENTURE) {
+            AdventureCourse adv = AdventureCourse.loadAdventure(getCourseDatabase(), course);
+            if (adv != null && adv.getChapter(course) > 1) {
+                ParkourCourse parent = adv.getCourses().get(adv.getChapter(course) - 2);
+                PlayerHighScore score = PlayerHighScore.loadHighScore(getCourseDatabase(), player, parent.getId());
+                if (score.getTime() == Long.MAX_VALUE) {
+                    return PlayResult.ADVENTURE_NOTPLAYED;
+                }
+            }
         }
+        return PlayResult.ALLOWED;
     }
 
     public enum PlayResult {
-        ALLOWED(null), VIP_NOT_BOUGHT("vip.notbought"), INSUFFICIENT_XP("xp.insufficient");
+        ALLOWED(null), NOT_IN_GUILD_WAR("guild.war.notin"), ADVENTURE_NOTPLAYED("adv.notplayed"), VIP_NOT_BOUGHT("vip.notbought"), INSUFFICIENT_XP("xp.insufficient"), NOT_FOUND("error.course404");
         public final String key;
 
         private PlayResult(String messageKey) {
@@ -296,30 +315,6 @@ public class Parkour extends JavaPlugin {
 
     public int getLevelRequiredToPlay(CourseDifficulty diff) {
         return this.getConfig().getInt("restriction." + diff.name().toLowerCase());
-    }
-
-    public boolean teleportToCourse(Player player, int tpParkourId, TeleportCause teleport) {
-        try {
-            ParkourCourse tpCourse = ParkourCourse.loadCourse(this.getCourseDatabase(), tpParkourId);
-            if ((tpCourse == null||(tpCourse.getMode() == CourseMode.HIDDEN && teleport == TeleportCause.COMMAND))&&!player.hasPermission("parkour.teleport")) {
-                player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
-            } else {
-                IPlayerExperience pcd = experience.getPlayerExperience(player);
-                PlayResult result = this.canPlay(player,pcd.getExperience(), tpCourse.getDifficulty(), tpCourse.getMode());
-                if (result!=PlayResult.ALLOWED) {
-                    player.sendMessage(Parkour.getString(result.key));
-                } else {
-                    player.teleport(tpCourse.getTeleport());
-                    if (tpCourse.getMode() != CourseMode.ADVENTURE) {
-                        player.sendMessage(Parkour.getString("course.teleport", new Object[]{tpCourse.getId()}));
-                    }
-                    return true;
-                }
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(Parkour.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return false;
     }
 
     public double getRatio() {

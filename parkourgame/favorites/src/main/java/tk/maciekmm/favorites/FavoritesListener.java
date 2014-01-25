@@ -111,7 +111,7 @@ public class FavoritesListener implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         if (plugin.pendingFavs.containsKey(event.getPlayer())) {
-            plugin.pendingFavs.remove(event.getPlayer()).save();
+            plugin.pendingFavs.remove(event.getPlayer()).save(true);
         }
     }
 

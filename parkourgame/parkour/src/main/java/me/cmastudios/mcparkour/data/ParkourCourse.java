@@ -199,7 +199,7 @@ public class ParkourCourse {
 
     public static enum CourseMode {
 
-        NORMAL, GUILDWAR, ADVENTURE, VIP, HIDDEN
+        NORMAL, GUILDWAR, ADVENTURE, VIP, HIDDEN, EVENT
     }
 
     public static enum CourseDifficulty {

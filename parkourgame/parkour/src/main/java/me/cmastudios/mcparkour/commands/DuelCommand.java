@@ -126,7 +126,7 @@ public class DuelCommand implements CommandExecutor {
                     player.sendMessage(Parkour.getString("duel.badcourse"));
                     return true;
                 }
-                Parkour.PlayResult result = plugin.canPlay(player,selfXp.getExperience(), course.getDifficulty(), course.getMode());
+                Parkour.PlayResult result = plugin.canPlay(player,selfXp.getExperience(),course);
 				if (result != Parkour.PlayResult.ALLOWED) {
 					player.sendMessage(Parkour.getString(result.key));
 					return true;

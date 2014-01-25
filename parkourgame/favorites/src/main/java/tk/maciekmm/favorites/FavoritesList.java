@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 import com.google.common.collect.ImmutableList;
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.data.ParkourCourse;
+import me.cmastudios.mcparkour.tasks.TeleportToCourseTask;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -107,7 +108,7 @@ public class FavoritesList {
                 return;
             }
             if (favorites.get(pos) != null) {
-                plugin.getParkour().teleportToCourse(player, favorites.get(pos), PlayerTeleportEvent.TeleportCause.PLUGIN);
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, new TeleportToCourseTask(plugin.getParkour(),player, PlayerTeleportEvent.TeleportCause.PLUGIN,favorites.get(pos)));
                 destroyMenu();
             }
         } else if (click.isShiftClick() && click.isRightClick()) {
@@ -142,23 +143,12 @@ public class FavoritesList {
         Collections.sort(favorites);
     }
 
-    public void save() {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, new SaveFavsTask(ImmutableList.copyOf(favorites), plugin.getCourseDatabase(), player));
-    }
-
-    public void syncSave() {
-        try {
-            PreparedStatement statement = conn.prepareStatement("INSERT INTO favorites (`player`,`favorites`) VALUES (?,?) ON DUPLICATE KEY UPDATE favorites = ?");
-            StringBuilder favs = new StringBuilder();
-            for (int i : favorites) {
-                favs.append(i).append(",");
-            }
-            statement.setString(1, player.getName());
-            statement.setString(2, favs.toString());
-            statement.setString(3, favs.toString());
-            statement.executeUpdate();
-        } catch (SQLException ex) {
-            Logger.getLogger(FavoritesList.class.getName()).log(Level.SEVERE, null, ex);
+    public void save(boolean async) {
+        SaveFavsTask task = new SaveFavsTask(ImmutableList.copyOf(favorites), plugin.getCourseDatabase(), player);
+        if(async) {
+            task.runTaskAsynchronously(plugin);
+        } else {
+            task.run();
         }
     }
 

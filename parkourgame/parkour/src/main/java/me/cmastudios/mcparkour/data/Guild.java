@@ -416,9 +416,9 @@ public class Guild {
             }
         }
 
-        public void handleFinish(GuildPlayer player, Parkour plugin) {
+        public void handleFinish(GuildPlayer player, Parkour plugin, long now) {
             warriors.remove(player);
-            long time = System.currentTimeMillis() - startTime;
+            long time = now - startTime;
             if (player.getGuild().equals(initiator)) {
                 timeInit += time;
                 if (longInit < time) {

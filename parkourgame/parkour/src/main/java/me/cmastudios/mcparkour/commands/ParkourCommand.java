@@ -24,6 +24,8 @@ import java.util.logging.Logger;
 import me.cmastudios.experience.IPlayerExperience;
 import me.cmastudios.mcparkour.Parkour;
 
+import me.cmastudios.mcparkour.tasks.TeleportToCourseTask;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -49,19 +51,19 @@ public class ParkourCommand implements CommandExecutor {
         }
         IPlayerExperience pcd;
         try {
-            pcd = Parkour.experience.getPlayerExperience((Player)sender);
-            
-            if((Parkour.experience.getLevel(pcd.getExperience())<plugin.getConfig().getInt("restriction.levelRequiredToUsePkCommand"))&&!sender.hasPermission("parkour.bypasslevel")) {
+            pcd = Parkour.experience.getPlayerExperience((Player) sender);
+
+            if ((Parkour.experience.getLevel(pcd.getExperience()) < plugin.getConfig().getInt("restriction.levelRequiredToUsePkCommand")) && !sender.hasPermission("parkour.bypasslevel")) {
                 sender.sendMessage(Parkour.getString("xp.insufficient.command", new Object[]{}));
                 return true;
             }
         } catch (SQLException ex) {
             Logger.getLogger(ParkourCommand.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         try {
             int id = Integer.parseInt(args[0]);
-            plugin.teleportToCourse((Player)sender, id,TeleportCause.COMMAND);
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, new TeleportToCourseTask(plugin, (Player) sender, TeleportCause.COMMAND, id));
         } catch (NumberFormatException ex) {
             sender.sendMessage(Parkour.getString("error.invalidint", new Object[]{}));
         }

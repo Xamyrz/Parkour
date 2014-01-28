@@ -122,7 +122,7 @@ public class DuelCommand implements CommandExecutor {
                     }
                 }
                 if (course.getMode() == ParkourCourse.CourseMode.ADVENTURE
-                        || course.getMode() == ParkourCourse.CourseMode.GUILDWAR) {
+                        || course.getMode() == ParkourCourse.CourseMode.GUILDWAR || course.getMode() == ParkourCourse.CourseMode.EVENT) {
                     player.sendMessage(Parkour.getString("duel.badcourse"));
                     return true;
                 }

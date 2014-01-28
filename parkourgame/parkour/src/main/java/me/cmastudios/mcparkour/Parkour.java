@@ -17,13 +17,12 @@
 package me.cmastudios.mcparkour;
 
 import me.cmastudios.experience.ExperienceManager;
-import me.cmastudios.experience.IPlayerExperience;
 import me.cmastudios.mcparkour.commands.*;
+import me.cmastudios.mcparkour.event.ParkourEvent;
 import me.cmastudios.mcparkour.data.*;
 import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.Guild.GuildWar;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseDifficulty;
-import me.confuser.barapi.BarAPI;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -41,13 +40,11 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
 import org.bukkit.FireworkEffect.Type;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
-import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.meta.FireworkMeta;
 
 /**
@@ -62,11 +59,11 @@ public class Parkour extends JavaPlugin {
     private boolean chat = true;
     private double ratio = 1;
     public static boolean isBarApiEnabled = false;
-    public List<EventCourse> events = new ArrayList<>();
+    private ParkourEvent event;
     public List<Player> blindPlayers = new ArrayList<>();
     public final List<Player> deafPlayers = new ArrayList<>();
     public ConcurrentHashMap<Player, Checkpoint> playerCheckpoints = new ConcurrentHashMap<>();
-    public Map<Player, PlayerCourseData> playerCourseTracker = new HashMap<>();
+    public ConcurrentHashMap<Player, PlayerCourseData> playerCourseTracker = new ConcurrentHashMap<>();
     public Map<Player, PlayerCourseData> completedCourseTracker = new HashMap<>();
     public Map<Player, GuildPlayer> guildChat = new HashMap<>();
     public Map<Player, List<Player>> blindPlayerExempts = new HashMap<>();
@@ -93,6 +90,7 @@ public class Parkour extends JavaPlugin {
         this.getCommand("chat").setExecutor(new ChatCommand(this));
         this.getCommand("pkroom").setExecutor(new PkRoomCommand(this));
         this.getCommand("ratio").setExecutor(new RatioCommand(this));
+        this.getCommand("event").setExecutor(new EventCommand(this));
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.setupExperience();
         this.saveDefaultConfig();
@@ -181,12 +179,13 @@ public class Parkour extends JavaPlugin {
                     this.getConfig().getString("mysql.host"), this.getConfig().getInt("mysql.port"), this.getConfig().getString("mysql.database")),
                     this.getConfig().getString("mysql.username"), this.getConfig().getString("mysql.password"));
             try (Statement initStatement = this.courseDatabase.createStatement()) {
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT, mode ENUM('normal', 'guildwar', 'adventure', 'vip', 'hidden') NOT NULL DEFAULT 'normal', difficulty ENUM('easy', 'medium', 'hard', 'veryhard') NOT NULL DEFAULT 'easy')");
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (player varchar(16), course INTEGER, time BIGINT, plays INT)");
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS experience (player varchar(16), xp INTEGER)");
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guilds (tag varchar(5), name varchar(32))");
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guildplayers (player varchar(16), guild varchar(5), rank enum('default','officer','leader') NOT NULL DEFAULT 'default')");
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS adventures (name varchar(32), course INTEGER)");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT, mode ENUM('normal', 'guildwar', 'adventure', 'vip', 'hidden', 'event') NOT NULL DEFAULT 'normal', difficulty ENUM('easy', 'medium', 'hard', 'veryhard') NOT NULL DEFAULT 'easy',PRIMARY KEY (id))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS events (id INTEGER, type enum('TIME_RUSH', 'POSITION_RUSH', 'PLAYS_RUSH', 'DISTANCE_RUSH') NOT NULL DEFAULT 'TIME_RUSH',PRIMARY KEY (id))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (player varchar(16), course INTEGER, time BIGINT, plays INT,PRIMARY KEY (player))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS experience (player varchar(16), xp INTEGER,PRIMARY KEY (player))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guilds (tag varchar(5), name varchar(32),PRIMARY KEY (tag))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guildplayers (player varchar(16), guild varchar(5), rank enum('default','officer','leader') NOT NULL DEFAULT 'default',PRIMARY KEY (player))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS adventures (name varchar(32), course INTEGER,PRIMARY KEY (name))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courseheads (world_name varchar(32), x INTEGER, y INTEGER, z INTEGER, course_id INTEGER, skull_type_name varchar(32))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS gameresults (time TIMESTAMP, type enum('duel','guildwar'), winner varchar(16), loser varchar(16))");
             }
@@ -440,6 +439,14 @@ public class Parkour extends JavaPlugin {
             default:
                 return SkullType.SKELETON;
         }
+    }
+
+    public ParkourEvent getEvent() {
+        return event;
+    }
+
+    public void setEvent(ParkourEvent event) {
+        this.event = event;
     }
 
     public boolean isChatEnabled() {

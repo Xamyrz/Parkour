@@ -15,32 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package me.cmastudios.mcparkour.data;
+package me.cmastudios.mcparkour.event.configurations;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class EventCourse {
-    private final ParkourCourse course;
-    private EventType eventType;
-    private final String name;
-    private final long startingTime;
-
-    public EventCourse(ParkourCourse course,String name, long startingTime) {
-        this.course = course;
-        this.name = name;
-        this.startingTime = startingTime;
-    }
-
-    public ParkourCourse getCourse() {
-        return course;
-    }
-
-    public EventType getEventType() {
-        return eventType;
-    }
-
-    public enum EventType {
-        TIME_RUSH, POSITION_RUSH, PLAYS_RUSH, FALL_RUSH
-    }
+public interface TimerableEvent {
+    public void startTimerTask();
 }

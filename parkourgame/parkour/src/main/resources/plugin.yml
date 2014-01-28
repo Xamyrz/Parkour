@@ -15,7 +15,7 @@ commands:
     permission: parkour.play
   setcourse:
     description: Set the teleport for a parkour course
-    usage: /<command> <course-number> <detection-range> <normal/vip/adventure/guildwar/hidden> <easy/medium/hard>
+    usage: /<command> <course-number> <detection-range> <normal/vip/adventure/guildwar/hidden/event> <easy/medium/hard>
     aliases: [pkset]
     permission: parkour.set
   listcourses:
@@ -96,6 +96,15 @@ commands:
       /<command> <adventure course> - Teleport to adventure course
       /<command> <adventure course> <chapter> - Teleport to specific adventure chapter
       /<command> <adventure course> add <course> - (admn) Add course to adventure
+  event:
+    description: Manage events
+    permission: parkour.event
+    aliases: [rush]
+    usage: |
+      /<command> - Teleports to event
+      /<command> start <minutes> <course> - Starts an event course
+      /<command> end - Ends an event
+      /<command> create <parkour> <TIME_RUSH/PLAY_RUSH/GATE_RUSH> - Creates an event
 permissions:
   parkour.play:
     description: Required in order to play parkour

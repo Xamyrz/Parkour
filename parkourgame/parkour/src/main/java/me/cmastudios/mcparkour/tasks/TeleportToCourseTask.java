@@ -46,26 +46,26 @@ public class TeleportToCourseTask extends BukkitRunnable {
     public void run() {
         try {
             final ParkourCourse tpCourse = ParkourCourse.loadCourse(plugin.getCourseDatabase(), courseId);
-            if ((tpCourse == null || (tpCourse.getMode() == ParkourCourse.CourseMode.HIDDEN && cause == PlayerTeleportEvent.TeleportCause.COMMAND)) && !player.hasPermission("parkour.teleport")) {
+            if (tpCourse == null||((tpCourse.getMode() == ParkourCourse.CourseMode.HIDDEN || tpCourse.getMode() == ParkourCourse.CourseMode.EVENT) && cause == PlayerTeleportEvent.TeleportCause.COMMAND && !player.hasPermission("parkour.teleport"))) {
                 player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
+                return;
+            }
+            IPlayerExperience pcd = Parkour.experience.getPlayerExperience(player);
+            Parkour.PlayResult result = plugin.canPlay(player, pcd.getExperience(), tpCourse);
+            if (result != Parkour.PlayResult.ALLOWED) {
+                player.sendMessage(Parkour.getString(result.key));
             } else {
-                IPlayerExperience pcd = Parkour.experience.getPlayerExperience(player);
-                Parkour.PlayResult result = plugin.canPlay(player, pcd.getExperience(), tpCourse);
-                if (result != Parkour.PlayResult.ALLOWED) {
-                    player.sendMessage(Parkour.getString(result.key));
-                } else {
-                    Bukkit.getScheduler().runTask(plugin, new Runnable() {
-                        @Override
-                        public void run() {
-                            player.teleport(tpCourse.getTeleport());
-                        }
-                    });
-                    if (tpCourse.getMode() != ParkourCourse.CourseMode.ADVENTURE) {
-                        player.sendMessage(Parkour.getString("course.teleport", new Object[]{tpCourse.getId()}));
+                Bukkit.getScheduler().runTask(plugin, new Runnable() {
+                    @Override
+                    public void run() {
+                        player.teleport(tpCourse.getTeleport());
                     }
-                    return;
+                });
+                if (tpCourse.getMode() != ParkourCourse.CourseMode.ADVENTURE) {
+                    player.sendMessage(Parkour.getString("course.teleport", new Object[]{tpCourse.getId()}));
                 }
             }
+
         } catch (SQLException ex) {
             Logger.getLogger(Parkour.class.getName()).log(Level.SEVERE, null, ex);
         }

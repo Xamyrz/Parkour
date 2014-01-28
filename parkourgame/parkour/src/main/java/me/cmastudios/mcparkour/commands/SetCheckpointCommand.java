@@ -21,6 +21,7 @@ import me.cmastudios.mcparkour.Checkpoint;
 import me.cmastudios.mcparkour.Duel;
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.data.ParkourCourse;
+import me.cmastudios.mcparkour.event.PlayerEventRushData;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 
@@ -55,6 +56,11 @@ public class SetCheckpointCommand implements CommandExecutor {
         Duel duel = plugin.getDuel(player);
         if (duel != null && duel.hasStarted()) {
             sender.sendMessage(Parkour.getString("checkpoint.duel"));
+            return true;
+        }
+
+        if(plugin.playerCourseTracker.get(player) instanceof PlayerEventRushData) {
+            sender.sendMessage(Parkour.getString("checkpoint.event"));
             return true;
         }
         ParkourCourse course = plugin.playerCourseTracker.get(player).course;

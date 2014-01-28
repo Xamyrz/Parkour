@@ -25,6 +25,25 @@ restriction:
   veryhard: 24
   duel: 8
   levelRequiredToUsePkCommand: 8
+events:
+  distance:
+    scoredplaces: 3
+    rewards:
+        1: 500
+        2: 400
+        3: 300
+  plays:
+    scoredplaces: 3
+    rewards:
+        1: 500
+        2: 400
+        3: 300
+  time:
+    scoredplaces: 3
+    rewards:
+        1: 500
+        2: 400
+        3: 300
 pkrooms:
   easy:
     x: 607

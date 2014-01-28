@@ -22,8 +22,12 @@ import me.cmastudios.mcparkour.data.*;
 import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.Guild.GuildWar;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
+import me.cmastudios.mcparkour.event.configurations.OwnEndingEvent;
+import me.cmastudios.mcparkour.event.configurations.SignConfigurableEvent;
+import me.cmastudios.mcparkour.event.configurations.TimerableEvent;
 import me.cmastudios.mcparkour.events.*;
 import me.cmastudios.mcparkour.tasks.*;
+import me.confuser.barapi.BarAPI;
 import org.apache.commons.lang.Validate;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -47,7 +51,6 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.SQLException;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -64,7 +67,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 public class ParkourListener implements Listener {
 
     private final Parkour plugin;
-    public static final int DETECTION_MIN = 2;
+    public static final int DETECTION_MIN = 1;
     public static final int SIGN_DETECTION_MAX = 4;
 
     public ParkourListener(Parkour instance) {
@@ -94,13 +97,12 @@ public class ParkourListener implements Listener {
                 case "[start]":
                     plugin.completedCourseTracker.remove(player);
                     plugin.playerCheckpoints.remove(player);
-                    int startParkourId;
-                    try {
-                        startParkourId = Integer.parseInt(sign.getLine(1));
-                    } catch (IndexOutOfBoundsException | NumberFormatException ex) {
-                        return; // Prevent console spam
+                    Bukkit.getScheduler().runTaskAsynchronously(plugin, new ParkourStartTask(sign, player, plugin, now));
+                    break;
+                case "[event]":
+                    if (plugin.getEvent() != null && plugin.getEvent().hasStarted() && plugin.getEvent() instanceof SignConfigurableEvent) {
+                        ((SignConfigurableEvent) plugin.getEvent()).handleEventSign(player, sign);
                     }
-                    Bukkit.getScheduler().runTaskAsynchronously(plugin,new ParkourStartTask(startParkourId,player,plugin,now));
                     break;
                 case "[end]":
                     if (plugin.playerCourseTracker.containsKey(player)) {
@@ -116,9 +118,13 @@ public class ParkourListener implements Listener {
                         PlayerCourseData endData = plugin.playerCourseTracker.remove(player); // They have ended their course anyhow
                         endData.restoreState(player);
                         long completionTime = now - endData.startTime;
-                        Duel duel = plugin.getDuel(player);
                         plugin.playerCheckpoints.remove(player);
                         plugin.completedCourseTracker.put(player, endData);
+                        if (endData.course.getMode() == CourseMode.EVENT && plugin.getEvent() != null && plugin.getEvent() instanceof OwnEndingEvent) {
+                            ((OwnEndingEvent) plugin.getEvent()).handleEnding(player, completionTime, endData);
+                            return;
+                        }
+                        Duel duel = plugin.getDuel(player);
                         Bukkit.getScheduler().runTaskAsynchronously(plugin, new ParkourCompleteTask(player, plugin, endData.course, endData, completionTime, duel != null && duel.hasStarted(), sign.getLine(1)));
                         if (duel != null && duel.isAccepted() && duel.hasStarted()) {
                             duel.win(player, plugin);
@@ -126,7 +132,7 @@ public class ParkourListener implements Listener {
                             event.setTo(duel.getCourse().getTeleport());
                             Bukkit.getPluginManager().callEvent(new PlayerCompleteDuelEvent(duel, player, completionTime));
                         }
-                        Bukkit.getScheduler().runTaskAsynchronously(plugin,new GuildFinishHandling(plugin,player,now));
+                        Bukkit.getScheduler().runTaskAsynchronously(plugin, new GuildFinishHandling(plugin, player, now));
                     }
                     break;
                 case "[cancel]":
@@ -146,7 +152,7 @@ public class ParkourListener implements Listener {
                     } catch (IndexOutOfBoundsException | NumberFormatException ex) {
                         return; // Prevent console spam
                     }
-                    Bukkit.getScheduler().runTaskAsynchronously(plugin, new TeleportToCourseTask(plugin,player,TeleportCause.PLUGIN,tpParkourId));
+                    Bukkit.getScheduler().runTaskAsynchronously(plugin, new TeleportToCourseTask(plugin, player, TeleportCause.PLUGIN, tpParkourId));
                     break;
                 case "[portal]":
                     try {
@@ -286,7 +292,7 @@ public class ParkourListener implements Listener {
                     try {
                         int parkourNumber = Integer.parseInt(sign.getLine(1));
                         event.setCancelled(true);
-                        Bukkit.getScheduler().runTaskAsynchronously(plugin, new TeleportToCourseTask(plugin,event.getPlayer(),TeleportCause.PLUGIN,parkourNumber));
+                        Bukkit.getScheduler().runTaskAsynchronously(plugin, new TeleportToCourseTask(plugin, event.getPlayer(), TeleportCause.PLUGIN, parkourNumber));
                     } catch (IndexOutOfBoundsException | NumberFormatException | NullPointerException ignored) {
                     }
                     return;
@@ -401,6 +407,13 @@ public class ParkourListener implements Listener {
     @EventHandler
     public void onPlayerJoin(final PlayerJoinEvent event) throws SQLException {
         event.setJoinMessage(null);
+        if (plugin.getEvent() != null && plugin.getEvent().hasStarted()) {
+            if (Parkour.isBarApiEnabled) {
+                BarAPI.setMessage(event.getPlayer(), Parkour.getString("event.started", Parkour.getString(plugin.getEvent().getCourse().getType().nameKey)));
+            } else {
+                event.getPlayer().sendMessage(Parkour.getString("event.started", Parkour.getString(plugin.getEvent().getCourse().getType().nameKey)));
+            }
+        }
         for (Player blindPlayer : plugin.blindPlayers) {
             plugin.refreshVision(blindPlayer);
         }
@@ -450,7 +463,7 @@ public class ParkourListener implements Listener {
         if (!event.getPlayer().hasPermission("parkour.tpexempt")) {
             event.getPlayer().teleport(plugin.getSpawn());
         }
-        Bukkit.getScheduler().runTaskAsynchronously(plugin,new GuildRejoinHandling(event.getPlayer(),plugin));
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, new GuildRejoinHandling(event.getPlayer(), plugin));
     }
 
     @EventHandler
@@ -611,7 +624,7 @@ public class ParkourListener implements Listener {
         @Override
         public void run() {
             for (Player player : plugin.playerCourseTracker.keySet()) {
-                if (plugin.playerCourseTracker.get(player).course.getMode() == CourseMode.GUILDWAR || plugin.playerCourseTracker.get(player).course.getMode() == CourseMode.EVENT) {
+                if (plugin.playerCourseTracker.get(player).course.getMode() == CourseMode.GUILDWAR || (plugin.playerCourseTracker.get(player).course.getMode() == CourseMode.EVENT && plugin.getEvent() != null && plugin.getEvent() instanceof TimerableEvent)) {
                     continue;
                 }
                 int secondsPassed = (int) ((System.currentTimeMillis() - plugin.playerCourseTracker.get(player).startTime) / 1000);

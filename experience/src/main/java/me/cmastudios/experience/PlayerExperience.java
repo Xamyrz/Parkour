@@ -22,9 +22,6 @@ import me.cmastudios.experience.tasks.ExperienceSaveTask;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class PlayerExperience implements IPlayerExperience {
@@ -41,8 +38,8 @@ public class PlayerExperience implements IPlayerExperience {
     }
 
     public void save(boolean async) throws SQLException {
-        ExperienceSaveTask task = new ExperienceSaveTask(plugin,player,experience);
-        if(async) {
+        ExperienceSaveTask task = new ExperienceSaveTask(plugin, player, experience);
+        if (async) {
             task.runTaskAsynchronously(plugin);
         } else {
             task.run();
@@ -57,15 +54,16 @@ public class PlayerExperience implements IPlayerExperience {
     public void setExperience(int experience, boolean fireEvent) throws SQLException {
         this.lastUsed = System.currentTimeMillis();
         if (fireEvent) {
-            ChangeExperienceEvent event = new ChangeExperienceEvent(this.experience, experience,this);
+            ChangeExperienceEvent event = new ChangeExperienceEvent(this.experience, experience, this);
             Bukkit.getPluginManager().callEvent(event);
-            player.getPlayer().sendMessage(Experience.getString("xp.gain", event.getXp()-this.experience, this.experience));
+            player.getPlayer().sendMessage(Experience.getString("xp.gain", event.getXp() - this.experience, this.experience));
             this.experience = event.getXp();
         } else {
+            player.getPlayer().sendMessage(Experience.getString("xp.gain", experience - this.experience, this.experience+(experience-this.experience
+            )));
             this.experience = experience;
-            player.getPlayer().sendMessage(Experience.getString("xp.gain", experience, this.experience));
         }
-        if(!player.isOnline()) {
+        if (!player.isOnline()) {
             save(true);  // To be 100% sure that if we change experience while offline the player will get that if log in on other server
         }
     }

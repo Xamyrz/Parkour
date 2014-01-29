@@ -95,6 +95,8 @@ public class Duel {
         if (plugin.playerCourseTracker.containsKey(competitor)) {
             plugin.playerCourseTracker.remove(competitor).leave(competitor);
         }
+        plugin.playerCheckpoints.remove(initiator);
+        plugin.playerCheckpoints.remove(competitor);
         initiator.teleport(course.getTeleport(), TeleportCause.COMMAND);
         competitor.teleport(course.getTeleport(), TeleportCause.COMMAND);
         initiator.sendMessage(Parkour.getString("duel.init"));

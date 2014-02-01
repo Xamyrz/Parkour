@@ -409,9 +409,9 @@ public class ParkourListener implements Listener {
         event.setJoinMessage(null);
         if (plugin.getEvent() != null && plugin.getEvent().hasStarted()) {
             if (Parkour.isBarApiEnabled) {
-                BarAPI.setMessage(event.getPlayer(), Parkour.getString("event.started", Parkour.getString(plugin.getEvent().getCourse().getType().nameKey)));
+                BarAPI.setMessage(event.getPlayer(), Parkour.getString("event.started", Parkour.getString(plugin.getEvent().getCourse().getType().getNameKey())));
             } else {
-                event.getPlayer().sendMessage(Parkour.getString("event.started", Parkour.getString(plugin.getEvent().getCourse().getType().nameKey)));
+                event.getPlayer().sendMessage(Parkour.getString("event.started", Parkour.getString(plugin.getEvent().getCourse().getType().getNameKey())));
             }
         }
         for (Player blindPlayer : plugin.blindPlayers) {

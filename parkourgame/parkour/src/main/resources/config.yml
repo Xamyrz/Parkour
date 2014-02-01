@@ -28,18 +28,21 @@ restriction:
 events:
   distance:
     scoredplaces: 3
+    preferredTimeInterval: 5-8
     rewards:
         1: 500
         2: 400
         3: 300
   plays:
     scoredplaces: 3
+    preferredTimeInterval: 3-6
     rewards:
         1: 500
         2: 400
         3: 300
   time:
     scoredplaces: 3
+    preferredTimeInterval: 4-5
     rewards:
         1: 500
         2: 400

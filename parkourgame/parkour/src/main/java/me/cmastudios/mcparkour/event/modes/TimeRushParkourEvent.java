@@ -43,7 +43,7 @@ public class TimeRushParkourEvent extends ScoreableParkourEvent implements OwnEn
         obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.hr"))).setScore(-1);
         obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.time.title"))).setScore(-2);
         obj.getScore(Bukkit.getOfflinePlayer(getFormatted(getPlayerBestScore(player)))).setScore(-3);
-        obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.scoredplaces"))).setScore(plugin.getConfig().getInt("events." + getKey() + ".scoredplaces"));
+        obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.scoredplaces"))).setScore(plugin.getConfig().getInt("events." + course.getType().key + ".scoredplaces"));
         obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.position"))).setScore(getPlayerPosition(player));
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
         player.setScoreboard(sb);
@@ -59,10 +59,6 @@ public class TimeRushParkourEvent extends ScoreableParkourEvent implements OwnEn
         }
     }
 
-    @Override
-    public String getKey() {
-        return "time";
-    }
 
     @Override
     public void handleEnding(Player player, long time, Parkour.PlayerCourseData endData) {

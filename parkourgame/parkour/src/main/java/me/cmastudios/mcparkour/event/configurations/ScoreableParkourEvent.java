@@ -58,7 +58,7 @@ public abstract class ScoreableParkourEvent<N extends Number> extends ParkourEve
         ob.setDisplayName(Parkour.getString("event.scoreboard.scores.title"));
         ob.setDisplaySlot(DisplaySlot.SIDEBAR);
         for (N key : bestResults.descendingMap().keySet()) {
-            if (ctrl >= plugin.getConfig().getInt("events." + getKey() + ".scoredplaces")) {
+            if (ctrl >= plugin.getConfig().getInt("events." + course.getType().key + ".scoredplaces")) {
                 stop = true;
             }
             Team team = null;
@@ -67,7 +67,7 @@ public abstract class ScoreableParkourEvent<N extends Number> extends ParkourEve
                 ctrl++;
                 team = sb.registerNewTeam("pos" + ctrl);
                 team.setPrefix(Parkour.getString("event.scoreboard.team.prefix", getFormatted(key)));
-                reward = (plugin.getConfig().contains("events." + getKey() + ".rewards." + ctrl) ? plugin.getConfig().getInt("events." + getKey() + ".rewards." + ctrl) : 0);
+                reward = (plugin.getConfig().contains("events." + course.getType().key + ".rewards." + ctrl) ? plugin.getConfig().getInt("events." + course.getType().key + ".rewards." + ctrl) : 0);
             }
             for (OfflinePlayer player : bestResults.get(key)) {
                 if (!stop) {
@@ -88,7 +88,6 @@ public abstract class ScoreableParkourEvent<N extends Number> extends ParkourEve
         bestResults.clear();
     }
 
-    public abstract String getKey();
 
     public void setStatistic(OfflinePlayer player, N stat) {
         N best = getPlayerBestScore(player);

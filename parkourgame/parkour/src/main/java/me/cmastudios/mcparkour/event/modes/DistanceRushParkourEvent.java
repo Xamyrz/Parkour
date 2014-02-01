@@ -84,7 +84,7 @@ public class DistanceRushParkourEvent extends ScoreableParkourEvent implements T
         obj.setDisplayName(Parkour.getString("event.scoreboard.title"));
         obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.distance.bestgate"))).setScore(getPlayerBestScore(player) != null ? getPlayerBestScore(player).intValue() : 0);
         obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.position"))).setScore(getPlayerPosition(player));
-        obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.scoredplaces"))).setScore(plugin.getConfig().getInt("events." + getKey() + ".scoredplaces"));
+        obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.scoredplaces"))).setScore(plugin.getConfig().getInt("events." + course.getType().key + ".scoredplaces"));
         obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.distance.gate"))).setScore((plugin.playerCourseTracker.containsKey(player) && (plugin.playerCourseTracker.get(player) instanceof PlayerEventRushData.PlayerDistanceRushData)) ? ((PlayerEventRushData.PlayerDistanceRushData) plugin.playerCourseTracker.get(player)).getGate() : 0);
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
         player.setScoreboard(sb);
@@ -97,11 +97,6 @@ public class DistanceRushParkourEvent extends ScoreableParkourEvent implements T
         } else {
             return Parkour.getString("event.formatted.notfinished");
         }
-    }
-
-    @Override
-    public String getKey() {
-        return "distance";
     }
 
     @Override

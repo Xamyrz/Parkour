@@ -78,7 +78,7 @@ public abstract class ParkourEvent {
         tasks.clear();
         startingTime = System.currentTimeMillis();
         if (!Parkour.isBarApiEnabled) {
-            Bukkit.broadcastMessage(Parkour.getString("event.started", Parkour.getString(getCourse().getType().nameKey),eventTime-(System.currentTimeMillis() - startingTime) / 60000));
+            Bukkit.broadcastMessage(Parkour.getString("event.started", Parkour.getString(getCourse().getType().getNameKey()),eventTime-(System.currentTimeMillis() - startingTime) / 60000));
         }
         tasks.add(Bukkit.getScheduler().runTaskTimer(plugin, new GameEndTask(), 1, 20));
     }
@@ -99,9 +99,9 @@ public abstract class ParkourEvent {
             int secondsPassed = (int) ((System.currentTimeMillis() - startingTime) / 1000);
             for (Player player : Bukkit.getOnlinePlayers()) {
                 if (Parkour.isBarApiEnabled) {
-                    BarAPI.setMessage(player, Parkour.getString("event.starting", Parkour.getString(course.getType().nameKey), 5 - secondsPassed), (5 - secondsPassed) * (100F / 5));
+                    BarAPI.setMessage(player, Parkour.getString("event.starting", Parkour.getString(course.getType().getNameKey()), 5 - secondsPassed), (5 - secondsPassed) * (100F / 5));
                 } else {
-                    Bukkit.broadcastMessage(Parkour.getString("event.starting", Parkour.getString(course.getType().nameKey), 5 - secondsPassed));
+                    Bukkit.broadcastMessage(Parkour.getString("event.starting", Parkour.getString(course.getType().getNameKey()), 5 - secondsPassed));
                 }
 
                 if (5 - secondsPassed <= 0) {
@@ -122,7 +122,7 @@ public abstract class ParkourEvent {
             if (secondsPassed < eventTime*60) {
                 if (Parkour.isBarApiEnabled) {
                     for (Player player : Bukkit.getOnlinePlayers()) {
-                        BarAPI.setMessage(player, Parkour.getString("event.started", Parkour.getString(getCourse().getType().nameKey), this.convertSecondsToUserFriendlyTime(eventTime*60-secondsPassed)),(eventTime*60-secondsPassed) * (100F/(eventTime*60)));
+                        BarAPI.setMessage(player, Parkour.getString("event.started", Parkour.getString(getCourse().getType().getNameKey()), this.convertSecondsToUserFriendlyTime(eventTime*60-secondsPassed)),(eventTime*60-secondsPassed) * (100F/(eventTime*60)));
                     }
                 }
             } else {

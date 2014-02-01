@@ -41,6 +41,21 @@ public class EventCourse {
         return null;
     }
 
+    public static EventCourse getRandomCourse(Connection conn) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("SELECT FLOOR(RAND() * COUNT(*)) AS `offset` FROM `events`");
+        ResultSet rs = stmt.executeQuery();
+        if(rs.next()) {
+            int offset = rs.getInt("offset");
+            PreparedStatement statement = conn.prepareStatement("SELECT * FROM `events` LIMIT ?, 1");
+            statement.setInt(1,offset);
+            ResultSet result = statement.executeQuery();
+            if(result.next()) {
+                return new EventCourse(EventType.valueOf(result.getString("type")),ParkourCourse.loadCourse(conn,result.getInt("id")));
+            }
+        }
+        return null;
+    }
+
     public void save(Connection conn) {
         try {
             PreparedStatement stmt = conn.prepareStatement("INSERT INTO events (`id`,`type`) VALUES (?,?) ON DUPLICATE KEY UPDATE type=VALUES(type)");
@@ -70,11 +85,16 @@ public class EventCourse {
     }
 
     public enum EventType {
-        TIME_RUSH("event.time.title"), PLAYS_RUSH("event.plays.title"), DISTANCE_RUSH("event.distance.title");
+        TIME_RUSH("time"), PLAYS_RUSH("plays"), DISTANCE_RUSH("distance");
 
-        public final String nameKey;
+        public final String key;
+
         private EventType(String key) {
-            this.nameKey = key;
+            this.key = key;
+        }
+
+        public String getNameKey() {
+            return "event."+key+".title";
         }
     }
 

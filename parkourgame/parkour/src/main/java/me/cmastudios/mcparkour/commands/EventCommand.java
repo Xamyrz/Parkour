@@ -57,11 +57,11 @@ public class EventCommand implements CommandExecutor {
                         if (course != null) {
                             course.setType(type);
                             course.save(plugin.getCourseDatabase());
-                            sender.sendMessage(Parkour.getString("event.admin.modified",pkid));
+                            sender.sendMessage(Parkour.getString("event.admin.modified", pkid));
                             return true;
                         }
-                        ParkourCourse parkour = ParkourCourse.loadCourse(plugin.getCourseDatabase(),pkid);
-                        if(parkour==null) {
+                        ParkourCourse parkour = ParkourCourse.loadCourse(plugin.getCourseDatabase(), pkid);
+                        if (parkour == null) {
                             sender.sendMessage(Parkour.getString("event.admin.error.invalidcourse"));
                             return true;
                         }
@@ -80,40 +80,53 @@ public class EventCommand implements CommandExecutor {
                         sender.sendMessage(Parkour.getString("error.permission"));
                         return true;
                     }
-                    if (args.length < 3) {
-                        return false;
-                    }
-                    if(plugin.getEvent()!=null) {
+                    if (plugin.getEvent() != null) {
                         sender.sendMessage(Parkour.getString("event.admin.error.alreadystarted"));
                         return true;
                     }
+                    EventCourse pk = null;
+                    ParkourEvent course = null;
                     try {
-                        int length = Integer.parseInt(args[1]);
-                        int parkourId = Integer.parseInt(args[2]);
-                        EventCourse pk = EventCourse.loadCourse(plugin.getCourseDatabase(), parkourId);
-                        if (pk == null) {
-                            sender.sendMessage(Parkour.getString("event.admin.error.invalidcourse"));
-                            return true;
+                        if (args.length == 2) {
+                            if (args[1].equalsIgnoreCase("random")) {
+                                pk = EventCourse.getRandomCourse(plugin.getCourseDatabase());
+                                String[] interval = plugin.getConfig().getString("events."+pk.getType().key+".preferredTimeInterval").split("-");
+                                if(interval.length!=2) {
+                                    sender.sendMessage(Parkour.getString("event.admin.error.badlyconfigured"));
+                                    return true;
+                                }
+                                switch (pk.getType()) {
+                                    case DISTANCE_RUSH:
+                                        course = new DistanceRushParkourEvent(pk, plugin, getRandomFromRange(Integer.parseInt(interval[0]),Integer.parseInt(interval[1])));
+                                        break;
+                                    case PLAYS_RUSH:
+                                        course = new PlaysRushParkourEvent(pk, plugin, getRandomFromRange(Integer.parseInt(interval[0]),Integer.parseInt(interval[1])));
+                                        break;
+                                    case TIME_RUSH:
+                                        course = new TimeRushParkourEvent(pk, plugin, getRandomFromRange(Integer.parseInt(interval[0]),Integer.parseInt(interval[1])));
+                                        break;
+                                }
+                            } else {
+                                return false;
+                            }
+                        } else if (args.length == 3) {
+                            int length = Integer.parseInt(args[1]);
+                            int parkourId = Integer.parseInt(args[2]);
+                            pk = EventCourse.loadCourse(plugin.getCourseDatabase(), parkourId);
+                            switch (pk.getType()) {
+                                case DISTANCE_RUSH:
+                                    course = new DistanceRushParkourEvent(pk, plugin, length);
+                                    break;
+                                case PLAYS_RUSH:
+                                    course = new PlaysRushParkourEvent(pk, plugin, length);
+                                    break;
+                                case TIME_RUSH:
+                                    course = new TimeRushParkourEvent(pk, plugin, length);
+                                    break;
+                            }
+                        } else {
+                            return false;
                         }
-                        ParkourEvent course = null;
-
-                        switch (pk.getType()) {
-                            case DISTANCE_RUSH:
-                                course = new DistanceRushParkourEvent(pk,plugin,length);
-                                break;
-                            case PLAYS_RUSH:
-                                course = new PlaysRushParkourEvent(pk,plugin,length);
-                                break;
-                            case TIME_RUSH:
-                                course = new TimeRushParkourEvent(pk,plugin,length);
-                                break;
-                        }
-                        if (course == null) {
-                            sender.sendMessage(Parkour.getString("event.admin.error.invalid"));
-                            return true;
-                        }
-                        plugin.setEvent(course);
-                        course.prepare();
                     } catch (NumberFormatException e) {
                         sender.sendMessage(Parkour.getString("error.invalidint"));
                         return true;
@@ -123,6 +136,16 @@ public class EventCommand implements CommandExecutor {
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
+                    if (pk == null) {
+                        sender.sendMessage(Parkour.getString("event.admin.error.invalidcourse"));
+                        return true;
+                    }
+                    if (course == null) {
+                        sender.sendMessage(Parkour.getString("event.admin.error.invalid"));
+                        return true;
+                    }
+                    plugin.setEvent(course);
+                    course.prepare();
                     break;
                 case "end":
                     if (!sender.hasPermission("parkour.set")) {
@@ -139,6 +162,7 @@ public class EventCommand implements CommandExecutor {
                 default:
                     return false;
             }
+
             return true;
         }
         if (!(sender instanceof Player)) {
@@ -151,5 +175,10 @@ public class EventCommand implements CommandExecutor {
             sender.sendMessage(Parkour.getString("event.notrunning"));
         }
         return true;
+    }
+
+    private int getRandomFromRange(int num1, int num2) {
+        int min = Math.min(num1,num2);
+        return plugin.random.nextInt(((min == num2 ? num1 : num2) - min) + 1) + min;
     }
 }

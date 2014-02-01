@@ -72,7 +72,7 @@ public class Parkour extends JavaPlugin {
     public List<Duel> activeDuels = new ArrayList<>();
     public List<GuildWar> activeWars = new ArrayList<>();
     public static ExperienceManager experience;
-    private final Random random = new Random();
+    public final Random random = new Random();
 
     @Override
     public void onEnable() {

@@ -19,6 +19,7 @@ package me.cmastudios.mcparkour.tasks;
 
 import me.cmastudios.experience.IPlayerExperience;
 import me.cmastudios.mcparkour.Parkour;
+import me.cmastudios.mcparkour.data.CustomCourse;
 import me.cmastudios.mcparkour.event.EventCourse;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.event.PlayerEventRushData;
@@ -26,6 +27,7 @@ import me.cmastudios.mcparkour.events.PlayerStartParkourEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.SQLException;
@@ -49,26 +51,17 @@ public class ParkourStartTask extends BukkitRunnable {
             final ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), Integer.parseInt(data.getLine(1)));
             final IPlayerExperience exp = Parkour.experience.getPlayerExperience(player);
             final Parkour.PlayResult result = plugin.canPlay(player, exp.getExperience(), course);
+            final CustomCourse customCourse = course.getMode() == ParkourCourse.CourseMode.CUSTOM ? CustomCourse.loadCourse(plugin.getCourseDatabase(),course.getId()): null;
             if (result == Parkour.PlayResult.ALLOWED && course.getMode() != ParkourCourse.CourseMode.EVENT) {
                 new DisplayHighscoresTask(plugin, player, course).run();
             }
-
             Bukkit.getScheduler().runTask(plugin, new Runnable() {
                 @Override
                 public void run() {
-                    if (course.getMode() != ParkourCourse.CourseMode.EVENT) {
-                        if (result != Parkour.PlayResult.ALLOWED) {
-                            player.sendMessage(Parkour.getString(result.key));
-                            player.teleport(plugin.getSpawn());
-                            return;
-                        }
-                        Parkour.PlayerCourseData data = new Parkour.PlayerCourseData(course, player, startTime);
-                        plugin.playerCourseTracker.put(player, data);
-                        Bukkit.getPluginManager().callEvent(new PlayerStartParkourEvent(player, exp, data));
-                    } else {
+                    if (course.getMode() == ParkourCourse.CourseMode.EVENT) {
                         if (plugin.getEvent() == null || !plugin.getEvent().hasStarted()) {
                             player.sendMessage(Parkour.getString("event.notrunning"));
-                            if (plugin.getEvent() != null && (!plugin.getEvent().hasStarted()||plugin.getEvent().getCourse().getCourse().getId()!=course.getId())) {
+                            if (plugin.getEvent() != null && (!plugin.getEvent().hasStarted() || plugin.getEvent().getCourse().getCourse().getId() != course.getId())) {
                                 player.teleport(plugin.getEvent().getCourse().getCourse().getTeleport());
                             } else if (plugin.getEvent() == null) {
                                 player.teleport(plugin.getSpawn());
@@ -96,6 +89,23 @@ public class ParkourStartTask extends BukkitRunnable {
                                 break;
 
                         }
+                    } else {
+                        if (result != Parkour.PlayResult.ALLOWED) {
+                            player.sendMessage(Parkour.getString(result.key));
+                            player.teleport(plugin.getSpawn());
+                            return;
+                        }
+                        Parkour.PlayerCourseData data = new Parkour.PlayerCourseData(course, player, startTime);
+                        plugin.playerCourseTracker.put(player, data);
+                        if (customCourse!=null) {
+                            for(PotionEffect effect : customCourse.getEffects()) {
+                                effect.apply(player);
+                                player.addPotionEffect(effect);
+                            }
+                        }
+                        Bukkit.getPluginManager().callEvent(new PlayerStartParkourEvent(player, exp, data));
+
+
                     }
                 }
             });

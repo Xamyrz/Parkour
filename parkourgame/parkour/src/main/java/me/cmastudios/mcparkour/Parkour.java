@@ -29,6 +29,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import java.sql.Connection;
@@ -91,6 +92,7 @@ public class Parkour extends JavaPlugin {
         this.getCommand("pkroom").setExecutor(new PkRoomCommand(this));
         this.getCommand("ratio").setExecutor(new RatioCommand(this));
         this.getCommand("event").setExecutor(new EventCommand(this));
+        this.getCommand("custom").setExecutor(new CustomCourseCommand(this));
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.setupExperience();
         this.saveDefaultConfig();
@@ -181,9 +183,10 @@ public class Parkour extends JavaPlugin {
                     this.getConfig().getString("mysql.host"), this.getConfig().getInt("mysql.port"), this.getConfig().getString("mysql.database")),
                     this.getConfig().getString("mysql.username"), this.getConfig().getString("mysql.password"));
             try (Statement initStatement = this.courseDatabase.createStatement()) {
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT, mode ENUM('normal', 'guildwar', 'adventure', 'vip', 'hidden', 'event') NOT NULL DEFAULT 'normal', difficulty ENUM('easy', 'medium', 'hard', 'veryhard') NOT NULL DEFAULT 'easy', name VARCHAR(0) NOT NULL DEFAULT '',PRIMARY KEY (id))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT, mode ENUM('normal', 'guildwar', 'adventure', 'vip', 'hidden', 'event', 'custom') NOT NULL DEFAULT 'normal', difficulty ENUM('easy', 'medium', 'hard', 'veryhard') NOT NULL DEFAULT 'easy', name VARCHAR(0) NOT NULL DEFAULT '',PRIMARY KEY (id))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS events (id INTEGER, type enum('TIME_RUSH', 'POSITION_RUSH', 'PLAYS_RUSH', 'DISTANCE_RUSH') NOT NULL DEFAULT 'TIME_RUSH',PRIMARY KEY (id))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (player varchar(16), course INTEGER, time BIGINT, plays INT,PRIMARY KEY (player))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS custom (id int(11) NOT NULL AUTO_INCREMENT, effects mediumtext NOT NULL, PRIMARY KEY (id))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS experience (player varchar(16), xp INTEGER,PRIMARY KEY (player))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guilds (tag varchar(5), name varchar(32),PRIMARY KEY (tag))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guildplayers (player varchar(16), guild varchar(5), rank enum('default','officer','leader') NOT NULL DEFAULT 'default',PRIMARY KEY (player))");
@@ -485,8 +488,12 @@ public class Parkour extends JavaPlugin {
             this.previousLevel = player.getLevel();
             player.setExp(0.0F);
             player.setLevel(0);
-            player.removePotionEffect(PotionEffectType.SPEED);
-            player.removePotionEffect(PotionEffectType.SLOW);
+            for(PotionEffect effect : player.getActivePotionEffects()) {
+                if(effect.getType() == PotionEffectType.INVISIBILITY) {
+                    continue; //We don't want to remove vanish
+                }
+                player.removePotionEffect(effect.getType());
+            }
         }
     }
 }

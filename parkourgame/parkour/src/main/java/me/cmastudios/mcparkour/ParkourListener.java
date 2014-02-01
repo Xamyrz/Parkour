@@ -48,6 +48,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.SQLException;
@@ -68,7 +70,7 @@ public class ParkourListener implements Listener {
 
     private final Parkour plugin;
     public static final int DETECTION_MIN = 1;
-    public static final int SIGN_DETECTION_MAX = 4;
+    public static final int SIGN_DETECTION_MAX = 6;
 
     public ParkourListener(Parkour instance) {
         this.plugin = instance;
@@ -133,6 +135,12 @@ public class ParkourListener implements Listener {
                             Bukkit.getPluginManager().callEvent(new PlayerCompleteDuelEvent(duel, player, completionTime));
                         }
                         Bukkit.getScheduler().runTaskAsynchronously(plugin, new GuildFinishHandling(plugin, player, now));
+                        for(PotionEffect effect : player.getActivePotionEffects()) {
+                            if(effect.getType() == PotionEffectType.INVISIBILITY) {
+                                continue; //We don't want to remove vanish
+                            }
+                            player.removePotionEffect(effect.getType());
+                        }
                     }
                     break;
                 case "[cancel]":
@@ -186,6 +194,12 @@ public class ParkourListener implements Listener {
                 plugin.playerCourseTracker.remove(player);
                 data.restoreState(event.getPlayer());
                 event.setTo(data.course.getTeleport());
+                for(PotionEffect effect : player.getActivePotionEffects()) {
+                    if(effect.getType() == PotionEffectType.INVISIBILITY) {
+                        continue; //We don't want to remove vanish
+                    }
+                    player.removePotionEffect(effect.getType());
+                }
             }
         } else if (plugin.completedCourseTracker.containsKey(player)) {
             int detection = plugin.completedCourseTracker.get(player).course.getDetection();

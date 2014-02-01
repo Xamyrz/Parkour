@@ -18,6 +18,8 @@
 package me.cmastudios.mcparkour.commands;
 
 import java.sql.SQLException;
+import java.util.Arrays;
+
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseDifficulty;
@@ -38,7 +40,7 @@ public class SetCourseCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length < 1) {
+        if (args.length < 5) {
             return false;
         }
         if (!(sender instanceof Player)) {
@@ -48,19 +50,29 @@ public class SetCourseCommand implements CommandExecutor {
         Player player = (Player) sender;
         try {
             int id = Integer.parseInt(args[0]);
-            int detection = args.length >= 2 ? Integer.parseInt(args[1]) : 2;
-            CourseMode mode = args.length >= 3 ? CourseMode.valueOf(args[2].toUpperCase()) : CourseMode.NORMAL;
-            CourseDifficulty diff = args.length >= 4 ? CourseDifficulty.valueOf(args[3].toUpperCase()) : CourseDifficulty.EASY;
+            int detection = Integer.parseInt(args[1]);
+            CourseMode mode = CourseMode.valueOf(args[2].toUpperCase());
+            CourseDifficulty diff = CourseDifficulty.valueOf(args[3].toUpperCase());
             ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), id);
+            String[] nameArr = Arrays.copyOfRange(args,4,args.length);
+            StringBuilder name = new StringBuilder();
+            for(String string : nameArr) {
+                name.append(string).append(" ");
+            }
+            if(name.toString().length()>20) {
+                sender.sendMessage(Parkour.getString("error.nametoolong"));
+                return true;
+            }
             if (course != null) {
                 course.setTeleport(player.getLocation());
                 course.setDetection(detection);
                 course.setMode(mode);
                 course.setDifficulty(diff);
+                course.setName(name.toString());
                 sender.sendMessage(Parkour.getString("course.updated", id));
             } else {
-                course = new ParkourCourse(id, player.getLocation(), detection, mode, diff);
-                sender.sendMessage(Parkour.getString("course.created", id));
+                course = new ParkourCourse(id, name.toString(), player.getLocation(), detection, mode, diff);
+                sender.sendMessage(Parkour.getString("course.created", id, name));
             }
             course.save(plugin.getCourseDatabase());
         } catch (SQLException ex) {

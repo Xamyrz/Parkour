@@ -45,7 +45,6 @@ public class FavoritesList {
     private Player player;
     private List<Integer> favorites;
     private Favorites plugin;
-    private Connection conn;
     private int page = 1;
 
     public static FavoritesList loadFavoritesList(Player player, Favorites plugin) throws SQLException {
@@ -70,7 +69,6 @@ public class FavoritesList {
 
     public FavoritesList(Player player, Favorites plugin, List<Integer> favorites) throws SQLException {
         this.player = player;
-        this.conn = plugin.getCourseDatabase();
         this.plugin = plugin;
         this.favorites = favorites;
     }
@@ -252,25 +250,25 @@ class OpenFavsTask extends BukkitRunnable {
                             case EASY:
                                 item = Item.EASY.getItem();
                                 meta = item.getItemMeta();
-                                meta.setDisplayName(Favorites.getString("favorites.item.easy", current.getId()));
+                                meta.setDisplayName(Favorites.getString("favorites.item.easy", current.getName(), current.getId()));
                                 item.setItemMeta(meta);
                                 break;
                             case MEDIUM:
                                 item = Item.MEDIUM.getItem();
                                 meta = item.getItemMeta();
-                                meta.setDisplayName(Favorites.getString("favorites.item.medium", current.getId()));
+                                meta.setDisplayName(Favorites.getString("favorites.item.medium", current.getName(), current.getId()));
                                 item.setItemMeta(meta);
                                 break;
                             case HARD:
                                 item = Item.HARD.getItem();
                                 meta = item.getItemMeta();
-                                meta.setDisplayName(Favorites.getString("favorites.item.hard", current.getId()));
+                                meta.setDisplayName(Favorites.getString("favorites.item.hard", current.getName(), current.getId()));
                                 item.setItemMeta(meta);
                                 break;
                             case VERYHARD:
                                 item = Item.V_HARD.getItem();
                                 meta = item.getItemMeta();
-                                meta.setDisplayName(Favorites.getString("favorites.item.vhard", current.getId()));
+                                meta.setDisplayName(Favorites.getString("favorites.item.vhard", current.getName(), current.getId()));
                                 item.setItemMeta(meta);
                                 break;
                         }
@@ -278,19 +276,19 @@ class OpenFavsTask extends BukkitRunnable {
                     case HIDDEN:
                         item = Item.HIDDEN.getItem();
                         meta = item.getItemMeta();
-                        meta.setDisplayName(Favorites.getString("favorites.item.hidden", current.getId()));
+                        meta.setDisplayName(Favorites.getString("favorites.item.hidden", current.getName(), current.getId()));
                         item.setItemMeta(meta);
                         break;
                     case ADVENTURE:
                         item = Item.ADVENTURE.getItem();
                         meta = item.getItemMeta();
-                        meta.setDisplayName(Favorites.getString("favorites.item.adventure", current.getId()));
+                        meta.setDisplayName(Favorites.getString("favorites.item.adventure", current.getName(), current.getId()));
                         item.setItemMeta(meta);
                         break;
                     case VIP:
                         item = Item.THEMATIC.getItem();
                         meta = item.getItemMeta();
-                        meta.setDisplayName(Favorites.getString("favorites.item.thematic", current.getId()));
+                        meta.setDisplayName(Favorites.getString("favorites.item.thematic", current.getName(), current.getId()));
                         item.setItemMeta(meta);
                         break;
 

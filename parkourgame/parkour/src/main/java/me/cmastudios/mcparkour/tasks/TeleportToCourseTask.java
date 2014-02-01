@@ -47,7 +47,7 @@ public class TeleportToCourseTask extends BukkitRunnable {
         try {
             final ParkourCourse tpCourse = ParkourCourse.loadCourse(plugin.getCourseDatabase(), courseId);
             if (tpCourse == null||((tpCourse.getMode() == ParkourCourse.CourseMode.HIDDEN || tpCourse.getMode() == ParkourCourse.CourseMode.EVENT) && cause == PlayerTeleportEvent.TeleportCause.COMMAND && !player.hasPermission("parkour.teleport"))) {
-                player.sendMessage(Parkour.getString("error.course404", new Object[]{}));
+                player.sendMessage(Parkour.getString("error.course404"));
                 return;
             }
             IPlayerExperience pcd = Parkour.experience.getPlayerExperience(player);
@@ -62,7 +62,7 @@ public class TeleportToCourseTask extends BukkitRunnable {
                     }
                 });
                 if (tpCourse.getMode() != ParkourCourse.CourseMode.ADVENTURE) {
-                    player.sendMessage(Parkour.getString("course.teleport", new Object[]{tpCourse.getId()}));
+                    player.sendMessage(Parkour.getString("course.teleport", tpCourse.getName(),tpCourse.getId()));
                 }
             }
 

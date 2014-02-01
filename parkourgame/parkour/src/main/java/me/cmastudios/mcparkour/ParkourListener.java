@@ -125,7 +125,7 @@ public class ParkourListener implements Listener {
                             return;
                         }
                         Duel duel = plugin.getDuel(player);
-                        Bukkit.getScheduler().runTaskAsynchronously(plugin, new ParkourCompleteTask(player, plugin, endData.course, endData, completionTime, duel != null && duel.hasStarted(), sign.getLine(1)));
+                        Bukkit.getScheduler().runTaskAsynchronously(plugin, new ParkourCompleteTask(player, plugin, endData, completionTime, duel != null && duel.hasStarted(), sign.getLine(1)));
                         if (duel != null && duel.isAccepted() && duel.hasStarted()) {
                             duel.win(player, plugin);
                             plugin.activeDuels.remove(duel);

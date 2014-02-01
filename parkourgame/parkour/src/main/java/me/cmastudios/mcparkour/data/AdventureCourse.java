@@ -67,7 +67,8 @@ public class AdventureCourse {
             stmt.setString(1, name);
             try (ResultSet result = stmt.executeQuery()) {
                 while (result.next()) {
-                    ParkourCourse currCourse = new ParkourCourse(result.getInt("id"), new Location(
+                    ParkourCourse currCourse = new ParkourCourse(result.getInt("id"),
+                            result.getString("name"), new Location(
                             Bukkit.getWorld(result.getString("world")),
                             result.getDouble("x"), result.getDouble("y"),
                             result.getDouble("z"), result.getFloat("yaw"),

@@ -34,17 +34,15 @@ import java.util.List;
 
 public class ParkourCompleteTask extends BukkitRunnable {
     private final Player player;
-    private final ParkourCourse course;
     private final Parkour plugin;
     private final Parkour.PlayerCourseData endData;
     private final long completionTime;
     private final boolean isDuel;
     private final String signExp;
 
-    public ParkourCompleteTask(Player player, Parkour plugin, ParkourCourse course, Parkour.PlayerCourseData data, long time, boolean isDuel, String signExp) {
+    public ParkourCompleteTask(Player player, Parkour plugin, Parkour.PlayerCourseData data, long time, boolean isDuel, String signExp) {
         this.player = player;
         this.completionTime = time;
-        this.course = course;
         this.signExp = signExp;
         this.endData = data;
         this.isDuel = isDuel;
@@ -60,7 +58,7 @@ public class ParkourCompleteTask extends BukkitRunnable {
             final PlayerCompleteParkourEventBuilder eventBuilder = new PlayerCompleteParkourEventBuilder(endData, playerXp, highScore, completionTime);
             if (highScore.getTime() > completionTime && highScore.getPlays() > 0) {
                 eventBuilder.setPersonalBest(true);
-                player.sendMessage(Parkour.getString("course.end.personalbest", new Object[]{endData.course.getId()}));
+                player.sendMessage(Parkour.getString("course.end.personalbest", endData.course.getName(),endData.course.getId()));
             }
             if (highScore.getTime() > completionTime || highScore.getTime() == -1) {
                 highScore.setTime(completionTime);
@@ -69,7 +67,7 @@ public class ParkourCompleteTask extends BukkitRunnable {
             highScore.save(plugin.getCourseDatabase());
             final DecimalFormat df = new DecimalFormat("#.###");
             final double completionTimeSeconds = ((double) completionTime) / 1000;
-            player.sendMessage(Parkour.getString("course.end", new Object[]{df.format(completionTimeSeconds)}));
+            player.sendMessage(Parkour.getString("course.end", df.format(completionTimeSeconds)));
             final List<PlayerHighScore> scores = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), endData.course.getId(), 10);
             PlayerHighScore bestScore = scores.get(0);
             for (PlayerHighScore hs : scores) {
@@ -83,7 +81,7 @@ public class ParkourCompleteTask extends BukkitRunnable {
                 Bukkit.getScheduler().runTask(plugin, new Runnable() {
                     @Override
                     public void run() {
-                        plugin.getServer().broadcastMessage(Parkour.getString("course.end.best", player.getDisplayName() + ChatColor.RESET, endData.course.getId(), df.format(completionTimeSeconds)));
+                        plugin.getServer().broadcastMessage(Parkour.getString("course.end.best", player.getDisplayName() + ChatColor.RESET,endData.course.getName(), endData.course.getId(), df.format(completionTimeSeconds)));
                     }
                 });
             }

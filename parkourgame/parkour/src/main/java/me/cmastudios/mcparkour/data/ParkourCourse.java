@@ -16,13 +16,10 @@
  */
 package me.cmastudios.mcparkour.data;
 
-import me.cmastudios.experience.IPlayerExperience;
 import me.cmastudios.mcparkour.Parkour;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
@@ -33,23 +30,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.scoreboard.Team;
 
-/**
- * Playable parkour course.
- *
- * @author Connor Monahan
- */
 public class ParkourCourse {
 
     private final int id;
     private Location teleport;
     private int detection;
     private CourseMode mode;
+    private String name;
     private CourseDifficulty diff;
 
     public static ParkourCourse loadCourse(Connection conn, int id) throws SQLException {
@@ -58,7 +49,8 @@ public class ParkourCourse {
             stmt.setInt(1, id);
             try (ResultSet result = stmt.executeQuery()) {
                 if (result.next()) {
-                    ret = new ParkourCourse(id, new Location(
+                    ret = new ParkourCourse(id,
+                            result.getString("name"),new Location(
                             Bukkit.getWorld(result.getString("world")),
                             result.getDouble("x"), result.getDouble("y"),
                             result.getDouble("z"), result.getFloat("yaw"),
@@ -72,20 +64,21 @@ public class ParkourCourse {
         return ret;
     }
 
-    public ParkourCourse(int id, Location teleport, int detection, CourseMode mode, CourseDifficulty diff) {
+    public ParkourCourse(int id, String name, Location teleport, int detection, CourseMode mode, CourseDifficulty diff) {
         this.id = id;
         this.teleport = teleport;
         this.detection = detection;
         this.mode = mode;
         this.diff = diff;
+        this.name = name;
     }
 
     public void save(Connection conn) throws SQLException {
         final String stmtText;
         if (exists(conn)) {
-            stmtText = "UPDATE courses SET x = ?, y = ?, z = ?, pitch = ?, yaw = ?, world = ?, detection = ?, mode = ?, difficulty = ? WHERE id = ?";
+            stmtText = "UPDATE courses SET x = ?, y = ?, z = ?, pitch = ?, yaw = ?, world = ?, detection = ?, mode = ?, difficulty = ?, name = ? WHERE id = ?";
         } else {
-            stmtText = "INSERT INTO courses (x, y, z, pitch, yaw, world, detection, mode, difficulty, id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            stmtText = "INSERT INTO courses (x, y, z, pitch, yaw, world, detection, mode, difficulty, name, id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         }
         try (PreparedStatement stmt = conn.prepareStatement(stmtText)) {
             stmt.setDouble(1, teleport.getX());
@@ -97,7 +90,9 @@ public class ParkourCourse {
             stmt.setInt(7, detection);
             stmt.setString(8, mode.name());
             stmt.setString(9, diff.name());
-            stmt.setInt(10, id);
+            stmt.setString(10, name);
+            stmt.setInt(11, id);
+
             stmt.executeUpdate();
         }
     }
@@ -160,10 +155,14 @@ public class ParkourCourse {
         this.diff = diff;
     }
 
+    public String getName() { return name; }
+
+    public void setName(String name) { this.name = name;}
+
     public Scoreboard getScoreboard(List<PlayerHighScore> highScores) {
         Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
         Objective obj = sb.registerNewObjective("scores", "dummy");
-        obj.setDisplayName(Parkour.getString("scoreboard.title", id));
+        obj.setDisplayName(Parkour.getString("scoreboard.title",name,id));
 
         for (int count = 0; count < 10; count++) {
             if (highScores.size() <= count) {
@@ -187,10 +186,6 @@ public class ParkourCourse {
             OfflinePlayer result = Bukkit.getOfflinePlayer(name);
             team.setPrefix(Parkour.getString("scoreboard.prefix", df.format(((double) highScore.getTime()) / 1000.0D),"\u00A7"+color.getChar()));
             team.addPlayer(result);
-            String oplr = Parkour.getString("scoreboard.format", name);
-            if (oplr.length() > 16) {
-                oplr = oplr.substring(0, 16);
-            }
             obj.getScore(result).setScore(-(count + 1));
         }
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);

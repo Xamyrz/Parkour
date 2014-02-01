@@ -1,0 +1,28 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>mcparkour</artifactId>
+        <groupId>me.cmastudios</groupId>
+        <version>0.2-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>parkourgame</artifactId>
+    <version>0.2-SNAPSHOT</version>
+    <name>Parkour (root)</name>
+    <url>https://bitbucket.org/cmastudios/mcparkour</url>
+    <description>Parkour based games for minecraft</description>
+    <packaging>pom</packaging>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <netbeans.hint.license>gpl30</netbeans.hint.license>
+    </properties>
+
+    <modules>
+        <module>parkour</module>
+        <module>achievements-wrapper</module>
+        <module>favorites</module>
+    </modules>
+
+</project>

@@ -1,0 +1,7 @@
+name: ${project.name}
+version: ${project.version}
+description: ${project.description}
+author: maciekmm
+authors: [cmastudios]
+website: ${project.url}
+main: ${main.class}

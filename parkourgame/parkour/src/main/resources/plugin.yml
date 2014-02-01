@@ -1,0 +1,125 @@
+name: ${project.name}
+version: ${project.version}
+description: ${project.description}
+author: cmastudios
+authors: [maciekmm]
+website: ${project.url}
+depend: [Experience]
+softdepend: [BarAPI]
+main: ${main.class}
+commands:
+  parkour:
+    description: Teleport to a parkour course
+    usage: /<command> <numer parkoura> - teleportuje na dany parkour
+    aliases: [pk, kz]
+    permission: parkour.play
+  setcourse:
+    description: Set the teleport for a parkour course
+    usage: /<command> <course-number> <detection-range> <normal/vip/adventure/guildwar/hidden/event> <easy/medium/hard>
+    aliases: [pkset]
+    permission: parkour.set
+  listcourses:
+    description: List all valid parkour courses
+    usage: /<command> [adventure]
+    aliases: [pklist]
+    permission: parkour.play
+  deletecourse:
+    description: Delete the teleport for a parkour course
+    usage: /<command> <course-number>
+    aliases: [pkdelete, pkdel, pkremove, pkrm]
+    permission: parkour.delete
+  topscores:
+    description: View top scores for a parkour course
+    usage: /<command> <numer-parkoura> [strona] - Wyswietla wszystkie czasu na danym parkourze
+    aliases: [pktop]
+    permission: parkour.play
+  highscores:
+    description: Manage highscores
+    usage: |
+      /<command> reset player <player> - resets player's highscores
+      /<command> reset course <course> - resets all highscores on specified course
+      /<command> reset course <course> <player> - resets all player's highscores on specified course
+    aliases: [highscore, wyniki,hs]
+    permission: parkour.highscores
+  checkpoint:
+    description: Set a checkpoint in the current course to your location
+    usage: /<command>
+    aliases: [cp]
+    permission: parkour.cp
+  see:
+    description: Add player to exempts list when in blind mode
+    usage: /<command> <player>
+    aliases: [ogladaj]
+    permission: parkour.see
+  duel:
+    description: Start or accept request to begin a parkour duel.
+    usage: |
+      /<command> <player name> <parkour number> <bounty> - Sends duel invitation to opponent.
+      /<command> accept <bounty> - Accepts duel invitation
+      /<command> decline - Declines the invitation
+    permission: parkour.play
+  pkroom:
+    description: Parkour rooms
+    usage: /<command> <room>
+    aliases: [easy,normal,medium,hard,veryhard,adventure,thematic,tematyczne,przygodowe]
+    permission: parkour.play
+  chat:
+    description: Toggle global chat
+    usage: /<command> <state>
+    permission: parkour.chat.toggle
+  ratio:
+    description: Set global ratio
+    usage: |
+      /<command> set <amount> - Sets global ratio
+      /<command> - Gets global ratio
+      /<command> get - Gets global ratio
+    permission: parkour.ratio
+  guild:
+    description: Guild management
+    usage: |
+      /<command> create <tag> <name> - Creates a guild
+      /<command> invite <player name> - Invites a player to guild
+      /<command> accept <tag> - Accepts guild invitation
+      /<command> decline - Declines the invitation
+      /<command> leave - Leaves guild, if you are the only member and you leave the guild gets removed.
+      /<command> kick <player name> - Kick player the from guild
+      /<command> rank <player name> <rank> - Changes players guild rank.
+      /<command> chat - Toggles guild chat
+      /<command> war <tag> <course> - Sends war invitation.
+      /<command> war <tag> - Accepts war invitation
+      /<command> war decline - Declines the war invitation
+  adventure:
+    description: Manage adventure parkour courses
+    permission: parkour.play
+    aliases: [adv, advcontinue, advset, advadd]
+    usage: |
+      /<command> <adventure course> - Teleport to adventure course
+      /<command> <adventure course> <chapter> - Teleport to specific adventure chapter
+      /<command> <adventure course> add <course> - (admn) Add course to adventure
+  event:
+    description: Manage events
+    permission: parkour.event
+    aliases: [rush]
+    usage: |
+      /<command> - Teleports to event
+      /<command> start <minutes> <course> - Starts an event course
+      /<command> end - Ends an event
+      /<command> create <parkour> <TIME_RUSH/PLAY_RUSH/GATE_RUSH> - Creates an event
+permissions:
+  parkour.play:
+    description: Required in order to play parkour
+  parkour.set:
+    description: Required in order to set teleports for courses or to create control signs
+  parkour.teleport:
+    description: Required in order to teleport to hidden parkours
+  parkour.tpexempt:
+    description: Exempt a player from being teleported back to spawn on join.
+  parkour.guild.create:
+    description: Power to create a guild
+  parkour.vip:
+    description: Permission to play on VIP maps
+  parkour.bypasslevel:
+    description: Permission to bypass 
+  parkour.chat.write:
+    description: Permission to chat when chat is disabled
+

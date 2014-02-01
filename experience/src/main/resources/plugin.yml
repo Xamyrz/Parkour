@@ -1,0 +1,22 @@
+name: ${project.name}
+version: ${project.version}
+description: ${project.description}
+author: cmastudios
+authors: [maciekmm]
+website: ${project.url}
+main: ${main.class}
+commands:
+  exp:
+    description: Manage player''s experience
+    usage: |
+          /<command> set <player> <xp> - set player's xp
+          /<command> add <player> <xp> - add xp to player
+    aliases: [experience]
+    permission: experience.admin
+  lvl:
+    description: View player level and experience.
+    usage: |
+      /<command> - wyswietla statystyki doswiadczenia
+      /<command> <nick-gracza> - Wyswietla statystyki innego gracza
+    aliases: [level, poziom]
+    permission: parkour.play

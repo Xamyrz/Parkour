@@ -1,6 +1,6 @@
-/.classpath
-/.project
-/.settings/
-/.idea/
-/mcparkour.iml
-target/
+target
+*.iml
+.classpath
+.project
+.settings
+.idea

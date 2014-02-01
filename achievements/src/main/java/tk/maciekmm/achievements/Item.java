@@ -22,10 +22,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public enum Item {
     NEXT_PAGE(ItemType.MISC,Material.ACTIVATOR_RAIL, Achievements.getString("achievement.item.next"), 1, (short) 0),
@@ -34,14 +31,14 @@ public enum Item {
     ACHIEVEMENT_ACHIEVED(ItemType.MISC,Material.DIAMOND, 1),
     MILESTONE(ItemType.MISC,Material.COAL, 1, (short) 1),
     MILESTONE_ACHIEVED(ItemType.MISC,Material.EMERALD, 1),
-    ACHIEVEMENTS_MENU(ItemType.SPAWN,Material.EXP_BOTTLE, Achievements.getString("achievement.inventory.opener"), 1, (short) 0);
+    ACHIEVEMENTS_MENU(ItemType.SPAWN,Material.EXP_BOTTLE, Achievements.getString("achievement.inventory.opener"), 1, (short) 0, Achievements.getMessageArrayFromPrefix("achievement.inventory.opener.lore"));
     private final ItemStack item;
     private final ItemType type;
 
-    private Item(ItemType type, Material material, String name, int amount, short data, String... desc) {
+    private Item(ItemType type, Material material, String name, int amount, short data, List<String> desc) {
         this(type,material,name,amount,data);
         ItemMeta meta = this.item.getItemMeta();
-        meta.setLore(Arrays.asList(desc));
+        meta.setLore(desc);
         item.setItemMeta(meta);
     }
 

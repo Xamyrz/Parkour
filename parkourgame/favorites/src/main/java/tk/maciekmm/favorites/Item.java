@@ -22,10 +22,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public enum Item {
     FAVORITES(ItemType.SPAWN,Material.EMERALD, Favorites.getString("favorites.item.base"), 1, (short) 0, Favorites.getMessageArrayFromPrefix("favorites.item.base.lore")),
@@ -42,10 +39,10 @@ public enum Item {
     private final ItemStack item;
     private final ItemType type;
 
-    private Item(ItemType type, Material material, String name, int amount, short data, String... desc) {
+    private Item(ItemType type, Material material, String name, int amount, short data, List<String> desc) {
         this(type,material,name,amount,data);
         ItemMeta meta = this.item.getItemMeta();
-        meta.setLore(Arrays.asList(desc));
+        meta.setLore(desc);
         item.setItemMeta(meta);
     }
 

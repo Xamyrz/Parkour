@@ -22,10 +22,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public enum Item {
     VISION(ItemType.SPAWN,Material.EYE_OF_ENDER, Parkour.getString("item.vision"), 1, (short) 0),
@@ -44,17 +41,17 @@ public enum Item {
     BOOTS(ItemType.VIP,Material.GOLD_BOOTS, 1, (short) 0, new HashMap<Enchantment, Integer>() {{
         put(Enchantment.DURABILITY, 3);
     }}),
-    FIREWORK_SPAWNER(ItemType.VIP,Material.FIREWORK, Parkour.getString("item.firework"), 1, (short) 0),
+    FIREWORK_SPAWNER(ItemType.VIP,Material.FIREWORK, Parkour.getString("item.firework"), 1, (short) 0, Parkour.getMessageArrayFromPrefix("item.firework.description")),
     SCOREBOARD(ItemType.SETTINGS,Material.BOOK, Parkour.getString("item.scoreboard"), 1, (short) 0, Parkour.getMessageArrayFromPrefix("item.scoreboard.description")),
-    SETTINGS(ItemType.SPAWN,Material.REDSTONE, Parkour.getString("item.settings"),1,(short) 0);
+    SETTINGS(ItemType.SPAWN,Material.REDSTONE, Parkour.getString("item.settings"),1,(short) 0,Parkour.getMessageArrayFromPrefix("item.settings.description"));
 
     private final ItemStack item;
     private final ItemType type;
 
-    private Item(ItemType type, Material material, String name, int amount, short data, String... desc) {
+    private Item(ItemType type, Material material, String name, int amount, short data, List<String> desc) {
         this(type,material,name,amount,data);
         ItemMeta meta = this.item.getItemMeta();
-        meta.setLore(Arrays.asList(desc));
+        meta.setLore(desc);
         item.setItemMeta(meta);
     }
 

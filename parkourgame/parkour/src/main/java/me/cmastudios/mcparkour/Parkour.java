@@ -152,17 +152,19 @@ public class Parkour extends JavaPlugin {
         return MessageFormat.format(messages.getString(key), args).replace("\u00A0", " ");
     }
 
-    public static String[] getMessageArrayFromPrefix(String prefix) {
-        Enumeration<String> keys = messages.getKeys();
-        ArrayList<String> res = new ArrayList<>();
-
-        for (; keys.hasMoreElements(); ) {
-            String key = keys.nextElement();
+    public static List<String> getMessageArrayFromPrefix(String prefix) {
+        Set<String> keys = messages.keySet();
+        TreeSet<String> res = new TreeSet<>();
+        for (String key : keys) {
             if (key.startsWith(prefix)) {
-                res.add(Parkour.getString(key));
+                res.add(key);
             }
         }
-        return res.toArray(new String[res.size()]);
+        ArrayList<String> mess = new ArrayList<>();
+        for(String key : res) {
+            mess.add(Parkour.getString(key));
+        }
+        return mess;
     }
 
     public void connectDatabase() {
@@ -179,7 +181,7 @@ public class Parkour extends JavaPlugin {
                     this.getConfig().getString("mysql.host"), this.getConfig().getInt("mysql.port"), this.getConfig().getString("mysql.database")),
                     this.getConfig().getString("mysql.username"), this.getConfig().getString("mysql.password"));
             try (Statement initStatement = this.courseDatabase.createStatement()) {
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT, mode ENUM('normal', 'guildwar', 'adventure', 'vip', 'hidden', 'event') NOT NULL DEFAULT 'normal', difficulty ENUM('easy', 'medium', 'hard', 'veryhard') NOT NULL DEFAULT 'easy', name VARCHAR(20) NOT NULL DEFAULT '',PRIMARY KEY (id))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT, mode ENUM('normal', 'guildwar', 'adventure', 'vip', 'hidden', 'event') NOT NULL DEFAULT 'normal', difficulty ENUM('easy', 'medium', 'hard', 'veryhard') NOT NULL DEFAULT 'easy', name VARCHAR(0) NOT NULL DEFAULT '',PRIMARY KEY (id))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS events (id INTEGER, type enum('TIME_RUSH', 'POSITION_RUSH', 'PLAYS_RUSH', 'DISTANCE_RUSH') NOT NULL DEFAULT 'TIME_RUSH',PRIMARY KEY (id))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (player varchar(16), course INTEGER, time BIGINT, plays INT,PRIMARY KEY (player))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS experience (player varchar(16), xp INTEGER,PRIMARY KEY (player))");

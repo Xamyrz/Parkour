@@ -56,8 +56,9 @@ public class Favorites extends JavaPlugin {
     @Override
     public void onDisable() {
         for(FavoritesList list : pendingFavs.values()) {
-            pendingFavs.remove(list).save(false);
+            list.save(false);
         }
+        pendingFavs.clear();
         parkour = null;
     }
 
@@ -69,17 +70,19 @@ public class Favorites extends JavaPlugin {
         return MessageFormat.format(messages.getString(key), args).replace("\u00A0", " ");
     }
 
-    public static String[] getMessageArrayFromPrefix(String prefix) {
-        Enumeration<String> keys = messages.getKeys();
-        ArrayList<String> res = new ArrayList<>();
-
-        for (; keys.hasMoreElements(); ) {
-            String key = keys.nextElement();
+    public static List<String> getMessageArrayFromPrefix(String prefix) {
+        Set<String> keys = messages.keySet();
+        TreeSet<String> res = new TreeSet<>();
+        for (String key : keys) {
             if (key.startsWith(prefix)) {
-                res.add(Favorites.getString(key));
+                res.add(key);
             }
         }
-        return res.toArray(new String[res.size()]);
+        ArrayList<String> mess = new ArrayList<>();
+        for(String key : res) {
+            mess.add(Favorites.getString(key));
+        }
+        return mess;
     }
 
     public Connection getCourseDatabase() {

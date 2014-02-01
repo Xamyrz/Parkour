@@ -338,8 +338,15 @@ public class ParkourListener implements Listener {
                 event.getPlayer().openInventory(inv);
             } else if (Item.POINT.isSimilar(event.getItem())) {
                 event.setCancelled(true);
+                if (event.getPlayer().isSneaking() && plugin.playerCourseTracker.containsKey(event.getPlayer())) {
+                    plugin.playerCheckpoints.remove(event.getPlayer());
+                    PlayerCourseData data = plugin.playerCourseTracker.remove(event.getPlayer());
+                    event.getPlayer().teleport(data.course.getTeleport());
+                    data.restoreState(event.getPlayer());
+                    event.getPlayer().sendMessage(Parkour.getString("checkpoint.deleted"));
+                    return;
+                }
                 event.getPlayer().performCommand("cp");
-
             } else if (Item.FIREWORK_SPAWNER.isSimilar(event.getItem())) {
                 event.setCancelled(true);
                 if (plugin.playerCourseTracker.get(event.getPlayer()) != null) {

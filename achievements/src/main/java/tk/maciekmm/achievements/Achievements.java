@@ -33,7 +33,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.logging.Level;
 
 public class Achievements extends JavaPlugin {
@@ -77,7 +77,20 @@ public class Achievements extends JavaPlugin {
         return MessageFormat.format(messages.getString(key), args).replace("\u00A0", " ");
     }
 
-
+    public static List<String> getMessageArrayFromPrefix(String prefix) {
+        Set<String> keys = messages.keySet();
+        TreeSet<String> res = new TreeSet<>();
+        for (String key : keys) {
+            if (key.startsWith(prefix)) {
+                res.add(key);
+            }
+        }
+        ArrayList<String> mess = new ArrayList<>();
+        for(String key : res) {
+            mess.add(Achievements.getString(key));
+        }
+        return mess;
+    }
 
     public void connectDatabase() {
         try {

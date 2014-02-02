@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import me.cmastudios.experience.IPlayerExperience;
 import me.cmastudios.mcparkour.Duel;
 import me.cmastudios.mcparkour.Parkour;
+import me.cmastudios.mcparkour.Utils;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 
 import org.bukkit.command.Command;
@@ -41,6 +42,11 @@ public class DuelCommand implements CommandExecutor {
         if (!(sender instanceof Player)) {
             sender.sendMessage(Parkour.getString("error.playerreq", new Object[]{}));
             return true;
+        } else {
+            if(!Utils.canUse(plugin, (Player) sender, "duelcmd", 1)) {
+                sender.sendMessage(Parkour.getString("error.cooldown"));
+                return true;
+            }
         }
         Player player = (Player) sender;
         if (args.length < 1) {

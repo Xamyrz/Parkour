@@ -23,9 +23,11 @@ import java.sql.SQLException;
 
 import me.cmastudios.mcparkour.Parkour;
 
+import me.cmastudios.mcparkour.Utils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 public class ListCoursesCommand implements CommandExecutor {
 
@@ -38,6 +40,12 @@ public class ListCoursesCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command arg1, String arg2,
             String[] arg3) {
+        if(sender instanceof Player) {
+            if(!Utils.canUse(plugin, (Player) sender, "pklist", 1)) {
+                sender.sendMessage(Parkour.getString("error.cooldown"));
+                return true;
+            }
+        }
         StringBuilder courses = new StringBuilder(
                 Parkour.getString("course.list"));
 		if (arg3.length >= 1 && arg3[0].toLowerCase().startsWith("adv")) {

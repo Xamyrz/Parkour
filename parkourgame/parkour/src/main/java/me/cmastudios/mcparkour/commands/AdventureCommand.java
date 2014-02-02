@@ -19,6 +19,7 @@ package me.cmastudios.mcparkour.commands;
 import java.sql.SQLException;
 
 import me.cmastudios.mcparkour.Parkour;
+import me.cmastudios.mcparkour.Utils;
 import me.cmastudios.mcparkour.data.AdventureCourse;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.PlayerHighScore;
@@ -42,6 +43,10 @@ public class AdventureCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command,
             String label, String[] args) {
+        if(!Utils.canUse(plugin, (Player) sender, "adventurecmd", 1)) {
+            sender.sendMessage(Parkour.getString("error.cooldown"));
+            return true;
+        }
         if (args.length < 1) {
             return false;
         }

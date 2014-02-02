@@ -60,6 +60,7 @@ import java.util.Map;
 
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.util.Vector;
 
 /**
  * Responds to Bukkit events for the Parkour plugin.
@@ -187,6 +188,7 @@ public class ParkourListener implements Listener {
                 plugin.playerCourseTracker.remove(player);
                 data.restoreState(event.getPlayer());
                 event.setTo(data.course.getTeleport());
+                player.setVelocity(new Vector());
             }
         } else if (plugin.completedCourseTracker.containsKey(player)) {
             int detection = plugin.completedCourseTracker.get(player).course.getDetection();

@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Random;
 
 import me.cmastudios.mcparkour.Parkour;
+import me.cmastudios.mcparkour.Utils;
 import me.cmastudios.mcparkour.data.Guild;
 import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.Guild.GuildRank;
@@ -294,7 +295,7 @@ public class GuildCommand implements CommandExecutor {
                 GuildRank oldRank = player.getRank();
                 List<GuildPlayer> oldPlayers = oldGuild.getPlayers(plugin
                         .getCourseDatabase());
-                Parkour.broadcast(GuildPlayer.getPlayers(oldPlayers), Parkour
+                Utils.broadcast(GuildPlayer.getPlayers(oldPlayers), Parkour
                         .getString("guild.part", sender.getName(),
                                 oldGuild.getTag()));
                 player.delete(plugin.getCourseDatabase());
@@ -311,7 +312,7 @@ public class GuildCommand implements CommandExecutor {
                                 .nextInt(oldPlayers.size()));
                         newLeader.setRank(GuildRank.LEADER);
                         newLeader.save(plugin.getCourseDatabase());
-                        Parkour.broadcast(GuildPlayer.getPlayers(oldPlayers),
+                        Utils.broadcast(GuildPlayer.getPlayers(oldPlayers),
                                 Parkour.getString("guild.chrank", newLeader
                                         .getPlayer().getName(), newLeader
                                         .getRank()));

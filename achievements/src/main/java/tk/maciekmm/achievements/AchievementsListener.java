@@ -86,9 +86,9 @@ public class AchievementsListener implements Listener {
         if (Item.ACHIEVEMENTS_MENU.isSimilar(event.getItem())) {
             event.setCancelled(true);
             if(plugin.canUse(event.getPlayer(),"menu",1)) {
-               plugin.getManager().getPlayerAchievements(event.getPlayer()).openMenu();
+                plugin.getManager().getPlayerAchievements(event.getPlayer()).openMenu();
             } else {
-              event.getPlayer().sendMessage(Achievements.getString("achievement.inventory.cooldown"));
+                event.getPlayer().sendMessage(Achievements.getString("achievement.inventory.cooldown"));
             }
 
         }

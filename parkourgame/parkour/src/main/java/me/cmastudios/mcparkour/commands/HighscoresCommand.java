@@ -46,8 +46,6 @@ public class HighscoresCommand implements CommandExecutor {
             sender.sendMessage(Parkour.getString("error.playerreq"));
             return true;
         }
-        Player player = (Player) sender;
-        OfflinePlayer target;
         if (args.length < 2) {
             return false;
         }

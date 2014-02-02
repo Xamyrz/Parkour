@@ -25,9 +25,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.SQLException;
 
-/**
- * Created by Maciej on 25.01.14.
- */
 public class GuildFinishHandling extends BukkitRunnable {
     private final Player player;
     private final Parkour plugin;
@@ -54,7 +51,6 @@ public class GuildFinishHandling extends BukkitRunnable {
                 }
             });
         } catch (SQLException e) {
-            return;
         }
     }
 }

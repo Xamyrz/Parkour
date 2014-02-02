@@ -17,7 +17,7 @@
 
 package tk.maciekmm.favorites;
 
-import me.cmastudios.mcparkour.Parkour;
+import me.cmastudios.mcparkour.Utils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -75,8 +75,9 @@ public class FavoritesListener implements Listener {
             }
             if (Item.FAVORITES.isSimilar(event.getItem())) {
                 event.setCancelled(true);
-                if(!plugin.canUse(event.getPlayer(),"favorites",2)) {
-                    event.getPlayer().sendMessage(Parkour.getString("favorites.delay"));
+
+                if(!Utils.canUse(plugin,event.getPlayer(),"favorites",2)) {
+                    event.getPlayer().sendMessage(Favorites.getString("favorites.delay"));
                     return;
                 }
                 FavoritesList favs;

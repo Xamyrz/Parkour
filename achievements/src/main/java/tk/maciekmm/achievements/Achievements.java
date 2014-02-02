@@ -18,6 +18,8 @@
 package tk.maciekmm.achievements;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -40,6 +42,7 @@ public class Achievements extends JavaPlugin {
     private static final ResourceBundle messages = ResourceBundle.getBundle("messages");
     private Connection achievementsDatabase;
     private AchievementsManager manager;
+
     @Override
     public void onEnable() {
         this.saveDefaultConfig();
@@ -50,7 +53,7 @@ public class Achievements extends JavaPlugin {
         FileConfiguration achievements = YamlConfiguration.loadConfiguration(new File(this.getDataFolder(), "achievements.yml"));
         PlayerAchievements.setupCriterias(this.getConfig());
         PlayerAchievements.setupAchievements(achievements);
-        Bukkit.getPluginManager().registerEvents(new AchievementsListener(this),this);
+        Bukkit.getPluginManager().registerEvents(new AchievementsListener(this), this);
         this.manager = new AchievementsManager(this);
         this.getServer().getServicesManager().register(AchievementsManager.class, manager, this, ServicePriority.Normal);
         for (Player p : Bukkit.getOnlinePlayers()) {
@@ -64,11 +67,11 @@ public class Achievements extends JavaPlugin {
     @Override
     public void onDisable() {
         this.getServer().getServicesManager().unregisterAll(this);
-        for(Player p : Bukkit.getOnlinePlayers()) {
-            if(p.hasMetadata("achievements")) {
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (p.hasMetadata("achievements")) {
                 PlayerAchievements achievement = (PlayerAchievements) p.getMetadata("achievements").get(0).value();
                 achievement.save(false);
-                p.removeMetadata("achievements",this);
+                p.removeMetadata("achievements", this);
             }
         }
     }
@@ -86,7 +89,7 @@ public class Achievements extends JavaPlugin {
             }
         }
         ArrayList<String> mess = new ArrayList<>();
-        for(String key : res) {
+        for (String key : res) {
             mess.add(Achievements.getString(key));
         }
         return mess;
@@ -106,7 +109,7 @@ public class Achievements extends JavaPlugin {
                     this.getConfig().getString("mysql.host"), this.getConfig().getInt("mysql.port"), this.getConfig().getString("mysql.database")),
                     this.getConfig().getString("mysql.username"), this.getConfig().getString("mysql.password"));
             try (Statement initStatement = this.achievementsDatabase.createStatement()) {
-               initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS playerachievements (`player` varchar(16) NOT NULL,`completed` text NOT NULL,`progress` mediumtext NOT NULL,`milestones` text NOT NULL, PRIMARY KEY (`player`))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS playerachievements (`player` varchar(16) NOT NULL,`completed` text NOT NULL,`progress` mediumtext NOT NULL,`milestones` text NOT NULL, PRIMARY KEY (`player`))");
             }
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load database driver", ex);
@@ -132,16 +135,16 @@ public class Achievements extends JavaPlugin {
     }
 
     public boolean canUse(Player player, String cooldown, long seconds) {
-        if(player.hasMetadata("achs"+cooldown)) {
-            for(MetadataValue val : player.getMetadata("achs"+cooldown)) {
-                if(val.getOwningPlugin()==this) {
-                    if((System.currentTimeMillis()-val.asLong())/1000 <= seconds) {
+        if (player.hasMetadata("achs" + cooldown)) {
+            for (MetadataValue val : player.getMetadata("achs" + cooldown)) {
+                if (val.getOwningPlugin() == this) {
+                    if ((System.currentTimeMillis() - val.asLong()) / 1000 <= seconds) {
                         return false;
                     }
                 }
             }
         }
-        player.setMetadata("achs"+cooldown,new FixedMetadataValue(this,System.currentTimeMillis()));
+        player.setMetadata("achs" + cooldown, new FixedMetadataValue(this, System.currentTimeMillis()));
         return true;
     }
 }

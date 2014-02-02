@@ -88,18 +88,4 @@ public class Favorites extends JavaPlugin {
     public Connection getCourseDatabase() {
         return this.parkour.getCourseDatabase();
     }
-
-    public boolean canUse(Player player, String cooldown, long seconds) {
-        if(player.hasMetadata("achs"+cooldown)) {
-            for(MetadataValue val : player.getMetadata("achs"+cooldown)) {
-                if(val.getOwningPlugin()==this) {
-                    if(val.asLong()/1000 <= seconds) {
-                        return false;
-                    }
-                }
-            }
-        }
-        player.setMetadata("achs"+cooldown,new FixedMetadataValue(this,System.currentTimeMillis()));
-        return true;
-    }
 }

@@ -27,11 +27,6 @@ import tk.maciekmm.achievements.data.SimpleAchievement;
 import tk.maciekmm.favorites.FavoritesAddParkourEvent;
 
 public class AchievementsListener implements Listener {
-    private final AchievementsWrapper plugin;
-
-    public AchievementsListener(AchievementsWrapper wrapper) {
-        this.plugin = wrapper;
-    }
 
     @EventHandler
     public void onPlayerCompleteParkour(PlayerCompleteParkourEvent event) {
@@ -65,7 +60,7 @@ public class AchievementsListener implements Listener {
         if (event.getDifference() > 0) {
             event.setXp(event.getXpBefore()+(int)(event.getDifference() * (1 + AchievementsWrapper.achievements.getOfflinePlayerAchievements(event.getPlayerExperience().getPlayer()).getModifier())));
             if (event.getPlayerExperience().getPlayer().isOnline()) {
-                AchievementsWrapper.achievements.getPlayerAchievements(event.getPlayerExperience().getPlayer().getPlayer()).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("LEVEL_ACQUIRE"), (long) plugin.experience.getLevel(event.getXp())));
+                AchievementsWrapper.achievements.getPlayerAchievements(event.getPlayerExperience().getPlayer().getPlayer()).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("LEVEL_ACQUIRE"), (long) AchievementsWrapper.experience.getLevel(event.getXp())));
             }
         }
     }

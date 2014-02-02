@@ -94,7 +94,6 @@ public class ParkourListener implements Listener {
                 || below.getType() == Material.WALL_SIGN)) {
             final Sign sign = (Sign) below.getState();
             final String controlLine = sign.getLine(0);
-
             switch (controlLine) {
                 case "[start]":
                     plugin.completedCourseTracker.remove(player);
@@ -135,8 +134,8 @@ public class ParkourListener implements Listener {
                             Bukkit.getPluginManager().callEvent(new PlayerCompleteDuelEvent(duel, player, completionTime));
                         }
                         Bukkit.getScheduler().runTaskAsynchronously(plugin, new GuildFinishHandling(plugin, player, now));
-                        for(PotionEffect effect : player.getActivePotionEffects()) {
-                            if(effect.getType() == PotionEffectType.INVISIBILITY) {
+                        for (PotionEffect effect : player.getActivePotionEffects()) {
+                            if (effect.getType() == PotionEffectType.INVISIBILITY) {
                                 continue; //We don't want to remove vanish
                             }
                             player.removePotionEffect(effect.getType());
@@ -194,12 +193,6 @@ public class ParkourListener implements Listener {
                 plugin.playerCourseTracker.remove(player);
                 data.restoreState(event.getPlayer());
                 event.setTo(data.course.getTeleport());
-                for(PotionEffect effect : player.getActivePotionEffects()) {
-                    if(effect.getType() == PotionEffectType.INVISIBILITY) {
-                        continue; //We don't want to remove vanish
-                    }
-                    player.removePotionEffect(effect.getType());
-                }
             }
         } else if (plugin.completedCourseTracker.containsKey(player)) {
             int detection = plugin.completedCourseTracker.get(player).course.getDetection();
@@ -283,6 +276,9 @@ public class ParkourListener implements Listener {
                 if (player.hasMetadata("disableScoreboard")) {
                     if (player.getMetadata("disableScoreboard").get(0).asBoolean()) {
                         player.sendMessage(Parkour.getString("scoreboard.enable"));
+                        if (plugin.playerCourseTracker.containsKey(event.getWhoClicked())) {
+                            Bukkit.getScheduler().runTaskAsynchronously(plugin, new DisplayHighscoresTask(plugin, player, plugin.playerCourseTracker.get(event.getWhoClicked()).course));
+                        }
                         player.removeMetadata("disableScoreboard", plugin);
                         return;
                     }
@@ -321,24 +317,29 @@ public class ParkourListener implements Listener {
             if (!event.hasItem()) {
                 return;
             }
-            if (event.getItem().getType() == Material.ENDER_PEARL) {
-                ItemStack check = event.getItem().clone();
-                check.setType(Item.VISION.getItem().getType());
-                if (check.isSimilar(Item.VISION.getItem())) {
-                    event.setCancelled(true);
-                    plugin.blindPlayers.remove(event.getPlayer());
-                    plugin.refreshVision(event.getPlayer());
-                    plugin.refreshHand(event.getPlayer());
-                    event.getPlayer().sendMessage(Parkour.getString("blind.disable", new Object[]{}));
+            if (Item.VISION_USED.isSimilar(event.getItem())) {
+                event.setCancelled(true);
+                plugin.blindPlayers.remove(event.getPlayer());
+                plugin.refreshVision(event.getPlayer());
+                if (event.getPlayer().getItemInHand().isSimilar(event.getItem())) { //Should be always true
+                    event.getPlayer().setItemInHand(Item.VISION.getItem());
+                } else {
+                    event.getPlayer().getInventory().remove(event.getItem());
+                    event.getPlayer().getInventory().addItem(Item.VISION.getItem());
                 }
+                event.getPlayer().sendMessage(Parkour.getString("blind.disable"));
             } else if (Item.VISION.isSimilar(event.getItem())) {
                 event.setCancelled(true);
                 plugin.blindPlayers.remove(event.getPlayer());
                 plugin.blindPlayers.add(event.getPlayer());
                 plugin.refreshVision(event.getPlayer());
-                plugin.refreshHand(event.getPlayer());
-                event.getPlayer().sendMessage(Parkour.getString("blind.enable", new Object[]{}));
-
+                event.getPlayer().sendMessage(Parkour.getString("blind.enable"));
+                if (event.getPlayer().getItemInHand().isSimilar(event.getItem())) {
+                    event.getPlayer().setItemInHand(Item.VISION_USED.getItem());
+                } else {
+                    event.getPlayer().getInventory().remove(event.getItem());
+                    event.getPlayer().getInventory().addItem(Item.VISION_USED.getItem());
+                }
             } else if (Item.SPAWN.isSimilar(event.getItem())) {
                 event.setCancelled(true);
                 event.getPlayer().teleport(plugin.getSpawn(), TeleportCause.COMMAND);
@@ -353,11 +354,15 @@ public class ParkourListener implements Listener {
             } else if (Item.POINT.isSimilar(event.getItem())) {
                 event.setCancelled(true);
                 if (event.getPlayer().isSneaking() && plugin.playerCourseTracker.containsKey(event.getPlayer())) {
-                    plugin.playerCheckpoints.remove(event.getPlayer());
-                    PlayerCourseData data = plugin.playerCourseTracker.remove(event.getPlayer());
-                    event.getPlayer().teleport(data.course.getTeleport());
-                    data.restoreState(event.getPlayer());
-                    event.getPlayer().sendMessage(Parkour.getString("checkpoint.deleted"));
+                    if (plugin.playerCheckpoints.containsKey(event.getPlayer())) {
+                        plugin.playerCheckpoints.remove(event.getPlayer());
+                        PlayerCourseData data = plugin.playerCourseTracker.remove(event.getPlayer());
+                        event.getPlayer().teleport(data.course.getTeleport());
+                        data.restoreState(event.getPlayer());
+                        event.getPlayer().sendMessage(Parkour.getString("checkpoint.deleted"));
+                    } else {
+                        event.getPlayer().sendMessage(Parkour.getString("checkpoint.notset"));
+                    }
                     return;
                 }
                 event.getPlayer().performCommand("cp");
@@ -367,14 +372,11 @@ public class ParkourListener implements Listener {
                     event.getPlayer().sendMessage(Parkour.getString("firework.incourse"));
                     return;
                 }
-                if (!plugin.fireworkCooldown.containsKey(event.getPlayer().getName())) {
-                    plugin.fireworkCooldown.put(event.getPlayer().getName(), System.currentTimeMillis());
-                } else if ((System.currentTimeMillis() - plugin.fireworkCooldown.get(event.getPlayer().getName())) / 1000 <= 5) {
+                if (!Utils.canUse(plugin, event.getPlayer(), "firework", 5)) {
                     event.getPlayer().sendMessage(Parkour.getString("firework.delay"));
                     return;
                 }
-                plugin.spawnRandomFirework(event.getPlayer().getLocation());
-                plugin.fireworkCooldown.put(event.getPlayer().getName(), System.currentTimeMillis());
+                Utils.spawnRandomFirework(event.getPlayer().getLocation());
             }
         }
         if ((event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK)
@@ -435,12 +437,16 @@ public class ParkourListener implements Listener {
                 event.getPlayer().sendMessage(Parkour.getString("event.started", Parkour.getString(plugin.getEvent().getCourse().getType().getNameKey())));
             }
         }
+
         for (Player blindPlayer : plugin.blindPlayers) {
             plugin.refreshVision(blindPlayer);
         }
 
-        if (event.getPlayer().getInventory().contains(Material.ENDER_PEARL)) {
-            event.getPlayer().getInventory().remove(Material.ENDER_PEARL);
+        for (ItemStack is : event.getPlayer().getInventory().all(Item.VISION_USED.getItem().getType()).values()) {
+            if (Item.VISION_USED.isSimilar(is)) {
+                event.getPlayer().getInventory().remove(is);
+                break;
+            }
         }
 
         parent:
@@ -496,10 +502,6 @@ public class ParkourListener implements Listener {
         plugin.playerCheckpoints.remove(event.getPlayer());
         plugin.guildChat.remove(event.getPlayer());
         plugin.completedCourseTracker.remove(event.getPlayer());
-        if (plugin.favoritesCooldown.containsKey(event.getPlayer().getName())) {
-            plugin.favoritesCooldown.remove(event.getPlayer().getName());
-        }
-
         if (plugin.blindPlayerExempts.containsKey(event.getPlayer())) {
             plugin.blindPlayerExempts.remove(event.getPlayer());
         }
@@ -530,8 +532,12 @@ public class ParkourListener implements Listener {
         event.setLeaveMessage(null);
     }
 
-    boolean ignoreTeleport = false;
+    @EventHandler
+    public void onParkourCancel(PlayerCancelParkourEvent event) {
+        Utils.removeEffects(event.getPlayer());
+    }
 
+    boolean ignoreTeleport = false;
     @EventHandler
     public void onPlayerTeleport(final PlayerTeleportEvent event) {
         if (event.getCause() == TeleportCause.COMMAND) {
@@ -626,7 +632,7 @@ public class ParkourListener implements Listener {
                 Validate.notNull(course, Parkour.getString("error.course404"));
                 Validate.isTrue(course.getMode() == CourseMode.GUILDWAR, Parkour.getString("error.coursewar"));
                 Validate.isTrue(event.getBlock().getState() instanceof Skull); // assert
-                SkullType type = plugin.getSkullFromDurability(event.getItemInHand().getDurability());
+                SkullType type = Utils.getSkullFromDurability(event.getItemInHand().getDurability());
                 Validate.notNull(type); // assert
                 EffectHead head = new EffectHead(event.getBlock().getLocation(), course, type);
                 head.save(plugin.getCourseDatabase());

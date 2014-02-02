@@ -41,8 +41,6 @@ public class PkRoomCommand implements CommandExecutor {
         }
         Player p = (Player) sender;
         int x, y, z;
-        String opt;
-        String[] optarray;
         World world;
         float pitch, yaw;
         try {

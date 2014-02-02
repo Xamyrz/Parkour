@@ -20,7 +20,6 @@ package me.cmastudios.mcparkour.tasks;
 import me.cmastudios.experience.IPlayerExperience;
 import me.cmastudios.mcparkour.Checkpoint;
 import me.cmastudios.mcparkour.Parkour;
-import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.PlayerHighScore;
 import me.cmastudios.mcparkour.events.PlayerCompleteParkourEventBuilder;
 import org.bukkit.Bukkit;

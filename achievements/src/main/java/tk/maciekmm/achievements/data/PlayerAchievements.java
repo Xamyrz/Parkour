@@ -43,13 +43,13 @@ public class PlayerAchievements extends OfflinePlayerAchievements implements Ite
     private final Achievements plugin;
 
     public PlayerAchievements(Achievements plugin, Player p, ArrayList<AchievementMilestone> milestones, ArrayList<ParkourAchievement> achievements, HashMap<ParkourAchievement, ArrayList<Long>> progress) {
-        super(p, milestones, achievements, progress);
+        super(milestones, achievements, progress);
         this.plugin = plugin;
         this.player = p;
     }
 
     public PlayerAchievements(OfflinePlayerAchievements playerAchievements, Achievements plugin, Player player) {
-        super(player, playerAchievements.completedMilestones, playerAchievements.completedAchievements, playerAchievements.achievementProgress);
+        super(playerAchievements.completedMilestones, playerAchievements.completedAchievements, playerAchievements.achievementProgress);
         this.plugin = plugin;
         this.player = player;
     }
@@ -207,7 +207,6 @@ public class PlayerAchievements extends OfflinePlayerAchievements implements Ite
                     openMenu();
                 }
             }, 2L);
-            return;
         } else if (slot == 53 && inv.getItem(53) != null) {
             this.page++;
             destroyMenu();

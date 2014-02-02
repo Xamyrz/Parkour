@@ -28,6 +28,7 @@ import java.util.logging.Level;
 
 import me.cmastudios.mcparkour.Parkour;
 
+import me.cmastudios.mcparkour.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -58,7 +59,7 @@ public class Guild {
     }
 
     public void broadcast(String message, Connection conn) throws SQLException {
-        Parkour.broadcast(GuildPlayer.getPlayers(this.getPlayers(conn)),
+        Utils.broadcast(GuildPlayer.getPlayers(this.getPlayers(conn)),
                 message);
     }
 

@@ -54,7 +54,6 @@ public class DisplayHighscoresTask extends BukkitRunnable {
                 }
             });
         } catch (SQLException e) {
-            return;
         }
     }
 }

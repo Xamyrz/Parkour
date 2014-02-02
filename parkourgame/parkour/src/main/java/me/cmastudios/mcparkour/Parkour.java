@@ -68,12 +68,9 @@ public class Parkour extends JavaPlugin {
     public Map<Player, PlayerCourseData> completedCourseTracker = new HashMap<>();
     public Map<Player, GuildPlayer> guildChat = new HashMap<>();
     public Map<Player, List<Player>> blindPlayerExempts = new HashMap<>();
-    public Map<String, Long> fireworkCooldown = new HashMap<>();
-    public Map<String, Long> favoritesCooldown = new HashMap<>();
     public List<Duel> activeDuels = new ArrayList<>();
     public List<GuildWar> activeWars = new ArrayList<>();
     public static ExperienceManager experience;
-    public final Random random = new Random();
 
     @Override
     public void onEnable() {
@@ -108,15 +105,12 @@ public class Parkour extends JavaPlugin {
         }
     }
 
-    private boolean setupExperience() {
+    private void setupExperience() {
         RegisteredServiceProvider<ExperienceManager> xpProvider = getServer().getServicesManager().getRegistration(me.cmastudios.experience.ExperienceManager.class);
         if (xpProvider != null) {
             experience = xpProvider.getProvider();
         }
-
-        return (experience != null);
     }
-
 
     @Override
     public void onDisable() {
@@ -131,7 +125,6 @@ public class Parkour extends JavaPlugin {
             Player player = it.next();
             it.remove();
             refreshVision(player);
-            refreshHand(player);
         }
         synchronized (deafPlayers) {
             deafPlayers.clear();
@@ -230,19 +223,6 @@ public class Parkour extends JavaPlugin {
         }
     }
 
-    public void refreshHand(Player player) {
-        boolean inHand = player.getItemInHand().getType() == Material.ENDER_PEARL || player.getItemInHand().getType() == Material.EYE_OF_ENDER;
-        ItemStack item = Item.VISION.getItem();
-        item.setType(blindPlayers.contains(player) ? Material.ENDER_PEARL : Material.EYE_OF_ENDER);
-        player.getInventory().remove(Material.ENDER_PEARL);
-        player.getInventory().remove(Material.EYE_OF_ENDER);
-        if (inHand) {
-            player.setItemInHand(item);
-        } else {
-            player.getInventory().addItem(item);
-        }
-    }
-
     public Location getSpawn() {
         World world = this.getServer().getWorld(this.getConfig().getString("spawn.world"));
         double x = this.getConfig().getDouble("spawn.x");
@@ -329,12 +309,6 @@ public class Parkour extends JavaPlugin {
         this.ratio = ratio;
     }
 
-    public static void broadcast(List<Player> list, String message) {
-        for (Player recipient : list) {
-            recipient.sendMessage(message);
-        }
-    }
-
     public void rebuildHeads() throws SQLException {
         for (EffectHead head : EffectHead.loadHeads(this.getCourseDatabase())) {
             head.setBlock(this);
@@ -344,105 +318,6 @@ public class Parkour extends JavaPlugin {
     public void rebuildHeads(ParkourCourse course) throws SQLException {
         for (EffectHead head : EffectHead.loadHeads(this.getCourseDatabase(), course)) {
             head.setBlock(this);
-        }
-    }
-
-    public void spawnRandomFirework(Location loc) {
-        Firework fw = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
-        FireworkMeta fwm = fw.getFireworkMeta();
-        int rt = random.nextInt(5) + 1;
-        Type type = Type.BALL;
-        switch (rt) {
-            case 1:
-                type = Type.BALL;
-                break;
-            case 2:
-                type = Type.BURST;
-                break;
-            case 3:
-                type = Type.CREEPER;
-                break;
-            case 4:
-                type = Type.STAR;
-                break;
-            case 5:
-                type = Type.BALL_LARGE;
-                break;
-        }
-        FireworkEffect effect = FireworkEffect.builder().flicker(random.nextBoolean()).withColor(getRandomColor()).withFade(getRandomColor()).with(type).trail(random.nextBoolean()).build();
-        fwm.addEffect(effect);
-        fwm.setPower(0);
-        fw.setFireworkMeta(fwm);
-    }
-
-    private Color getRandomColor() {
-        Color c = null;
-        Random r = new Random();
-        int i = r.nextInt(17) + 1;
-        switch (i) {
-            case 1:
-                c = Color.AQUA;
-                break;
-            case 2:
-                c = Color.BLACK;
-                break;
-            case 3:
-                c = Color.BLUE;
-                break;
-            case 4:
-                c = Color.FUCHSIA;
-                break;
-            case 5:
-                c = Color.GRAY;
-                break;
-            case 6:
-                c = Color.GREEN;
-                break;
-            case 7:
-                c = Color.LIME;
-                break;
-            case 8:
-                c = Color.MAROON;
-                break;
-            case 9:
-                c = Color.NAVY;
-                break;
-            case 10:
-                c = Color.OLIVE;
-                break;
-            case 11:
-                c = Color.ORANGE;
-                break;
-            case 12:
-                c = Color.PURPLE;
-                break;
-            case 13:
-                c = Color.RED;
-                break;
-            case 14:
-                c = Color.SILVER;
-                break;
-            case 15:
-                c = Color.TEAL;
-                break;
-            case 16:
-                c = Color.WHITE;
-                break;
-            case 17:
-                c = Color.YELLOW;
-                break;
-        }
-        return c;
-    }
-
-    public SkullType getSkullFromDurability(short durability) {
-        switch (durability) {
-            case 1:
-                return SkullType.WITHER;
-            case 3:
-                return SkullType.PLAYER;
-            default:
-                return SkullType.SKELETON;
         }
     }
 
@@ -488,12 +363,7 @@ public class Parkour extends JavaPlugin {
             this.previousLevel = player.getLevel();
             player.setExp(0.0F);
             player.setLevel(0);
-            for(PotionEffect effect : player.getActivePotionEffects()) {
-                if(effect.getType() == PotionEffectType.INVISIBILITY) {
-                    continue; //We don't want to remove vanish
-                }
-                player.removePotionEffect(effect.getType());
-            }
+            Utils.removeEffects(player);
         }
     }
 }

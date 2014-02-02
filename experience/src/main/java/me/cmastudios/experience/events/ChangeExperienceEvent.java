@@ -17,7 +17,6 @@
 
 package me.cmastudios.experience.events;
 
-import me.cmastudios.experience.ExperienceManager;
 import me.cmastudios.experience.IPlayerExperience;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;

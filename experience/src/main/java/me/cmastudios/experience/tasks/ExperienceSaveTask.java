@@ -20,16 +20,12 @@ package me.cmastudios.experience.tasks;
 import me.cmastudios.experience.Experience;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.logging.Level;
 
-/**
- * Created by Maciej on 25.01.14.
- */
 public class ExperienceSaveTask extends BukkitRunnable {
     private final int experience;
     private final OfflinePlayer player;

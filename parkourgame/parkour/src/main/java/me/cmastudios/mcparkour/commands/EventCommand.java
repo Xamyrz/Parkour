@@ -18,6 +18,7 @@
 package me.cmastudios.mcparkour.commands;
 
 import me.cmastudios.mcparkour.Parkour;
+import me.cmastudios.mcparkour.Utils;
 import me.cmastudios.mcparkour.event.*;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.event.modes.DistanceRushParkourEvent;
@@ -140,10 +141,10 @@ public class EventCommand implements CommandExecutor {
                         sender.sendMessage(Parkour.getString("event.admin.error.invalidcourse"));
                         return true;
                     }
-                    if (course == null) {
+                    /*if (course == null) {
                         sender.sendMessage(Parkour.getString("event.admin.error.invalid"));
                         return true;
-                    }
+                    }*/
                     plugin.setEvent(course);
                     course.prepare();
                     break;
@@ -179,6 +180,6 @@ public class EventCommand implements CommandExecutor {
 
     private int getRandomFromRange(int num1, int num2) {
         int min = Math.min(num1,num2);
-        return plugin.random.nextInt(((min == num2 ? num1 : num2) - min) + 1) + min;
+        return Utils.RANDOM.nextInt(((min == num2 ? num1 : num2) - min) + 1) + min;
     }
 }

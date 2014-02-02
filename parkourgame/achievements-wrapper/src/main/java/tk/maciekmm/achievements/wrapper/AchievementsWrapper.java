@@ -31,7 +31,7 @@ public class AchievementsWrapper extends JavaPlugin {
     public void onEnable() {
         setupAchievements();
         setupExperience();
-        Bukkit.getPluginManager().registerEvents(new AchievementsListener(this),this);
+        Bukkit.getPluginManager().registerEvents(new AchievementsListener(),this);
     }
 
     @Override

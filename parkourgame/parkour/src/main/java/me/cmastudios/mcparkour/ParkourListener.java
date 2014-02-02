@@ -98,8 +98,8 @@ public class ParkourListener implements Listener {
                     : this.getBlockInDepthRange(event.getFrom(), Material.WALL_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX);
             final Sign sign = (Sign) below.getState();
             final String controlLine = sign.getLine(0);
-            if(belowfrom!=null&&(below.getType() == Material.SIGN_POST
-                    || below.getType() == Material.WALL_SIGN)&&((Sign) below.getState()).getLine(0).equals(controlLine)) {
+            if(belowfrom!=null&&(belowfrom.getType() == Material.SIGN_POST
+                    || belowfrom.getType() == Material.WALL_SIGN)&&((Sign) belowfrom.getState()).getLine(0).equals(controlLine)) {
                 return;
             }
             switch (controlLine) {
@@ -430,7 +430,7 @@ public class ParkourListener implements Listener {
         event.setFormat(prefix + event.getFormat());
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOW)
     public void onPlayerJoin(final PlayerJoinEvent event) throws SQLException {
         event.setJoinMessage(null);
         if (plugin.getEvent() != null && plugin.getEvent().hasStarted()) {

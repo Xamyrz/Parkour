@@ -19,6 +19,7 @@ package me.cmastudios.mcparkour.tasks;
 
 import me.cmastudios.experience.IPlayerExperience;
 import me.cmastudios.mcparkour.Parkour;
+import me.cmastudios.mcparkour.Utils;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -59,6 +60,7 @@ public class TeleportToCourseTask extends BukkitRunnable {
                     @Override
                     public void run() {
                         player.teleport(tpCourse.getTeleport());
+                        Utils.removeEffects(player);
                     }
                 });
                 if (tpCourse.getMode() != ParkourCourse.CourseMode.ADVENTURE) {

@@ -134,12 +134,6 @@ public class ParkourListener implements Listener {
                             Bukkit.getPluginManager().callEvent(new PlayerCompleteDuelEvent(duel, player, completionTime));
                         }
                         Bukkit.getScheduler().runTaskAsynchronously(plugin, new GuildFinishHandling(plugin, player, now));
-                        for (PotionEffect effect : player.getActivePotionEffects()) {
-                            if (effect.getType() == PotionEffectType.INVISIBILITY) {
-                                continue; //We don't want to remove vanish
-                            }
-                            player.removePotionEffect(effect.getType());
-                        }
                     }
                     break;
                 case "[cancel]":
@@ -189,7 +183,7 @@ public class ParkourListener implements Listener {
                     event.setTo(cp.getLocation());
                     return;
                 }
-                Bukkit.getPluginManager().callEvent(new PlayerCancelParkourEvent(PlayerCancelParkourEvent.CancelReason.SIGN, data, event.getPlayer()));
+                Bukkit.getPluginManager().callEvent(new PlayerCancelParkourEvent(PlayerCancelParkourEvent.CancelReason.BED_ROCK, data, event.getPlayer()));
                 plugin.playerCourseTracker.remove(player);
                 data.restoreState(event.getPlayer());
                 event.setTo(data.course.getTeleport());

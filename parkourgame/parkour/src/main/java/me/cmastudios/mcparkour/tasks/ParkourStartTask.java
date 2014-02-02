@@ -104,8 +104,6 @@ public class ParkourStartTask extends BukkitRunnable {
                             }
                         }
                         Bukkit.getPluginManager().callEvent(new PlayerStartParkourEvent(player, exp, data));
-
-
                     }
                 }
             });

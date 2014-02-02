@@ -34,6 +34,7 @@ public enum Item {
     HARD(ItemType.MISC,Material.POWERED_MINECART, 1),
     V_HARD(ItemType.MISC,Material.EXPLOSIVE_MINECART, 1),
     THEMATIC(ItemType.MISC,Material.BOAT, 1),
+    CUSTOM(ItemType.MISC,Material.POTION, 1),
     ADVENTURE(ItemType.MISC,Material.SADDLE, 1);
 
     private final ItemStack item;

@@ -291,6 +291,12 @@ class OpenFavsTask extends BukkitRunnable {
                         meta.setDisplayName(Favorites.getString("favorites.item.thematic", current.getName(), current.getId()));
                         item.setItemMeta(meta);
                         break;
+                    case CUSTOM:
+                        item = Item.CUSTOM.getItem();
+                        meta = item.getItemMeta();
+                        meta.setDisplayName(Favorites.getString("favorites.item.custom", current.getName(), current.getId()));
+                        item.setItemMeta(meta);
+                        break;
 
                 }
                 if (item != null) {

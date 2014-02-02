@@ -141,10 +141,10 @@ public class EventCommand implements CommandExecutor {
                         sender.sendMessage(Parkour.getString("event.admin.error.invalidcourse"));
                         return true;
                     }
-                    /*if (course == null) {
+                    if (course == null) {
                         sender.sendMessage(Parkour.getString("event.admin.error.invalid"));
                         return true;
-                    }*/
+                    }
                     plugin.setEvent(course);
                     course.prepare();
                     break;

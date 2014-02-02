@@ -93,8 +93,15 @@ public class ParkourListener implements Listener {
                 : this.getBlockInDepthRange(event.getTo(), Material.WALL_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX);
         if (below != null && (below.getType() == Material.SIGN_POST
                 || below.getType() == Material.WALL_SIGN)) {
+            Block belowfrom = this.detectBlocks(event.getFrom(), Material.SIGN_POST, DETECTION_MIN, SIGN_DETECTION_MAX)
+                    ? this.getBlockInDepthRange(event.getFrom(), Material.SIGN_POST, DETECTION_MIN, SIGN_DETECTION_MAX)
+                    : this.getBlockInDepthRange(event.getFrom(), Material.WALL_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX);
             final Sign sign = (Sign) below.getState();
             final String controlLine = sign.getLine(0);
+            if(belowfrom!=null&&(below.getType() == Material.SIGN_POST
+                    || below.getType() == Material.WALL_SIGN)&&((Sign) below.getState()).getLine(0).equals(controlLine)) {
+                return;
+            }
             switch (controlLine) {
                 case "[start]":
                     plugin.completedCourseTracker.remove(player);

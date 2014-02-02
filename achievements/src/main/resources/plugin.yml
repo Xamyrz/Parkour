@@ -5,3 +5,8 @@ author: maciekmm
 authors: [cmastudios]
 website: ${project.url}
 main: ${main.class}
+commands:
+  modifier:
+    description: Checks modifier
+    usage: /<command> - Check your modifier
+    aliases: [mnoznik]

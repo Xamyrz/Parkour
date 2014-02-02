@@ -76,6 +76,18 @@ public class Achievements extends JavaPlugin {
         }
     }
 
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if(!(sender instanceof Player)) {
+            sender.sendMessage(Achievements.getString("error.playerreq"));
+            return true;
+        }
+        PlayerAchievements achs = manager.getPlayerAchievements((Player) sender);
+        sender.sendMessage(Achievements.getString("chat.modifier",achs.getModifier()));
+        return true;
+    }
+
     public static String getString(String key, Object... args) {
         return MessageFormat.format(messages.getString(key), args).replace("\u00A0", " ");
     }

@@ -162,7 +162,7 @@ public class ParkourCourse {
     public Scoreboard getScoreboard(List<PlayerHighScore> highScores) {
         Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
         Objective obj = sb.registerNewObjective("scores", "dummy");
-        obj.setDisplayName(Parkour.getString("scoreboard.title",name,id));
+        obj.setDisplayName(Parkour.getString("scoreboard.title",name.substring(0,Math.min(name.length(),32-(String.valueOf(id).length()+6))),id));
 
         for (int count = 0; count < 10; count++) {
             if (highScores.size() <= count) {

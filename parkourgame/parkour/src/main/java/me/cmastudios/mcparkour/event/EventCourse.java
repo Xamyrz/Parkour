@@ -31,34 +31,38 @@ public class EventCourse {
     public static EventCourse loadCourse(Connection conn, int id) throws SQLException {
         ParkourCourse course = ParkourCourse.loadCourse(conn, id);
         if (course != null && course.getMode() == ParkourCourse.CourseMode.EVENT) {
-            PreparedStatement stmt = conn.prepareStatement("SELECT * FROM events WHERE id=?");
-            stmt.setInt(1, id);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return new EventCourse(EventType.valueOf(rs.getString("type")), course);
+            try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM events WHERE id=?")) {
+                stmt.setInt(1, id);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return new EventCourse(EventType.valueOf(rs.getString("type")), course);
+                    }
+                }
             }
         }
         return null;
     }
 
     public static EventCourse getRandomCourse(Connection conn) throws SQLException {
-        PreparedStatement stmt = conn.prepareStatement("SELECT FLOOR(RAND() * COUNT(*)) AS `offset` FROM `events`");
-        ResultSet rs = stmt.executeQuery();
-        if(rs.next()) {
-            int offset = rs.getInt("offset");
-            PreparedStatement statement = conn.prepareStatement("SELECT * FROM `events` LIMIT ?, 1");
-            statement.setInt(1,offset);
-            ResultSet result = statement.executeQuery();
-            if(result.next()) {
-                return new EventCourse(EventType.valueOf(result.getString("type")),ParkourCourse.loadCourse(conn,result.getInt("id")));
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT FLOOR(RAND() * COUNT(*)) AS `offset` FROM `events`");
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                int offset = rs.getInt("offset");
+                try (PreparedStatement statement = conn.prepareStatement("SELECT * FROM `events` LIMIT ?, 1")) {
+                    statement.setInt(1, offset);
+                    try (ResultSet result = statement.executeQuery()) {
+                        if (result.next()) {
+                            return new EventCourse(EventType.valueOf(result.getString("type")), ParkourCourse.loadCourse(conn, result.getInt("id")));
+                        }
+                    }
+                }
             }
         }
         return null;
     }
 
     public void save(Connection conn) {
-        try {
-            PreparedStatement stmt = conn.prepareStatement("INSERT INTO events (`id`,`type`) VALUES (?,?) ON DUPLICATE KEY UPDATE type=VALUES(type)");
+        try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO events (`id`,`type`) VALUES (?,?) ON DUPLICATE KEY UPDATE type=VALUES(type)")) {
             stmt.setInt(1, course.getId());
             stmt.setString(2, type.name());
             stmt.executeUpdate();
@@ -94,7 +98,7 @@ public class EventCourse {
         }
 
         public String getNameKey() {
-            return "event."+key+".title";
+            return "event." + key + ".title";
         }
     }
 

@@ -27,6 +27,7 @@ import java.util.*;
 public enum Item {
     VISION(ItemType.SPAWN,Material.EYE_OF_ENDER, Parkour.getString("item.vision"), 1, (short) 0),
     VISION_USED(ItemType.MISC,Material.ENDER_PEARL, Parkour.getString("item.vision.used"), 1, (short)0),
+    ITEM_MENU(ItemType.SPAWN, Material.PORTAL, Parkour.getString("item.choosemenu"),1, (short)0, Parkour.getMessageArrayFromPrefix("item.choosemenu.description")),
     CHAT(ItemType.SETTINGS,Material.PAPER, Parkour.getString("item.chat"), 1, (short) 0, Parkour.getMessageArrayFromPrefix("item.chat.description")),
     SPAWN(ItemType.SPAWN,Material.NETHER_STAR, Parkour.getString("item.spawn"), 1, (short) 0),
     POINT(ItemType.SPAWN,Material.STICK, Parkour.getString("item.point"), 1, (short) 0, Parkour.getMessageArrayFromPrefix("item.point.description")),
@@ -44,7 +45,17 @@ public enum Item {
     }}),
     FIREWORK_SPAWNER(ItemType.VIP,Material.FIREWORK, Parkour.getString("item.firework"), 1, (short) 0, Parkour.getMessageArrayFromPrefix("item.firework.description")),
     SCOREBOARD(ItemType.SETTINGS,Material.BOOK, Parkour.getString("item.scoreboard"), 1, (short) 0, Parkour.getMessageArrayFromPrefix("item.scoreboard.description")),
-    SETTINGS(ItemType.SPAWN,Material.REDSTONE, Parkour.getString("item.settings"),1,(short) 0,Parkour.getMessageArrayFromPrefix("item.settings.description"));
+    SETTINGS(ItemType.SPAWN,Material.REDSTONE, Parkour.getString("item.settings"),1,(short) 0,Parkour.getMessageArrayFromPrefix("item.settings.description")),
+    NEXT_PAGE(ItemType.MISC,Material.ACTIVATOR_RAIL, Parkour.getString("item.icons.nextpage"), 1, (short) 0),
+    PREV_PAGE(ItemType.MISC,Material.RAILS, Parkour.getString("item.icons.prevpage"), 1, (short) 0),
+    EASY(ItemType.MISC,Material.MINECART, Parkour.getString("item.icons.easy", "", "filter"), 1, (short) 0),
+    MEDIUM(ItemType.MISC,Material.STORAGE_MINECART, Parkour.getString("item.icons.medium", "", "filter"), 1, (short) 0),
+    HIDDEN(ItemType.MISC,Material.HOPPER_MINECART, Parkour.getString("item.icons.hidden", "", "filter"), 1, (short) 0),
+    HARD(ItemType.MISC,Material.POWERED_MINECART, Parkour.getString("item.icons.hard", "", "filter"), 1, (short) 0),
+    VERYHARD(ItemType.MISC,Material.EXPLOSIVE_MINECART, Parkour.getString("item.icons.veryhard", "", "filter"), 1, (short) 0),
+    VIP(ItemType.MISC,Material.BOAT, Parkour.getString("item.icons.vip", "", "filter"), 1, (short) 0),
+    CUSTOM(ItemType.MISC,Material.POTION, Parkour.getString("item.icons.custom", "", "filter"), 1, (short) 0),
+    ADVENTURE(ItemType.MISC,Material.SADDLE, Parkour.getString("item.icons.adventure", "", "filter"), 1, (short) 0);
 
     private final ItemStack item;
     private final ItemType type;
@@ -82,6 +93,15 @@ public enum Item {
 
     public ItemStack getItem() {
         return item.clone();
+    }
+
+    public static Item getSimiliarItem(ItemStack is) {
+        for(Item item : values()) {
+            if(item.isSimilar(is)) {
+                return item;
+            }
+        }
+        return null;
     }
 
     public ItemType getType() {

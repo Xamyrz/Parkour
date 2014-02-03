@@ -25,17 +25,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.*;
 
 public enum Item {
-    FAVORITES(ItemType.SPAWN,Material.EMERALD, Favorites.getString("favorites.item.base"), 1, (short) 0, Favorites.getMessageArrayFromPrefix("favorites.item.base.lore")),
-    NEXT_PAGE(ItemType.MISC,Material.ACTIVATOR_RAIL, Favorites.getString("favorites.item.next"), 1, (short) 0),
-    PREV_PAGE(ItemType.MISC,Material.RAILS, Favorites.getString("favorites.item.prev"), 1, (short) 0),
-    EASY(ItemType.MISC,Material.MINECART, 1),
-    MEDIUM(ItemType.MISC,Material.STORAGE_MINECART, 1),
-    HIDDEN(ItemType.MISC,Material.HOPPER_MINECART, 1),
-    HARD(ItemType.MISC,Material.POWERED_MINECART, 1),
-    V_HARD(ItemType.MISC,Material.EXPLOSIVE_MINECART, 1),
-    THEMATIC(ItemType.MISC,Material.BOAT, 1),
-    CUSTOM(ItemType.MISC,Material.POTION, 1),
-    ADVENTURE(ItemType.MISC,Material.SADDLE, 1);
+    FAVORITES(ItemType.SPAWN,Material.EMERALD, Favorites.getString("favorites.item.base"), 1, (short) 0, Favorites.getMessageArrayFromPrefix("favorites.item.base.lore"));
 
     private final ItemStack item;
     private final ItemType type;

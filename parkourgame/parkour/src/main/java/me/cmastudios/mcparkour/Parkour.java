@@ -25,12 +25,9 @@ import me.cmastudios.mcparkour.data.Guild.GuildWar;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseDifficulty;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -43,10 +40,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
-import org.bukkit.FireworkEffect.Type;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Firework;
-import org.bukkit.inventory.meta.FireworkMeta;
 
 /**
  * Main class for mcparkour Bukkit plugin.
@@ -147,7 +140,7 @@ public class Parkour extends JavaPlugin {
         return MessageFormat.format(messages.getString(key), args).replace("\u00A0", " ");
     }
 
-    public static List<String> getMessageArrayFromPrefix(String prefix) {
+    public static List<String> getMessageArrayFromPrefix(String prefix,String... args) {
         Set<String> keys = messages.keySet();
         TreeSet<String> res = new TreeSet<>();
         for (String key : keys) {
@@ -157,7 +150,7 @@ public class Parkour extends JavaPlugin {
         }
         ArrayList<String> mess = new ArrayList<>();
         for(String key : res) {
-            mess.add(Parkour.getString(key));
+            mess.add(Parkour.getString(key,args));
         }
         return mess;
     }

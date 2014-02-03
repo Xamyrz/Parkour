@@ -31,6 +31,7 @@ import com.google.common.collect.ImmutableList;
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.tasks.TeleportToCourseTask;
+import me.cmastudios.mcparkour.Item;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -106,7 +107,7 @@ public class FavoritesList {
                 return;
             }
             if (favorites.get(pos) != null) {
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, new TeleportToCourseTask(plugin.getParkour(),player, PlayerTeleportEvent.TeleportCause.PLUGIN,favorites.get(pos)));
+                Bukkit.getScheduler().runTaskAsynchronously(plugin, new TeleportToCourseTask(plugin.getParkour(), player, PlayerTeleportEvent.TeleportCause.PLUGIN, favorites.get(pos)));
                 destroyMenu();
             }
         } else if (click.isShiftClick() && click.isRightClick()) {
@@ -143,7 +144,7 @@ public class FavoritesList {
 
     public void save(boolean async) {
         SaveFavsTask task = new SaveFavsTask(ImmutableList.copyOf(favorites), plugin.getCourseDatabase(), player);
-        if(async) {
+        if (async) {
             task.runTaskAsynchronously(plugin);
         } else {
             task.run();
@@ -176,8 +177,7 @@ class SaveFavsTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        try {
-            PreparedStatement statement = conn.prepareStatement("INSERT INTO favorites (`player`,`favorites`) VALUES (?,?) ON DUPLICATE KEY UPDATE favorites = ?");
+        try (PreparedStatement statement = conn.prepareStatement("INSERT INTO favorites (`player`,`favorites`) VALUES (?,?) ON DUPLICATE KEY UPDATE favorites = ?")) {
             StringBuilder favs = new StringBuilder();
             for (int i : favorites) {
                 favs.append(i).append(",");
@@ -250,25 +250,25 @@ class OpenFavsTask extends BukkitRunnable {
                             case EASY:
                                 item = Item.EASY.getItem();
                                 meta = item.getItemMeta();
-                                meta.setDisplayName(Favorites.getString("favorites.item.easy", current.getName(), current.getId()));
+                                meta.setDisplayName(Parkour.getString("item.icons.easy", current.getName(), current.getId()));
                                 item.setItemMeta(meta);
                                 break;
                             case MEDIUM:
                                 item = Item.MEDIUM.getItem();
                                 meta = item.getItemMeta();
-                                meta.setDisplayName(Favorites.getString("favorites.item.medium", current.getName(), current.getId()));
+                                meta.setDisplayName(Parkour.getString("item.icons.medium", current.getName(), current.getId()));
                                 item.setItemMeta(meta);
                                 break;
                             case HARD:
                                 item = Item.HARD.getItem();
                                 meta = item.getItemMeta();
-                                meta.setDisplayName(Favorites.getString("favorites.item.hard", current.getName(), current.getId()));
+                                meta.setDisplayName(Parkour.getString("item.icons.hard", current.getName(), current.getId()));
                                 item.setItemMeta(meta);
                                 break;
                             case VERYHARD:
-                                item = Item.V_HARD.getItem();
+                                item = Item.VERYHARD.getItem();
                                 meta = item.getItemMeta();
-                                meta.setDisplayName(Favorites.getString("favorites.item.vhard", current.getName(), current.getId()));
+                                meta.setDisplayName(Parkour.getString("item.icons.veryhard", current.getName(), current.getId()));
                                 item.setItemMeta(meta);
                                 break;
                         }
@@ -276,25 +276,25 @@ class OpenFavsTask extends BukkitRunnable {
                     case HIDDEN:
                         item = Item.HIDDEN.getItem();
                         meta = item.getItemMeta();
-                        meta.setDisplayName(Favorites.getString("favorites.item.hidden", current.getName(), current.getId()));
+                        meta.setDisplayName(Parkour.getString("item.icons.hidden", current.getName(), current.getId()));
                         item.setItemMeta(meta);
                         break;
                     case ADVENTURE:
                         item = Item.ADVENTURE.getItem();
                         meta = item.getItemMeta();
-                        meta.setDisplayName(Favorites.getString("favorites.item.adventure", current.getName(), current.getId()));
+                        meta.setDisplayName(Parkour.getString("item.icons.adventure", current.getName(), current.getId()));
                         item.setItemMeta(meta);
                         break;
                     case VIP:
-                        item = Item.THEMATIC.getItem();
+                        item = Item.VIP.getItem();
                         meta = item.getItemMeta();
-                        meta.setDisplayName(Favorites.getString("favorites.item.thematic", current.getName(), current.getId()));
+                        meta.setDisplayName(Parkour.getString("item.icons.vip", current.getName(), current.getId()));
                         item.setItemMeta(meta);
                         break;
                     case CUSTOM:
                         item = Item.CUSTOM.getItem();
                         meta = item.getItemMeta();
-                        meta.setDisplayName(Favorites.getString("favorites.item.custom", current.getName(), current.getId()));
+                        meta.setDisplayName(Parkour.getString("item.icons.custom", current.getName(), current.getId()));
                         item.setItemMeta(meta);
                         break;
 

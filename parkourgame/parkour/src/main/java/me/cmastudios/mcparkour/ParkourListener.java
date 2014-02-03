@@ -48,8 +48,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.metadata.MetadataValue;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.SQLException;
@@ -258,7 +256,7 @@ public class ParkourListener implements Listener {
         if (!(event.getWhoClicked() instanceof Player)) {
             return;
         }
-        if (event.getInventory().getName().equalsIgnoreCase(Parkour.getString("settings.inventory.name"))) {
+        if (event.getInventory().getName().equals(Parkour.getString("settings.inventory.name"))) {
             event.setCancelled(true);
             if (event.getCurrentItem() == null) {
                 return;
@@ -290,6 +288,16 @@ public class ParkourListener implements Listener {
                 player.sendMessage(Parkour.getString("scoreboard.disable"));
                 player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
             }
+        } else if(event.getInventory().getName().equals(Parkour.getString("choosemenu.title"))) {
+            event.setCancelled(true);
+            final Player player = (Player) event.getWhoClicked();
+            if(event.getSlot()==-1) {
+                return;
+            }
+            if (event.getCurrentItem() == null) {
+                return;
+            }
+            this.getChooseMenuData(player).handleClick(event.getInventory(),event.getCurrentItem(),plugin,player);
         }
     }
 
@@ -320,32 +328,33 @@ public class ParkourListener implements Listener {
             if (!event.hasItem()) {
                 return;
             }
+            Player player = event.getPlayer();
             if (Item.VISION_USED.isSimilar(event.getItem())) {
                 event.setCancelled(true);
-                plugin.blindPlayers.remove(event.getPlayer());
-                plugin.refreshVision(event.getPlayer());
-                if (event.getPlayer().getItemInHand().isSimilar(event.getItem())) { //Should be always true
-                    event.getPlayer().setItemInHand(Item.VISION.getItem());
+                plugin.blindPlayers.remove(player);
+                plugin.refreshVision(player);
+                if (player.getItemInHand().isSimilar(event.getItem())) { //Should be always true
+                    player.setItemInHand(Item.VISION.getItem());
                 } else {
-                    event.getPlayer().getInventory().remove(event.getItem());
-                    event.getPlayer().getInventory().addItem(Item.VISION.getItem());
+                    player.getInventory().remove(event.getItem());
+                    player.getInventory().addItem(Item.VISION.getItem());
                 }
-                event.getPlayer().sendMessage(Parkour.getString("blind.disable"));
+                player.sendMessage(Parkour.getString("blind.disable"));
             } else if (Item.VISION.isSimilar(event.getItem())) {
                 event.setCancelled(true);
                 plugin.blindPlayers.remove(event.getPlayer());
                 plugin.blindPlayers.add(event.getPlayer());
                 plugin.refreshVision(event.getPlayer());
-                event.getPlayer().sendMessage(Parkour.getString("blind.enable"));
-                if (event.getPlayer().getItemInHand().isSimilar(event.getItem())) {
-                    event.getPlayer().setItemInHand(Item.VISION_USED.getItem());
+                player.sendMessage(Parkour.getString("blind.enable"));
+                if (player.getItemInHand().isSimilar(event.getItem())) {
+                    player.setItemInHand(Item.VISION_USED.getItem());
                 } else {
-                    event.getPlayer().getInventory().remove(event.getItem());
-                    event.getPlayer().getInventory().addItem(Item.VISION_USED.getItem());
+                    player.getInventory().remove(event.getItem());
+                    player.getInventory().addItem(Item.VISION_USED.getItem());
                 }
             } else if (Item.SPAWN.isSimilar(event.getItem())) {
                 event.setCancelled(true);
-                event.getPlayer().teleport(plugin.getSpawn(), TeleportCause.COMMAND);
+                player.teleport(plugin.getSpawn(), TeleportCause.COMMAND);
             } else if (Item.SETTINGS.isSimilar(event.getItem())) {
                 event.setCancelled(true);
                 ArrayList<Item> items = Item.getItemsByType(Item.ItemType.SETTINGS);
@@ -353,33 +362,43 @@ public class ParkourListener implements Listener {
                 for (Item item : items) {
                     inv.addItem(item.getItem());
                 }
-                event.getPlayer().openInventory(inv);
+                player.openInventory(inv);
             } else if (Item.POINT.isSimilar(event.getItem())) {
                 event.setCancelled(true);
-                if (event.getPlayer().isSneaking() && plugin.playerCourseTracker.containsKey(event.getPlayer())) {
+                if (player.isSneaking() && plugin.playerCourseTracker.containsKey(event.getPlayer())) {
                     if (plugin.playerCheckpoints.containsKey(event.getPlayer())) {
                         plugin.playerCheckpoints.remove(event.getPlayer());
                         PlayerCourseData data = plugin.playerCourseTracker.remove(event.getPlayer());
-                        event.getPlayer().teleport(data.course.getTeleport());
+                        player.teleport(data.course.getTeleport());
                         data.restoreState(event.getPlayer());
-                        event.getPlayer().sendMessage(Parkour.getString("checkpoint.deleted"));
+                        player.sendMessage(Parkour.getString("checkpoint.deleted"));
                     } else {
-                        event.getPlayer().sendMessage(Parkour.getString("checkpoint.notset"));
+                        player.sendMessage(Parkour.getString("checkpoint.notset"));
                     }
                     return;
                 }
-                event.getPlayer().performCommand("cp");
+                player.performCommand("cp");
+            } else if (Item.ITEM_MENU.isSimilar(event.getItem())) {
+                event.setCancelled(true);
+                if (!Utils.canUse(plugin, event.getPlayer(), "choosemenu", 1)) {
+                    player.sendMessage(Parkour.getString("choosemenu.delay"));
+                    return;
+                }
+                Inventory inv = Bukkit.createInventory(event.getPlayer(),54,Parkour.getString("choosemenu.title"));
+                this.getChooseMenuData(player).render(inv,player,plugin);
+                player.openInventory(inv);
+                return;
             } else if (Item.FIREWORK_SPAWNER.isSimilar(event.getItem())) {
                 event.setCancelled(true);
                 if (plugin.playerCourseTracker.get(event.getPlayer()) != null) {
-                    event.getPlayer().sendMessage(Parkour.getString("firework.incourse"));
+                    player.sendMessage(Parkour.getString("firework.incourse"));
                     return;
                 }
                 if (!Utils.canUse(plugin, event.getPlayer(), "firework", 5)) {
-                    event.getPlayer().sendMessage(Parkour.getString("firework.delay"));
+                    player.sendMessage(Parkour.getString("firework.delay"));
                     return;
                 }
-                Utils.spawnRandomFirework(event.getPlayer().getLocation());
+                Utils.spawnRandomFirework(player.getLocation());
             }
         }
         if ((event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.LEFT_CLICK_BLOCK)
@@ -390,6 +409,19 @@ public class ParkourListener implements Listener {
             event.getPlayer().getInventory().remove(event.getPlayer().getItemInHand());
             event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BURP, 10, 0);
         }
+    }
+
+    private ParkourChooseMenu getChooseMenuData(Player player) {
+        if(player.hasMetadata("choosemenu")) {
+            for(MetadataValue value : player.getMetadata("choosemenu")) {
+                if(value.getOwningPlugin()==plugin) {
+                    return (ParkourChooseMenu) value.value();
+                }
+            }
+        }
+        ParkourChooseMenu menu = new ParkourChooseMenu();
+        player.setMetadata("choosemenu",new FixedMetadataValue(plugin,menu));
+        return menu;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

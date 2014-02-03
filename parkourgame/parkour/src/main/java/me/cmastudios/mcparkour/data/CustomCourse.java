@@ -35,17 +35,19 @@ public class CustomCourse {
     //Template EFFECT:LEVEL;EFFECT:LEVEL
     public static CustomCourse loadCourse(Connection conn, int id) throws SQLException {
         ParkourCourse pk = ParkourCourse.loadCourse(conn, id);
-        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM custom WHERE id=?");
-        stmt.setInt(1, id);
-        ResultSet rs = stmt.executeQuery();
-        if (rs.next()) {
-            ArrayList<PotionEffect> effect = new ArrayList<>();
-            String[] effs = rs.getString("effects").split(";");
-            for (String eff : effs) {
-                String[] potionEff = eff.split(":");
-                effect.add(new PotionEffect(PotionEffectType.getByName(potionEff[0]),Integer.MAX_VALUE,Integer.parseInt(potionEff[1])));
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM custom WHERE id=?")) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    ArrayList<PotionEffect> effect = new ArrayList<>();
+                    String[] effs = rs.getString("effects").split(";");
+                    for (String eff : effs) {
+                        String[] potionEff = eff.split(":");
+                        effect.add(new PotionEffect(PotionEffectType.getByName(potionEff[0]), Integer.MAX_VALUE, Integer.parseInt(potionEff[1])));
+                    }
+                    return new CustomCourse(pk, effect);
+                }
             }
-            return new CustomCourse(pk, effect);
         }
         return null;
     }
@@ -61,8 +63,8 @@ public class CustomCourse {
 
     //TODO: Add commands for adding effects
     public void addEffect(PotionEffect effect) {
-        for(PotionEffect eff : effects) {
-            if(eff.getType()==effect.getType()) {
+        for (PotionEffect eff : effects) {
+            if (eff.getType() == effect.getType()) {
                 effects.remove(eff);
                 break;
             }
@@ -71,8 +73,8 @@ public class CustomCourse {
     }
 
     public boolean removeEffect(PotionEffectType type) {
-        for(PotionEffect eff : effects) {
-            if(eff.getType()==type) {
+        for (PotionEffect eff : effects) {
+            if (eff.getType() == type) {
                 effects.remove(eff);
                 return true;
             }
@@ -89,11 +91,10 @@ public class CustomCourse {
     }
 
     public void save(Connection conn) {
-        try {
-            PreparedStatement stmt = conn.prepareStatement("INSERT INTO custom (`id`,`effects`) VALUES (?,?) ON DUPLICATE KEY UPDATE effects=VALUES(effects)");
+        try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO custom (`id`,`effects`) VALUES (?,?) ON DUPLICATE KEY UPDATE effects=VALUES(effects)")) {
             stmt.setInt(1, course.getId());
             StringBuilder builder = new StringBuilder();
-            for(PotionEffect effect : effects) {
+            for (PotionEffect effect : effects) {
                 builder.append(effect.getType().getName()).append(":").append(effect.getAmplifier()).append(";");
             }
             stmt.setString(2, builder.toString());

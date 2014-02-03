@@ -45,11 +45,15 @@ public class TeleportToCourseTask extends BukkitRunnable {
 
     @Override
     public void run() {
+        this.performWithResult();
+    }
+
+    public Parkour.PlayResult performWithResult() {
         try {
             final ParkourCourse tpCourse = ParkourCourse.loadCourse(plugin.getCourseDatabase(), courseId);
             if (tpCourse == null||((tpCourse.getMode() == ParkourCourse.CourseMode.HIDDEN || tpCourse.getMode() == ParkourCourse.CourseMode.EVENT) && cause == PlayerTeleportEvent.TeleportCause.COMMAND && !player.hasPermission("parkour.teleport"))) {
                 player.sendMessage(Parkour.getString("error.course404"));
-                return;
+                return Parkour.PlayResult.NOT_FOUND;
             }
             IPlayerExperience pcd = Parkour.experience.getPlayerExperience(player);
             Parkour.PlayResult result = plugin.canPlay(player, pcd.getExperience(), tpCourse);
@@ -67,9 +71,10 @@ public class TeleportToCourseTask extends BukkitRunnable {
                     player.sendMessage(Parkour.getString("course.teleport", tpCourse.getName(),tpCourse.getId()));
                 }
             }
-
+            return result;
         } catch (SQLException ex) {
             Logger.getLogger(Parkour.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return Parkour.PlayResult.ALLOWED;
     }
 }

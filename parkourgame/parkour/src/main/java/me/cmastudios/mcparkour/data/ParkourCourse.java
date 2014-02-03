@@ -192,13 +192,33 @@ public class ParkourCourse {
         return sb;
     }
 
-    public static enum CourseMode {
+    public static enum CourseMode implements ParkourChooseMenu.ParkourChooseCriterium {
 
-        NORMAL, GUILDWAR, ADVENTURE, VIP, HIDDEN, EVENT, CUSTOM
+        NORMAL, GUILDWAR, ADVENTURE, VIP, HIDDEN, EVENT, CUSTOM;
+
+        @Override
+        public String getType() {
+            return "mode";
+        }
+
+        @Override
+        public String getName() {
+            return this.name();
+        }
     }
 
-    public static enum CourseDifficulty {
+    public static enum CourseDifficulty implements ParkourChooseMenu.ParkourChooseCriterium {
 
-        EASY, MEDIUM, HARD, VERYHARD
+        EASY, MEDIUM, HARD, VERYHARD;
+
+        @Override
+        public String getType() {
+            return "difficulty";
+        }
+
+        @Override
+        public String getName() {
+            return this.name();
+        }
     }
 }

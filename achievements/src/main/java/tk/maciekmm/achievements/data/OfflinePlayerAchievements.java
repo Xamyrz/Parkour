@@ -182,56 +182,53 @@ public class OfflinePlayerAchievements {
         ArrayList<ParkourAchievement> completedAchievements = new ArrayList<>();
         ArrayList<AchievementMilestone> completedMilestones = new ArrayList<>();
         HashMap<ParkourAchievement, ArrayList<Long>> progressAchievements = new HashMap<>();
-        try {
-
-            PreparedStatement stmt = plugin.getAchievementsDatabase().prepareStatement("SELECT * FROM playerachievements WHERE player=?");
+        try (PreparedStatement stmt = plugin.getAchievementsDatabase().prepareStatement("SELECT * FROM playerachievements WHERE player=?")) {
             stmt.setString(1, p.getName());
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                if (rs.getString("completed").length() > 0) {
-                    String[] achievs = rs.getString("completed").split(",");
-                    for (String s : achievs) {
-                        ParkourAchievement ach = getAchievementById(Integer.parseInt(s));
-                        if (ach != null) {
-                            completedAchievements.add(ach);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    if (rs.getString("completed").length() > 0) {
+                        String[] achievs = rs.getString("completed").split(",");
+                        for (String s : achievs) {
+                            ParkourAchievement ach = getAchievementById(Integer.parseInt(s));
+                            if (ach != null) {
+                                completedAchievements.add(ach);
+                            }
                         }
                     }
-                }
-                if (rs.getString("progress").length() > 0) {
-                    String[] progress = rs.getString("progress").split(";");
-                    for (String s : progress) {
-                        if (s.length() > 0) {
+                    if (rs.getString("progress").length() > 0) {
+                        String[] progress = rs.getString("progress").split(";");
+                        for (String s : progress) {
+                            if (s.length() > 0) {
 
-                            String[] parent = s.split("/");
-                            if (parent.length > 1) {
-                                String[] options = parent[1].split(",");
+                                String[] parent = s.split("/");
+                                if (parent.length > 1) {
+                                    String[] options = parent[1].split(",");
 
-                                ParkourAchievement ach = getAchievementById(Integer.parseInt(parent[0]));
-                                if (ach != null) {
-                                    ArrayList<Long> optionList = new ArrayList<>();
-                                    for (String opt : options) {
-                                        optionList.add(Long.parseLong(opt));
+                                    ParkourAchievement ach = getAchievementById(Integer.parseInt(parent[0]));
+                                    if (ach != null) {
+                                        ArrayList<Long> optionList = new ArrayList<>();
+                                        for (String opt : options) {
+                                            optionList.add(Long.parseLong(opt));
+                                        }
+                                        progressAchievements.put(ach, optionList);
                                     }
-                                    progressAchievements.put(ach, optionList);
                                 }
                             }
                         }
                     }
-                }
 
-                if (rs.getString("milestones").length() > 0) {
-                    String[] miles = rs.getString("milestones").split(",");
-                    for (String s : miles) {
-                        AchievementMilestone milestone = getMilestoneById(Integer.parseInt(s));
-                        if (milestone != null) {
-                            completedMilestones.add(milestone);
+                    if (rs.getString("milestones").length() > 0) {
+                        String[] miles = rs.getString("milestones").split(",");
+                        for (String s : miles) {
+                            AchievementMilestone milestone = getMilestoneById(Integer.parseInt(s));
+                            if (milestone != null) {
+                                completedMilestones.add(milestone);
+                            }
                         }
-                    }
 
+                    }
                 }
             }
-
-            rs.close();
 
         } catch (SQLException ex) {
             Logger.getLogger(PlayerAchievements.class

@@ -16,10 +16,7 @@
  */
 package tk.maciekmm.favorites;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -87,28 +84,18 @@ public class FavoritesList {
         if (click.isLeftClick()) {
             if (slot == 45 && inv.getItem(45) != null) {
                 this.page--;
-                destroyMenu();
-                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-                    @Override
-                    public void run() {
-                        openMenu();
-                    }
-                }, 2L);
+                player.closeInventory();
+                openMenu();
                 return;
             } else if (slot == 53 && inv.getItem(53) != null) {
                 this.page++;
-                destroyMenu();
-                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-                    @Override
-                    public void run() {
-                        openMenu();
-                    }
-                }, 2L);
+                player.closeInventory();
+                openMenu();
                 return;
             }
             if (favorites.get(pos) != null) {
                 Bukkit.getScheduler().runTaskAsynchronously(plugin, new TeleportToCourseTask(plugin.getParkour(), player, PlayerTeleportEvent.TeleportCause.PLUGIN, favorites.get(pos)));
-                destroyMenu();
+                player.closeInventory();
             }
         } else if (click.isShiftClick() && click.isRightClick()) {
             Integer pkID = favorites.get(pos);
@@ -117,15 +104,6 @@ public class FavoritesList {
                 inv.setItem(slot, null);
             }
         }
-    }
-
-    public void destroyMenu() {
-        plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-            @Override
-            public void run() {
-                player.closeInventory();
-            }
-        }, 1L);
     }
 
     public void addParkour(int i) {
@@ -153,10 +131,6 @@ public class FavoritesList {
 
     public int getCurrentPage() {
         return page;
-    }
-
-    public void setPage(int page) {
-        this.page = page;
     }
 
     public int size() {
@@ -234,85 +208,55 @@ class OpenFavsTask extends BukkitRunnable {
         if (favs.size() > 45) {
             target = 45;
         }
-        for (int i = 0; i < target; i++) {
-            try {
-                ItemStack item = null;
-                ItemMeta meta;
-                if (favs.size() < 45 * (page - 1) + i + 1) {
-                    break;
-                }
-                int courseId = favs.get(45 * (page - 1) + i);
-                ParkourCourse current = ParkourCourse.loadCourse(plugin.getCourseDatabase(), courseId);
-
-                switch (current.getMode()) {
-                    case NORMAL:
-                        switch (current.getDifficulty()) {
-                            case EASY:
-                                item = Item.EASY.getItem();
-                                meta = item.getItemMeta();
-                                meta.setDisplayName(Parkour.getString("item.icons.easy", current.getName(), current.getId()));
-                                item.setItemMeta(meta);
-                                break;
-                            case MEDIUM:
-                                item = Item.MEDIUM.getItem();
-                                meta = item.getItemMeta();
-                                meta.setDisplayName(Parkour.getString("item.icons.medium", current.getName(), current.getId()));
-                                item.setItemMeta(meta);
-                                break;
-                            case HARD:
-                                item = Item.HARD.getItem();
-                                meta = item.getItemMeta();
-                                meta.setDisplayName(Parkour.getString("item.icons.hard", current.getName(), current.getId()));
-                                item.setItemMeta(meta);
-                                break;
-                            case VERYHARD:
-                                item = Item.VERYHARD.getItem();
-                                meta = item.getItemMeta();
-                                meta.setDisplayName(Parkour.getString("item.icons.veryhard", current.getName(), current.getId()));
-                                item.setItemMeta(meta);
-                                break;
-                        }
-                        break;
-                    case HIDDEN:
-                        item = Item.HIDDEN.getItem();
-                        meta = item.getItemMeta();
-                        meta.setDisplayName(Parkour.getString("item.icons.hidden", current.getName(), current.getId()));
-                        item.setItemMeta(meta);
-                        break;
-                    case ADVENTURE:
-                        item = Item.ADVENTURE.getItem();
-                        meta = item.getItemMeta();
-                        meta.setDisplayName(Parkour.getString("item.icons.adventure", current.getName(), current.getId()));
-                        item.setItemMeta(meta);
-                        break;
-                    case VIP:
-                        item = Item.VIP.getItem();
-                        meta = item.getItemMeta();
-                        meta.setDisplayName(Parkour.getString("item.icons.vip", current.getName(), current.getId()));
-                        item.setItemMeta(meta);
-                        break;
-                    case CUSTOM:
-                        item = Item.CUSTOM.getItem();
-                        meta = item.getItemMeta();
-                        meta.setDisplayName(Parkour.getString("item.icons.custom", current.getName(), current.getId()));
-                        item.setItemMeta(meta);
-                        break;
-
-                }
-                if (item != null) {
-                    meta = item.getItemMeta();
-                    String[] lore = {
-                            Favorites.getString("favorites.item.diffs.lore.0"),
-                            Favorites.getString("favorites.item.diffs.lore.1", current.getId()),
-                            Favorites.getString("favorites.item.diffs.lore.2")};
-                    meta.setLore(Arrays.asList(lore));
-                    item.setItemMeta(meta);
-                }
-                inv.setItem(i, item);
-            } catch (SQLException ex) {
-                Logger.getLogger(FavoritesList.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        StringBuilder builder = new StringBuilder();
+        for (Integer num : favs) {
+            builder.append(num).append(",");
         }
+        builder.deleteCharAt(builder.lastIndexOf(","));
+        try (PreparedStatement stmt = plugin.getCourseDatabase().prepareStatement("SELECT * FROM courses WHERE id IN (" + builder.toString() + ") LIMIT ?,?")) {
+            stmt.setInt(1, (page - 1)* 45);
+            stmt.setInt(2, target);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    ItemStack item;
+                    ItemMeta meta;
+                    try {
+                        switch (ParkourCourse.CourseMode.valueOf(rs.getString("mode").toUpperCase())) {
+                            case NORMAL:
+                                item = Item.valueOf(rs.getString("difficulty").toUpperCase()).getItem();
+                                meta = item.getItemMeta();
+                                meta.setDisplayName(Parkour.getString("item.icons." + rs.getString("difficulty").toLowerCase(), rs.getString("name"), rs.getInt("id")));
+                                item.setItemMeta(meta);
+                                break;
+                            default:
+                                item = Item.valueOf(rs.getString("mode").toUpperCase()).getItem();
+                                meta = item.getItemMeta();
+                                meta.setDisplayName(Parkour.getString("item.icons." + rs.getString("mode").toLowerCase(), rs.getString("name"), rs.getInt("id")));
+                                item.setItemMeta(meta);
+                                break;
+
+                        }
+                    } catch (IllegalArgumentException e) {
+                        inv.addItem(Item.EASY.getItem());
+                        continue;
+                    }
+                    if (item != null) {
+                        meta = item.getItemMeta();
+                        String[] lore = {
+                                Favorites.getString("favorites.item.diffs.lore.0"),
+                                Favorites.getString("favorites.item.diffs.lore.1", rs.getInt("id")),
+                                Favorites.getString("favorites.item.diffs.lore.2")};
+                        meta.setLore(Arrays.asList(lore));
+                        item.setItemMeta(meta);
+                    }
+                    inv.addItem(item);
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(FavoritesList.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+
         return inv;
     }
 

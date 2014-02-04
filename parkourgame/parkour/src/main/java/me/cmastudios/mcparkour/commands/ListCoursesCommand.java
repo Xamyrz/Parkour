@@ -28,6 +28,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.util.ChatPaginator;
 
 public class ListCoursesCommand implements CommandExecutor {
 
@@ -39,7 +40,7 @@ public class ListCoursesCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command arg1, String arg2,
-            String[] arg3) {
+            String[] args) {
         if(sender instanceof Player) {
             if(!Utils.canUse(plugin, (Player) sender, "pklist", 1)) {
                 sender.sendMessage(Parkour.getString("error.cooldown"));
@@ -47,8 +48,8 @@ public class ListCoursesCommand implements CommandExecutor {
             }
         }
         StringBuilder courses = new StringBuilder(
-                Parkour.getString("course.list"));
-		if (arg3.length >= 1 && arg3[0].toLowerCase().startsWith("adv")) {
+                Parkour.getString("course.list",0,0));
+		if (args.length >= 1 && args[0].toLowerCase().startsWith("adv")) {
 			try (PreparedStatement stmt = plugin.getCourseDatabase()
 					.prepareStatement("SELECT DISTINCT name FROM adventures")) {
 				try (ResultSet result = stmt.executeQuery()) {
@@ -62,17 +63,29 @@ public class ListCoursesCommand implements CommandExecutor {
 			sender.sendMessage(courses.toString());
 			return true;
 		}
+
+        StringBuilder parkours = new StringBuilder();
         try (PreparedStatement stmt = plugin.getCourseDatabase()
                 .prepareStatement("SELECT * FROM courses WHERE `mode`!='hidden' ORDER BY id")) {
             try (ResultSet result = stmt.executeQuery()) {
                 while (result.next()) {
-                    courses.append(' ').append(result.getInt("id"));
+                    parkours.append(Parkour.getString("course.list.format", result.getInt("id"), result.getString("name"),result.getString("mode"),result.getString("difficulty"))).append('\n');
                 }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        sender.sendMessage(courses.toString());
+        int pageId = 1;
+        if (args.length == 1) {
+            pageId = Integer.parseInt(args[0]);
+            if (pageId <= 0) {
+                pageId = 1;
+            }
+        }
+        ChatPaginator.ChatPage page = ChatPaginator.paginate(parkours.toString(), pageId, ChatPaginator.GUARANTEED_NO_WRAP_CHAT_PAGE_WIDTH, ChatPaginator.CLOSED_CHAT_PAGE_HEIGHT - 2);
+        sender.sendMessage(Parkour.getString("course.list", page.getPageNumber(), page.getTotalPages()));
+        sender.sendMessage(page.getLines());
+        sender.sendMessage(Parkour.getString("course.list.end",page.getPageNumber(), page.getTotalPages()));
         return true;
     }
 

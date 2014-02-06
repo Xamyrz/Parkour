@@ -426,9 +426,6 @@ public class ParkourListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerChat(final AsyncPlayerChatEvent event) throws SQLException {
-        if (!event.getPlayer().hasPermission("parkour.chat") && !plugin.isChatEnabled()) {
-            event.setCancelled(true);
-        }
         synchronized (plugin.deafPlayers) {
             for (Iterator<Player> it = event.getRecipients().iterator(); it.hasNext(); ) {
                 Player player = it.next();

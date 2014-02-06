@@ -50,7 +50,6 @@ public class Parkour extends JavaPlugin {
 
     private static ResourceBundle messages = ResourceBundle.getBundle("messages");
     private Connection courseDatabase;
-    private boolean chat = true;
     private double ratio = 1;
     public static boolean isBarApiEnabled = false;
     private ParkourEvent event;
@@ -78,7 +77,6 @@ public class Parkour extends JavaPlugin {
         this.getCommand("adventure").setExecutor(new AdventureCommand(this));
         this.getCommand("see").setExecutor(new BlindCommand(this));
         this.getCommand("highscores").setExecutor(new HighscoresCommand(this));
-        this.getCommand("chat").setExecutor(new ChatCommand(this));
         this.getCommand("pkroom").setExecutor(new PkRoomCommand(this));
         this.getCommand("ratio").setExecutor(new RatioCommand(this));
         this.getCommand("event").setExecutor(new EventCommand(this));
@@ -315,14 +313,6 @@ public class Parkour extends JavaPlugin {
 
     public void setEvent(ParkourEvent event) {
         this.event = event;
-    }
-
-    public boolean isChatEnabled() {
-        return chat;
-    }
-
-    public void setChat(boolean state) {
-        chat = state;
     }
 
     public static class PlayerCourseData {

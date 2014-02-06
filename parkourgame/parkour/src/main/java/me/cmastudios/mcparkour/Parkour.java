@@ -218,12 +218,7 @@ public class Parkour extends JavaPlugin {
 
     public Location getSpawn() {
         World world = this.getServer().getWorld(this.getConfig().getString("spawn.world"));
-        double x = this.getConfig().getDouble("spawn.x");
-        double y = this.getConfig().getDouble("spawn.y");
-        double z = this.getConfig().getDouble("spawn.z");
-        float pitch = (float) this.getConfig().getDouble("spawn.pitch");
-        float yaw = (float) this.getConfig().getDouble("spawn.yaw");
-        return new Location(world, x, y, z, yaw, pitch);
+        return world!=null ? world.getSpawnLocation() : Bukkit.getWorlds().get(0).getSpawnLocation();
     }
 
     public Duel getDuel(Player participator) {

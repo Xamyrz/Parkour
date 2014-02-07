@@ -424,7 +424,7 @@ public class ParkourListener implements Listener {
         return menu;
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerChat(final AsyncPlayerChatEvent event) throws SQLException {
         synchronized (plugin.deafPlayers) {
             for (Iterator<Player> it = event.getRecipients().iterator(); it.hasNext(); ) {
@@ -433,7 +433,7 @@ public class ParkourListener implements Listener {
                     try {
                         it.remove();
                     } catch (Exception ex) {
-                        // Impossible to modify recipients 
+                        // Impossible to modify recipients
                     }
                 }
             }

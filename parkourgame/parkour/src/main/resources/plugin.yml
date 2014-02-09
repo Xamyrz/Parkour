@@ -109,17 +109,61 @@ commands:
       /<command> create <id> <effect:amplifier>... - Creates custom map
       /<command> delete <id> - Deletes custom map
 permissions:
+  parkour.*:
+    description: All parkour permissions
+    children:
+        parkour.admin: true
+        parkour.player: true
+        parkour.vip: true
+  parkour.admin:
+    description: Admin permissions
+    children:
+        parkour.set: true
+        parkour.tpexempt: true
+        parkour.teleport: true
+        parkour.custom: true
+        parkour.bypasslevel: true
+        parkour.ignoreteleport: true
+        parkour.fly.bypass: true
+  parkour.player:
+    description: Basic player permissions
+    children:
+        parkour.play: true
+        parkour.duel: true
+        parkour.highscore: true
+        parkour.guild.join: true
+        parkour.event: true
+        parkour.cp: true
+        parkour.see: true
+  parkour.cp:
+    description: Allows you to use checkpoints
+  parkour.fly.bypass:
+    description: Allows you to score highscores with fly.
+  parkour.see:
+    description: Allows you to use see command
+  parkour.event:
+    description: Required to play event parkours
+  parkour.custom:
+    description: Required to create custom courses
   parkour.play:
-    description: Required in order to play parkour
+    description: Starting courses, teleporting to maps
+  parkour.highscore:
+    description: Required to achieve highscores.
+  parkour.duel:
+    description: Required play duels
   parkour.set:
     description: Required in order to set teleports for courses or to create control signs
   parkour.teleport:
     description: Required in order to teleport to hidden parkours
   parkour.tpexempt:
     description: Exempt a player from being teleported back to spawn on join.
+  parkour.guild.join:
+    description: Allows player to be in guild
   parkour.guild.create:
     description: Power to create a guild
+  parkour.ignoreteleport:
+    description: Does not stop parkour when teleporting
   parkour.vip:
-    description: Permission to play on VIP maps
+    description: Permission to play on VIP maps and get VIP stuff
   parkour.bypasslevel:
-    description: Permission to bypass
+    description: Permission to bypass level restrictions

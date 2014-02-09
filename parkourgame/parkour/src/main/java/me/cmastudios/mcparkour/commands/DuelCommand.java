@@ -40,15 +40,20 @@ public class DuelCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command,
             String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(Parkour.getString("error.playerreq", new Object[]{}));
+            sender.sendMessage(Parkour.getString("error.playerreq"));
             return true;
         } else {
-            if(!Utils.canUse(plugin, (Player) sender, "duelcmd", 1)) {
+            if(!Utils.canUse(plugin, (Player) sender, "duelcmd", 5)) {
                 sender.sendMessage(Parkour.getString("error.cooldown"));
                 return true;
             }
         }
+
         Player player = (Player) sender;
+        if(!player.hasPermission("parkour.duel")) {
+            sender.sendMessage(Parkour.getString("duel.nopermsinit"));
+            return true;
+        }
         if (args.length < 1) {
             return false;
         }
@@ -89,6 +94,10 @@ public class DuelCommand implements CommandExecutor {
                 sender.sendMessage(Parkour.getString("error.player404", args[0]));
                 return true;
             }
+            if(!competitor.hasPermission("parkour.duel")) {
+                sender.sendMessage(Parkour.getString("duel.nopermscomp"));
+                return true;
+            }
             if (plugin.playerCourseTracker.containsKey(competitor) || plugin.getDuel(competitor) != null) {
                 sender.sendMessage(Parkour.getString("duel.busy"));
                 return true;
@@ -121,12 +130,6 @@ public class DuelCommand implements CommandExecutor {
                     sender.sendMessage(Parkour.getString("duel.insufficient"));
                     return true;
                 }
-                if (course.getMode() == ParkourCourse.CourseMode.VIP) {
-                    if (!player.hasPermission("parkour.vip") || !competitor.hasPermission("parkour.vip")) {
-                        player.sendMessage(Parkour.getString("duel.novip"));
-                        return true;
-                    }
-                }
                 if (course.getMode() == ParkourCourse.CourseMode.ADVENTURE
                         || course.getMode() == ParkourCourse.CourseMode.GUILDWAR || course.getMode() == ParkourCourse.CourseMode.EVENT) {
                     player.sendMessage(Parkour.getString("duel.badcourse"));
@@ -137,6 +140,11 @@ public class DuelCommand implements CommandExecutor {
 					player.sendMessage(Parkour.getString(result.key));
 					return true;
 				}
+                Parkour.PlayResult compResult = plugin.canPlay(competitor,otherXp.getExperience(),course);
+                if (compResult != Parkour.PlayResult.ALLOWED) {
+                    player.sendMessage(Parkour.getString("duel.nopermscomponmap"));
+                    return true;
+                }
                 Duel duel = new Duel(player, competitor, course, bounty);
                 plugin.activeDuels.add(duel);
                 duel.startTimeoutTimer(plugin);

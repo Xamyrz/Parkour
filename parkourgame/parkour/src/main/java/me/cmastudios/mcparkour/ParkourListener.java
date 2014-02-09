@@ -575,8 +575,8 @@ public class ParkourListener implements Listener {
         if (event.getCause() == TeleportCause.COMMAND) {
             event.getPlayer().setScoreboard(plugin.getServer().getScoreboardManager().getMainScoreboard());
         }
-        if (event.getTo().getWorld() != event.getFrom().getWorld()
-                || event.getTo().distance(event.getFrom()) >= 10 && !ignoreTeleport) {
+        if ((event.getTo().getWorld() != event.getFrom().getWorld()
+                || event.getTo().distance(event.getFrom()) >= 6 || event.getCause() == TeleportCause.COMMAND) && !ignoreTeleport && !event.getPlayer().hasPermission("parkour.ignoreteleport")) {
             Duel duel = plugin.getDuel(event.getPlayer());
             if (duel != null && duel.isAccepted() && duel.getCourse() != null) { //stopgap
                 event.setTo(duel.getCourse().getTeleport());

@@ -138,7 +138,7 @@ public class Parkour extends JavaPlugin {
         return MessageFormat.format(messages.getString(key), args).replace("\u00A0", " ");
     }
 
-    public static List<String> getMessageArrayFromPrefix(String prefix,String... args) {
+    public static List<String> getMessageArrayFromPrefix(String prefix, String... args) {
         Set<String> keys = messages.keySet();
         TreeSet<String> res = new TreeSet<>();
         for (String key : keys) {
@@ -147,8 +147,8 @@ public class Parkour extends JavaPlugin {
             }
         }
         ArrayList<String> mess = new ArrayList<>();
-        for(String key : res) {
-            mess.add(Parkour.getString(key,args));
+        for (String key : res) {
+            mess.add(Parkour.getString(key, args));
         }
         return mess;
     }
@@ -167,7 +167,7 @@ public class Parkour extends JavaPlugin {
                     this.getConfig().getString("mysql.host"), this.getConfig().getInt("mysql.port"), this.getConfig().getString("mysql.database")),
                     this.getConfig().getString("mysql.username"), this.getConfig().getString("mysql.password"));
             try (Statement initStatement = this.courseDatabase.createStatement()) {
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT, mode ENUM('normal', 'guildwar', 'adventure', 'vip', 'hidden', 'event', 'custom') NOT NULL DEFAULT 'normal', difficulty ENUM('easy', 'medium', 'hard', 'veryhard') NOT NULL DEFAULT 'easy', name VARCHAR(0) NOT NULL DEFAULT '',PRIMARY KEY (id))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT, mode ENUM('normal', 'guildwar', 'adventure', 'vip', 'hidden', 'event', 'custom') NOT NULL DEFAULT 'normal', difficulty ENUM('easy', 'medium', 'hard', 'veryhard') NOT NULL DEFAULT 'easy', name VARCHAR(25) NOT NULL DEFAULT '',PRIMARY KEY (id))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS events (id INTEGER, type enum('TIME_RUSH', 'POSITION_RUSH', 'PLAYS_RUSH', 'DISTANCE_RUSH') NOT NULL DEFAULT 'TIME_RUSH',PRIMARY KEY (id))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (player varchar(16), course INTEGER, time BIGINT, plays INT,PRIMARY KEY (player))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS custom (id int(11) NOT NULL AUTO_INCREMENT, effects mediumtext NOT NULL, PRIMARY KEY (id))");
@@ -216,7 +216,7 @@ public class Parkour extends JavaPlugin {
 
     public Location getSpawn() {
         World world = this.getServer().getWorld(this.getConfig().getString("spawn.world"));
-        return world!=null ? world.getSpawnLocation() : Bukkit.getWorlds().get(0).getSpawnLocation();
+        return world != null ? world.getSpawnLocation() : Bukkit.getWorlds().get(0).getSpawnLocation();
     }
 
     public Duel getDuel(Player participator) {
@@ -255,6 +255,8 @@ public class Parkour extends JavaPlugin {
     public PlayResult canPlay(Player player, int exp, ParkourCourse course) throws SQLException {
         if (course == null) {
             return PlayResult.NOT_FOUND;
+        } else if (!player.hasPermission("parkour.play") || (course.getMode() == CourseMode.EVENT && !player.hasPermission("parkour.event"))) {
+            return PlayResult.NO_PERMS;
         } else if (course.getMode() == CourseMode.GUILDWAR && getWar(player) == null) {
             return PlayResult.NOT_IN_GUILD_WAR;
         } else if ((course.getMode() == CourseMode.VIP || course.getMode() == CourseMode.ADVENTURE) && !player.hasPermission("parkour.vip")) {
@@ -275,7 +277,7 @@ public class Parkour extends JavaPlugin {
     }
 
     public enum PlayResult {
-        ALLOWED(null), NOT_IN_GUILD_WAR("guild.war.notin"), ADVENTURE_NOTPLAYED("adv.notplayed"), VIP_NOT_BOUGHT("vip.notbought"), INSUFFICIENT_XP("xp.insufficient"), NOT_FOUND("error.course404");
+        ALLOWED(null), NO_PERMS("course.noperms"), NOT_IN_GUILD_WAR("guild.war.notin"), ADVENTURE_NOTPLAYED("adv.notplayed"), VIP_NOT_BOUGHT("vip.notbought"), INSUFFICIENT_XP("xp.insufficient"), NOT_FOUND("error.course404");
         public final String key;
 
         private PlayResult(String messageKey) {

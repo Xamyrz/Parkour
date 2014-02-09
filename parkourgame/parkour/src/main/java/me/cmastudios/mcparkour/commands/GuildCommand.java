@@ -129,9 +129,13 @@ public class GuildCommand implements CommandExecutor {
             if (args.length < 2) {
                 return false;
             }
-            OfflinePlayer invitedPlayer = Bukkit.getPlayer(args[1]);
+            Player invitedPlayer = Bukkit.getPlayer(args[1]);
             if (invitedPlayer == null) {
                 sender.sendMessage(Parkour.getString("error.player404"));
+                return true;
+            }
+            if (!invitedPlayer.hasPermission("parkour.guild.join")) {
+                sender.sendMessage(Parkour.getString("guild.invite.invtnoperm"));
                 return true;
             }
             if (invitedPlayer.getName().equals(sender.getName()))
@@ -171,6 +175,10 @@ public class GuildCommand implements CommandExecutor {
             break;
         case "accept":
             Player acplr = Bukkit.getPlayerExact(sender.getName());
+            if(!acplr.hasPermission("guild.join")) {
+                sender.sendMessage(Parkour.getString("guild.join.noperms"));
+                return true;
+            }
             Guild acreq = invites.get(acplr);
             if(args.length<2) {
                 sender.sendMessage(Parkour.getString("guild.putname"));

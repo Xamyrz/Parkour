@@ -55,12 +55,16 @@ public class ParkourCompleteTask extends BukkitRunnable {
             IPlayerExperience playerXp = Parkour.experience.getPlayerExperience(player);
 
             final PlayerCompleteParkourEventBuilder eventBuilder = new PlayerCompleteParkourEventBuilder(endData, playerXp, highScore, completionTime);
-            if (highScore.getTime() > completionTime && highScore.getPlays() > 0) {
-                eventBuilder.setPersonalBest(true);
-                player.sendMessage(Parkour.getString("course.end.personalbest", endData.course.getName(),endData.course.getId()));
-            }
-            if (highScore.getTime() > completionTime || highScore.getTime() == -1) {
-                highScore.setTime(completionTime);
+            if (player.hasPermission("parkour.highscore")&&(!player.isFlying()||(player.isFlying()&&player.hasPermission("parkour.fly.bypass")))) {
+                if (highScore.getTime() > completionTime && highScore.getPlays() > 0) {
+                    eventBuilder.setPersonalBest(true);
+                    player.sendMessage(Parkour.getString("course.end.personalbest", endData.course.getName(), endData.course.getId()));
+                }
+                if (highScore.getTime() > completionTime || highScore.getTime() == -1) {
+                    highScore.setTime(completionTime);
+                }
+            } else if (highScore.getTime()==Long.MAX_VALUE) {
+                highScore.setTime(-1);
             }
             highScore.setPlays(highScore.getPlays() + 1);
             highScore.save(plugin.getCourseDatabase());
@@ -68,21 +72,24 @@ public class ParkourCompleteTask extends BukkitRunnable {
             final double completionTimeSeconds = ((double) completionTime) / 1000;
             player.sendMessage(Parkour.getString("course.end", df.format(completionTimeSeconds)));
             final List<PlayerHighScore> scores = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), endData.course.getId(), 10);
-            PlayerHighScore bestScore = scores.get(0);
-            for (PlayerHighScore hs : scores) {
-                if (hs.getPlayer().getName().equals(player.getName())) {
-                    eventBuilder.setTopTen(true);
-                    break;
-                }
-            }
-            if (highScore.equals(bestScore) && highScore.getTime() == completionTime) {
-                eventBuilder.setBest(true);
-                Bukkit.getScheduler().runTask(plugin, new Runnable() {
-                    @Override
-                    public void run() {
-                        plugin.getServer().broadcastMessage(Parkour.getString("course.end.best", player.getDisplayName() + ChatColor.RESET,endData.course.getName(), endData.course.getId(), df.format(completionTimeSeconds)));
+
+            if (player.hasPermission("parkour.highscore")) {
+                PlayerHighScore bestScore = scores.get(0);
+                for (PlayerHighScore hs : scores) {
+                    if (hs.getPlayer().getName().equals(player.getName())) {
+                        eventBuilder.setTopTen(true);
+                        break;
                     }
-                });
+                }
+                if (highScore.equals(bestScore) && highScore.getTime() == completionTime) {
+                    eventBuilder.setBest(true);
+                    Bukkit.getScheduler().runTask(plugin, new Runnable() {
+                        @Override
+                        public void run() {
+                            plugin.getServer().broadcastMessage(Parkour.getString("course.end.best", player.getDisplayName() + ChatColor.RESET, endData.course.getName(), endData.course.getId(), df.format(completionTimeSeconds)));
+                        }
+                    });
+                }
             }
             int courseXp = Integer.parseInt(signExp);
             Checkpoint cp = plugin.playerCheckpoints.get(player);

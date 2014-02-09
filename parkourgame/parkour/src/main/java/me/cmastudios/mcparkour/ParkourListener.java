@@ -163,11 +163,12 @@ public class ParkourListener implements Listener {
                     break;
                 case "[portal]":
                     try {
-                        String[] xyz = sign.getLine(1).split(",");
-                        int x = Integer.parseInt(xyz[0]);
-                        int y = Integer.parseInt(xyz[1]);
-                        int z = Integer.parseInt(xyz[2]);
-                        World world = Bukkit.getWorld(sign.getLine(2));
+                        double x = Double.parseDouble(sign.getLine(1));
+                        double z = Double.parseDouble(sign.getLine(2));
+                        String[] yworld = sign.getLine(3).split(" ");
+                        double y = Double.parseDouble(yworld[0]);
+                        String sWorld = yworld[1];
+                        World world = Bukkit.getWorld(sWorld);
                         if (world == null) {
                             world = player.getWorld();
                         }

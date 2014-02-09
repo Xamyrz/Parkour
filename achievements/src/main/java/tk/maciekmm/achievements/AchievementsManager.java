@@ -41,7 +41,7 @@ public class AchievementsManager {
         }
         OfflinePlayerAchievements off = OfflinePlayerAchievements.loadPlayerAchievements(p.getPlayer(), plugin);
         PlayerAchievements achs = new PlayerAchievements(off,plugin,p);
-        p.getPlayer().setMetadata("achievements", new FixedMetadataValue(plugin, achs)); //Bug? returning null
+        p.getPlayer().setMetadata("achievements", new FixedMetadataValue(plugin, achs));
         return achs;
     }
 

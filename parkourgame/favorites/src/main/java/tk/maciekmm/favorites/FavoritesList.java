@@ -102,6 +102,9 @@ public class FavoritesList {
             if (pkID != null) {
                 favorites.remove(pos);
                 inv.setItem(slot, null);
+                if (favorites.size() == 0) {
+                    getSaveTask().runTaskAsynchronously(plugin);
+                }
             }
         }
     }
@@ -120,12 +123,18 @@ public class FavoritesList {
         Collections.sort(favorites);
     }
 
+    private SaveFavsTask getSaveTask() {
+        return new SaveFavsTask(ImmutableList.copyOf(favorites), plugin.getCourseDatabase(), player);
+    }
+
     public void save(boolean async) {
-        SaveFavsTask task = new SaveFavsTask(ImmutableList.copyOf(favorites), plugin.getCourseDatabase(), player);
+        if (favorites.size() == 0) {
+            return;
+        }
         if (async) {
-            task.runTaskAsynchronously(plugin);
+            getSaveTask().runTaskAsynchronously(plugin);
         } else {
-            task.run();
+            getSaveTask().run();
         }
     }
 
@@ -214,7 +223,7 @@ class OpenFavsTask extends BukkitRunnable {
         }
         builder.deleteCharAt(builder.lastIndexOf(","));
         try (PreparedStatement stmt = plugin.getCourseDatabase().prepareStatement("SELECT * FROM courses WHERE id IN (" + builder.toString() + ") LIMIT ?,?")) {
-            stmt.setInt(1, (page - 1)* 45);
+            stmt.setInt(1, (page - 1) * 45);
             stmt.setInt(2, target);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {

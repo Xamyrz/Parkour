@@ -107,13 +107,7 @@ public class PlayerHighScore {
     }
 
     public void save(Connection conn) throws SQLException {
-        final String stmtText;
-        if (exists(conn)) {
-            stmtText = "UPDATE highscores SET time = ?, plays = ? WHERE player = ? AND course = ?";
-        } else {
-            stmtText = "INSERT INTO highscores (time, plays, player, course) VALUES (?, ?, ?, ?)";
-        }
-        try (PreparedStatement stmt = conn.prepareStatement(stmtText)) {
+        try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO highscores (time, plays, player, course) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE time = VALUES(time), plays = VALUES(plays)")) {
             stmt.setLong(1, time);
             stmt.setInt(2, plays);
             stmt.setString(3, player);

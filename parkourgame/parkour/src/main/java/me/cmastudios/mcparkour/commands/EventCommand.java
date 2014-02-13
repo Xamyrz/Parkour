@@ -85,7 +85,7 @@ public class EventCommand implements CommandExecutor {
                         sender.sendMessage(Parkour.getString("event.admin.error.alreadystarted"));
                         return true;
                     }
-                    EventCourse pk = null;
+                    EventCourse pk;
                     ParkourEvent course = null;
                     try {
                         if (args.length == 2) {
@@ -94,6 +94,10 @@ public class EventCommand implements CommandExecutor {
                                 String[] interval = plugin.getConfig().getString("events."+pk.getType().key+".preferredTimeInterval").split("-");
                                 if(interval.length!=2) {
                                     sender.sendMessage(Parkour.getString("event.admin.error.badlyconfigured"));
+                                    return true;
+                                }
+                                if (pk == null) {
+                                    sender.sendMessage(Parkour.getString("event.admin.error.invalidcourse"));
                                     return true;
                                 }
                                 switch (pk.getType()) {
@@ -128,6 +132,10 @@ public class EventCommand implements CommandExecutor {
                         } else {
                             return false;
                         }
+                        if (pk == null) {
+                            sender.sendMessage(Parkour.getString("event.admin.error.invalidcourse"));
+                            return true;
+                        }
                     } catch (NumberFormatException e) {
                         sender.sendMessage(Parkour.getString("error.invalidint"));
                         return true;
@@ -137,10 +145,7 @@ public class EventCommand implements CommandExecutor {
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
-                    if (pk == null) {
-                        sender.sendMessage(Parkour.getString("event.admin.error.invalidcourse"));
-                        return true;
-                    }
+
                     if (course == null) {
                         sender.sendMessage(Parkour.getString("event.admin.error.invalid"));
                         return true;

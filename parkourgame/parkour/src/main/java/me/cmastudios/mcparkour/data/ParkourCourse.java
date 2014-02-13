@@ -74,13 +74,7 @@ public class ParkourCourse {
     }
 
     public void save(Connection conn) throws SQLException {
-        final String stmtText;
-        if (exists(conn)) {
-            stmtText = "UPDATE courses SET x = ?, y = ?, z = ?, pitch = ?, yaw = ?, world = ?, detection = ?, mode = ?, difficulty = ?, name = ? WHERE id = ?";
-        } else {
-            stmtText = "INSERT INTO courses (x, y, z, pitch, yaw, world, detection, mode, difficulty, name, id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        }
-        try (PreparedStatement stmt = conn.prepareStatement(stmtText)) {
+        try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO courses (x, y, z, pitch, yaw, world, detection, mode, difficulty, name, id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE x = VALUES(x), y = VALUES(y), z = VALUES(z), pitch = VALUES(pitch), yaw = VALUES(yaw), world = VALUES(world), detection = VALUES(detection), mode = VALUES(mode), difficulty = VALUES(difficulty), name = VALUES(name)")) {
             stmt.setDouble(1, teleport.getX());
             stmt.setDouble(2, teleport.getY());
             stmt.setDouble(3, teleport.getZ());

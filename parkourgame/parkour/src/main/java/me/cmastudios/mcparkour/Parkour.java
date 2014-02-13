@@ -169,7 +169,7 @@ public class Parkour extends JavaPlugin {
             try (Statement initStatement = this.courseDatabase.createStatement()) {
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT, mode ENUM('normal', 'guildwar', 'adventure', 'vip', 'hidden', 'event', 'custom') NOT NULL DEFAULT 'normal', difficulty ENUM('easy', 'medium', 'hard', 'veryhard') NOT NULL DEFAULT 'easy', name VARCHAR(25) NOT NULL DEFAULT '',PRIMARY KEY (id))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS events (id INTEGER, type enum('TIME_RUSH', 'POSITION_RUSH', 'PLAYS_RUSH', 'DISTANCE_RUSH') NOT NULL DEFAULT 'TIME_RUSH',PRIMARY KEY (id))");
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (player varchar(16), course INTEGER, time BIGINT, plays INT)");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (player varchar(16), course INTEGER, time BIGINT, plays INT, UNIQUE KEY (player,course))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS custom (id int(11) NOT NULL AUTO_INCREMENT, effects mediumtext NOT NULL, PRIMARY KEY (id))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS experience (player varchar(16), xp INTEGER,PRIMARY KEY (player))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guilds (tag varchar(5), name varchar(32),PRIMARY KEY (tag))");

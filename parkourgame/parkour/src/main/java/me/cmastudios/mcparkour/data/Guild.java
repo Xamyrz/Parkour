@@ -97,13 +97,7 @@ public class Guild {
     }
 
     public void save(Connection conn) throws SQLException {
-        final String stmtText;
-        if (exists(conn)) {
-            stmtText = "UPDATE guilds SET name = ? WHERE tag = ?";
-        } else {
-            stmtText = "INSERT INTO guilds (name, tag) VALUES (?, ?)";
-        }
-        try (PreparedStatement stmt = conn.prepareStatement(stmtText)) {
+        try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO guilds (name, tag) VALUES (?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name)")) {
             stmt.setString(1, name);
             stmt.setString(2, tag);
             stmt.executeUpdate();
@@ -183,13 +177,7 @@ public class Guild {
         }
 
         public void save(Connection conn) throws SQLException {
-            final String stmtText;
-            if (exists(conn)) {
-                stmtText = "UPDATE guildplayers SET guild = ?, rank = ? WHERE player = ?";
-            } else {
-                stmtText = "INSERT INTO guildplayers (guild, rank, player) VALUES (?, ?, ?)";
-            }
-            try (PreparedStatement stmt = conn.prepareStatement(stmtText)) {
+            try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO guildplayers (guild, rank, player) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE rank = VALUES(rank), guild = VALUES(guild)")) {
                 stmt.setString(1, guild.getTag());
                 stmt.setString(2, rank.name());
                 stmt.setString(3, player);

@@ -59,7 +59,7 @@ public class SetCourseCommand implements CommandExecutor {
             for(String string : nameArr) {
                 name.append(string).append(" ");
             }
-            if(name.toString().length()>20) {
+            if(name.toString().length()>25) {
                 sender.sendMessage(Parkour.getString("error.nametoolong"));
                 return true;
             }

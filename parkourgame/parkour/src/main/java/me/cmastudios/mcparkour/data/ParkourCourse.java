@@ -188,7 +188,7 @@ public class ParkourCourse {
 
     public static enum CourseMode implements ParkourChooseMenu.ParkourChooseCriterium {
 
-        NORMAL, GUILDWAR, ADVENTURE, VIP, HIDDEN, EVENT, CUSTOM;
+        NORMAL, GUILDWAR, ADVENTURE, VIP, HIDDEN, EVENT, CUSTOM, THEMATIC;
 
         @Override
         public String getType() {

@@ -53,7 +53,8 @@ public enum Item {
     HIDDEN(ItemType.MISC,Material.HOPPER_MINECART, Parkour.getString("item.icons.hidden", "", "filter"), 1, (short) 0),
     HARD(ItemType.MISC,Material.POWERED_MINECART, Parkour.getString("item.icons.hard", "", "filter"), 1, (short) 0),
     VERYHARD(ItemType.MISC,Material.EXPLOSIVE_MINECART, Parkour.getString("item.icons.veryhard", "", "filter"), 1, (short) 0),
-    VIP(ItemType.MISC,Material.BOAT, Parkour.getString("item.icons.vip", "", "filter"), 1, (short) 0),
+    VIP(ItemType.MISC,Material.IRON_BARDING, Parkour.getString("item.icons.vip", "", "filter"), 1, (short) 0),
+    THEMATIC(ItemType.MISC,Material.BOAT, Parkour.getString("item.icons.thematic", "", "filter"), 1, (short) 0),
     CUSTOM(ItemType.MISC,Material.POTION, Parkour.getString("item.icons.custom", "", "filter"), 1, (short) 0),
     ADVENTURE(ItemType.MISC,Material.SADDLE, Parkour.getString("item.icons.adventure", "", "filter"), 1, (short) 0);
 

@@ -116,7 +116,7 @@ public class ParkourChooseMenu {
         @Override
         public void run() {
             StringBuilder builder = new StringBuilder("SELECT id FROM courses WHERE (courses.mode = ?");
-            if (player.hasPermission("parkour.vip") && criterium.getType().equalsIgnoreCase("difficulty")) {
+            if (player.hasPermission("parkour.vip") && criterium == ParkourCourse.CourseMode.THEMATIC) {
                 builder.append(" OR courses.mode = 'VIP'");
             }
             builder.append(")");
@@ -136,7 +136,7 @@ public class ParkourChooseMenu {
                     if (rs.next()) {
                         if (new TeleportToCourseTask(plugin, player, PlayerTeleportEvent.TeleportCause.COMMAND, rs.getInt("id")).performWithResult() != Parkour.PlayResult.ALLOWED) {
                             player.closeInventory();
-                            Inventory inv = Bukkit.createInventory(player,54,Parkour.getString("choosemenu.title"));
+                            Inventory inv = Bukkit.createInventory(player, 54, Parkour.getString("choosemenu.title"));
                             render(inv, player, plugin);
                             player.openInventory(inv);
                         }
@@ -167,7 +167,7 @@ public class ParkourChooseMenu {
         public void run() {
             try {
                 StringBuilder query = new StringBuilder("SELECT courses.id,courses.mode,courses.difficulty,courses.name,b.time,b.plays FROM courses LEFT JOIN (SELECT * FROM highscores WHERE player = ?) b ON b.course = courses.id WHERE (courses.mode = ?");
-                if (player.hasPermission("parkour.vip") && criterium.getType().equalsIgnoreCase("difficulty")) {
+                if (player.hasPermission("parkour.vip") && criterium == ParkourCourse.CourseMode.THEMATIC) {
                     query.append(" OR courses.mode = 'VIP'");
                 }
                 query.append(")");
@@ -209,7 +209,7 @@ public class ParkourChooseMenu {
                         inventory.setItem(47, Item.MEDIUM.getItem());
                         inventory.setItem(48, Item.HARD.getItem());
                         inventory.setItem(49, Item.VERYHARD.getItem());
-                        inventory.setItem(50, Item.VIP.getItem());
+                        inventory.setItem(50, Item.THEMATIC.getItem());
                         inventory.setItem(51, Item.CUSTOM.getItem());
                         inventory.setItem(52, Item.ADVENTURE.getItem());
                         if (control >= 45) {
@@ -219,10 +219,8 @@ public class ParkourChooseMenu {
                         }
 
                     } catch (IllegalArgumentException e) {
-                        return;
                     }
                 }
-
             } catch (SQLException e) {
                 e.printStackTrace();
             }

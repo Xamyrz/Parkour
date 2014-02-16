@@ -108,15 +108,22 @@ commands:
     usage: |
       /<command> create <id> <effect:amplifier>... - Creates custom map
       /<command> delete <id> - Deletes custom map
+  vanish:
+    description: Vanish from cruel world
+    permission: parkour.vanish.command
+    aliases: [vsh,disappear,zniknij]
+    usage: /<command> - Vanishes
 permissions:
   parkour.*:
     description: All parkour permissions
+    default: op
     children:
         parkour.admin: true
         parkour.player: true
         parkour.vip: true
   parkour.admin:
     description: Admin permissions
+    default: false
     children:
         parkour.set: true
         parkour.tpexempt: true
@@ -125,8 +132,10 @@ permissions:
         parkour.bypasslevel: true
         parkour.ignoreteleport: true
         parkour.fly.bypass: true
+        parkour.vanish: true
   parkour.player:
     description: Basic player permissions
+    default: true
     children:
         parkour.play: true
         parkour.duel: true
@@ -135,6 +144,12 @@ permissions:
         parkour.event: true
         parkour.cp: true
         parkour.see: true
+  parkour.vanish:
+    default: false
+    description: Vanish command
+    childer:
+        parkour.vanish.command: true
+        parkour.vanish.seevanished: true
   parkour.cp:
     description: Allows you to use checkpoints
   parkour.fly.bypass:
@@ -167,3 +182,9 @@ permissions:
     description: Permission to play on VIP maps and get VIP stuff
   parkour.bypasslevel:
     description: Permission to bypass level restrictions
+  parkour.vanish.seevanished:
+    description: Allows you to see vanished people
+  parkour.vanish.command:
+    description: Allows you to vanish
+  parkour.vanish.alwayshidden:
+    description: Person is always hidden from others

@@ -60,6 +60,7 @@ public class Parkour extends JavaPlugin {
     public Map<Player, PlayerCourseData> completedCourseTracker = new HashMap<>();
     public Map<Player, GuildPlayer> guildChat = new HashMap<>();
     public Map<Player, List<Player>> blindPlayerExempts = new HashMap<>();
+    public List<Player> vanishedPlayers = new ArrayList<>();
     public List<Duel> activeDuels = new ArrayList<>();
     public List<GuildWar> activeWars = new ArrayList<>();
     public static ExperienceManager experience;
@@ -81,6 +82,7 @@ public class Parkour extends JavaPlugin {
         this.getCommand("ratio").setExecutor(new RatioCommand(this));
         this.getCommand("event").setExecutor(new EventCommand(this));
         this.getCommand("custom").setExecutor(new CustomCourseCommand(this));
+        this.getCommand("vanish").setExecutor(new VanishCommand(this));
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.setupExperience();
         this.saveDefaultConfig();
@@ -200,18 +202,33 @@ public class Parkour extends JavaPlugin {
     public void refreshVision(Player player) {
         boolean isBlind = blindPlayers.contains(player);
         for (Player onlinePlayer : player.getServer().getOnlinePlayers()) {
-            if (player != onlinePlayer && isBlind) {
-                if (blindPlayerExempts.containsKey(player)) {
-                    if (blindPlayerExempts.get(player).contains(onlinePlayer)) {
-                        player.showPlayer(onlinePlayer);
-                        continue;
-                    }
-                }
-                player.hidePlayer(onlinePlayer);
-            } else if (player != onlinePlayer) {
-                player.showPlayer(onlinePlayer);
+            if (player == onlinePlayer) {
+                continue;
             }
+            if (!canSee(player, onlinePlayer)||(isBlind&&(!blindPlayerExempts.containsKey(player) || !blindPlayerExempts.get(player).contains(onlinePlayer)))) {
+                player.hidePlayer(onlinePlayer);
+                continue;
+            }
+            player.showPlayer(onlinePlayer);
         }
+    }
+
+    public void refreshVisionOfOnePlayer(Player player) {
+        for (Player onlinePlayer : player.getServer().getOnlinePlayers()) {
+            boolean isBlind = blindPlayers.contains(onlinePlayer);
+            if (player == onlinePlayer) {
+                continue;
+            }
+            if (!canSee(onlinePlayer,player)||(isBlind&&(!blindPlayerExempts.containsKey(onlinePlayer) || !blindPlayerExempts.get(player).contains(player)))) {
+                onlinePlayer.hidePlayer(player);
+                continue;
+            }
+            onlinePlayer.showPlayer(player);
+        }
+    }
+
+    public boolean canSee(Player seeker, Player target) {
+        return seeker.hasPermission("parkour.vanish.seevanished") || (!target.hasPermission("parkour.vanish.alwaysvanished")&&!vanishedPlayers.contains(target));
     }
 
     public Location getSpawn() {

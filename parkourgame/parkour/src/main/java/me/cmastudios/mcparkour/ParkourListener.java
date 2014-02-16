@@ -471,9 +471,8 @@ public class ParkourListener implements Listener {
             }
         }
 
-        for (Player blindPlayer : plugin.blindPlayers) {
-            plugin.refreshVision(blindPlayer);
-        }
+        plugin.refreshVision(event.getPlayer());
+        plugin.refreshVisionOfOnePlayer(event.getPlayer());
 
         for (ItemStack is : event.getPlayer().getInventory().all(Item.VISION_USED.getItem().getType()).values()) {
             if (Item.VISION_USED.isSimilar(is)) {
@@ -535,6 +534,7 @@ public class ParkourListener implements Listener {
         plugin.playerCheckpoints.remove(event.getPlayer());
         plugin.guildChat.remove(event.getPlayer());
         plugin.completedCourseTracker.remove(event.getPlayer());
+        plugin.vanishedPlayers.remove(event.getPlayer());
         if (plugin.blindPlayerExempts.containsKey(event.getPlayer())) {
             plugin.blindPlayerExempts.remove(event.getPlayer());
         }

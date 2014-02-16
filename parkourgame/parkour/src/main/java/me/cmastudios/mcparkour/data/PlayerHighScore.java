@@ -23,7 +23,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import me.cmastudios.mcparkour.Parkour;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
@@ -95,6 +98,13 @@ public class PlayerHighScore {
             if (player != null) {
                 stmt.setString(2, player.getName());
             }
+            stmt.executeUpdate();
+        }
+    }
+
+    public static void resetPlayerHighScores(Connection conn, String player) throws SQLException{
+        try (PreparedStatement stmt = conn.prepareStatement("UPDATE `highscores` SET time=-1 WHERE `player` LIKE ?")) {
+            stmt.setString(1, player);
             stmt.executeUpdate();
         }
     }

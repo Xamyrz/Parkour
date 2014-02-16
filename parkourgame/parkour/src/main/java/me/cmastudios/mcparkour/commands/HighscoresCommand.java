@@ -71,15 +71,13 @@ public class HighscoresCommand implements CommandExecutor {
                     }
                     break;
                 case "player":
-                    try (PreparedStatement stmt = plugin.getCourseDatabase().prepareStatement("UPDATE `highscores` SET time=-1 WHERE `player` LIKE ?")) {
-                        stmt.setString(1, args[2]);
-                        stmt.executeUpdate();
+                    try {
+                        PlayerHighScore.resetPlayerHighScores(plugin.getCourseDatabase(),args[2]);
                         sender.sendMessage(Parkour.getString("highscores.reset.success", args[2]));
-                        return true;
-                    } catch (SQLException ex) {
-                        Logger.getLogger(HighscoresCommand.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (SQLException e) {
+                        Logger.getLogger(HighscoresCommand.class.getName()).log(Level.SEVERE, null, e);
                     }
-                    break;
+                    return true;
             }
 
 

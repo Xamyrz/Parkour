@@ -219,7 +219,7 @@ public class Parkour extends JavaPlugin {
             if (player == onlinePlayer) {
                 continue;
             }
-            if (!canSee(onlinePlayer,player)||(isBlind&&(!blindPlayerExempts.containsKey(onlinePlayer) || !blindPlayerExempts.get(player).contains(player)))) {
+            if (!canSee(onlinePlayer,player)||(isBlind&&(!blindPlayerExempts.containsKey(onlinePlayer) || (blindPlayerExempts.containsKey(onlinePlayer)&&blindPlayerExempts.get(player)!=null&&blindPlayerExempts.get(player).contains(player))))) {
                 onlinePlayer.hidePlayer(player);
                 continue;
             }

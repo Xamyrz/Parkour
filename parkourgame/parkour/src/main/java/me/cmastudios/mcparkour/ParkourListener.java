@@ -304,26 +304,6 @@ public class ParkourListener implements Listener {
 
     @EventHandler
     public void onPlayerInteract(final PlayerInteractEvent event) throws SQLException {
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            if (event.getClickedBlock().getType() == Material.SIGN_POST
-                    || event.getClickedBlock().getType() == Material.WALL_SIGN) {
-                Sign sign = (Sign) event.getClickedBlock().getState();
-                if (sign.getLine(0).equals("[tp]")) {
-                    // Right clicked a parkour teleport sign
-                    plugin.completedCourseTracker.remove(event.getPlayer());
-                    try {
-                        int parkourNumber = Integer.parseInt(sign.getLine(1));
-                        event.setCancelled(true);
-                        Bukkit.getScheduler().runTaskAsynchronously(plugin, new TeleportToCourseTask(plugin, event.getPlayer(), TeleportCause.PLUGIN, parkourNumber));
-                    } catch (IndexOutOfBoundsException | NumberFormatException | NullPointerException ignored) {
-                    }
-                    return;
-                }
-            }
-            if (plugin.playerCourseTracker.containsKey(event.getPlayer()) && (event.getClickedBlock().getType() == Material.ANVIL || event.getClickedBlock().getType() == Material.ENCHANTMENT_TABLE)) {
-                event.setCancelled(true);
-            }
-        }
         if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_AIR
                 || event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) {
             if (!event.hasItem()) {
@@ -529,7 +509,6 @@ public class ParkourListener implements Listener {
     public void onPlayerQuit(final PlayerQuitEvent event) throws SQLException {
         event.setQuitMessage(null);
         plugin.blindPlayers.remove(event.getPlayer());
-        event.getPlayer().getInventory().remove(Material.ENDER_PEARL);
         plugin.deafPlayers.remove(event.getPlayer());
         plugin.playerCheckpoints.remove(event.getPlayer());
         plugin.guildChat.remove(event.getPlayer());

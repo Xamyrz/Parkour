@@ -186,5 +186,5 @@ permissions:
     description: Allows you to see vanished people
   parkour.vanish.command:
     description: Allows you to vanish
-  parkour.vanish.alwayshidden:
+  parkour.vanish.alwaysvanished:
     description: Person is always hidden from others

@@ -205,7 +205,7 @@ public class Parkour extends JavaPlugin {
             if (player == onlinePlayer) {
                 continue;
             }
-            if (!canSee(player, onlinePlayer)||(isBlind&&(!blindPlayerExempts.containsKey(player) || !blindPlayerExempts.get(player).contains(onlinePlayer)))) {
+            if (!canSee(player, onlinePlayer) || (isBlind && (!blindPlayerExempts.containsKey(player) || !blindPlayerExempts.get(player).contains(onlinePlayer)))) {
                 player.hidePlayer(onlinePlayer);
                 continue;
             }
@@ -215,20 +215,19 @@ public class Parkour extends JavaPlugin {
 
     public void refreshVisionOfOnePlayer(Player player) {
         for (Player onlinePlayer : player.getServer().getOnlinePlayers()) {
-            boolean isBlind = blindPlayers.contains(onlinePlayer);
             if (player == onlinePlayer) {
                 continue;
             }
-            if (!canSee(onlinePlayer,player)||(isBlind&&(!blindPlayerExempts.containsKey(onlinePlayer) || (blindPlayerExempts.containsKey(onlinePlayer)&&blindPlayerExempts.get(player)!=null&&blindPlayerExempts.get(player).contains(player))))) {
+            if (canSee(onlinePlayer, player)) {
+                onlinePlayer.showPlayer(player);
+            } else {
                 onlinePlayer.hidePlayer(player);
-                continue;
             }
-            onlinePlayer.showPlayer(player);
         }
     }
 
     public boolean canSee(Player seeker, Player target) {
-        return seeker.hasPermission("parkour.vanish.seevanished") || (!target.hasPermission("parkour.vanish.alwaysvanished")&&!vanishedPlayers.contains(target));
+        return (seeker.hasPermission("parkour.vanish.seevanished") || (!vanishedPlayers.contains(target) && !target.hasPermission("parkour.vanish.alwaysvanished"))) && (blindPlayers.contains(seeker) && (blindPlayerExempts.containsKey(seeker) && blindPlayerExempts.get(seeker).contains(target)) || !blindPlayers.contains(seeker));
     }
 
     public Location getSpawn() {

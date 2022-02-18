@@ -290,7 +290,7 @@ public class GuildCommand implements CommandExecutor {
             try {
                 GuildPlayer player = GuildPlayer.loadGuildPlayer(
                         plugin.getCourseDatabase(),
-                        Bukkit.getOfflinePlayer(sender.getName()));
+                        Bukkit.getOfflinePlayer(((Player) sender).getUniqueId()));
                 if (player == null || !player.inGuild()) {
                     sender.sendMessage(Parkour.getString("guild.notin"));
                     return true;

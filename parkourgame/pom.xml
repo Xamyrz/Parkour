@@ -10,7 +10,7 @@
     <artifactId>parkourgame</artifactId>
     <version>0.2-SNAPSHOT</version>
     <name>Parkour (root)</name>
-    <url>https://bitbucket.org/cmastudios/mcparkour</url>
+    <url>file:///C:/Users/Kamil/.m2/repository/me/cmastudios/parkour</url>
     <description>Parkour based games for minecraft</description>
     <packaging>pom</packaging>
 

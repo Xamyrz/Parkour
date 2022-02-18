@@ -19,7 +19,9 @@ package tk.maciekmm.achievements;
 
 import com.google.common.collect.ImmutableList;
 import org.bukkit.Bukkit;
-import org.bukkit.scheduler.BukkitRunnable;
+import java.lang.Runnable;
+
+import org.bukkit.entity.Player;
 import tk.maciekmm.achievements.data.AchievementMilestone;
 import tk.maciekmm.achievements.data.ParkourAchievement;
 
@@ -28,19 +30,22 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.UUID;
 import java.util.logging.Level;
 
-public class SaveTask extends BukkitRunnable {
+public class SaveTask implements Runnable {
 
     private final ImmutableList<ParkourAchievement> achievements;
     private final ImmutableList<AchievementMilestone> milestones;
     private final HashMap<ParkourAchievement, ArrayList<Long>> progress;
+    private final UUID uuid;
     private final String player;
 
     private final Connection conn;
 
-    public SaveTask(String player,ImmutableList<ParkourAchievement> achievements, ImmutableList<AchievementMilestone> milestones, HashMap<ParkourAchievement, ArrayList<Long>> progress, Connection connection) {
-        this.player = player;
+    public SaveTask(Player player, ImmutableList<ParkourAchievement> achievements, ImmutableList<AchievementMilestone> milestones, HashMap<ParkourAchievement, ArrayList<Long>> progress, Connection connection) {
+        this.uuid = player.getUniqueId();
+        this.player = player.getName();
         this.achievements = achievements;
         this.milestones = milestones;
         this.progress = (HashMap<ParkourAchievement, ArrayList<Long>>) progress.clone();
@@ -66,11 +71,12 @@ public class SaveTask extends BukkitRunnable {
             for (AchievementMilestone mile : milestones) {
                 sbmilestones.append(mile.getId()).append(",");
             }
-            PreparedStatement stmt = conn.prepareStatement("INSERT INTO playerachievements (`player`,`completed`,`progress`,`milestones`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `completed`=VALUES(completed), `progress`=VALUES(progress), `milestones`=VALUES(milestones)");
-            stmt.setString(1, player);
-            stmt.setString(2, sbach.toString());
-            stmt.setString(3, sbprogress.toString());
-            stmt.setString(4, sbmilestones.toString());
+            PreparedStatement stmt = conn.prepareStatement("INSERT INTO playerachievements (`uuid`,`player`,`completed`,`progress`,`milestones`) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE `completed`=VALUES(completed), `progress`=VALUES(progress), `milestones`=VALUES(milestones)");
+            stmt.setString(1, uuid.toString());
+            stmt.setString(2, player);
+            stmt.setString(3, sbach.toString());
+            stmt.setString(4, sbprogress.toString());
+            stmt.setString(5, sbmilestones.toString());
             stmt.executeUpdate();
 
         } catch (SQLException ex) {

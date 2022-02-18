@@ -20,6 +20,7 @@ import me.cmastudios.mcparkour.Parkour;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
@@ -74,7 +75,7 @@ public class ParkourCourse {
     }
 
     public void save(Connection conn) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO courses (x, y, z, pitch, yaw, world, detection, mode, difficulty, name, id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE x = VALUES(x), y = VALUES(y), z = VALUES(z), pitch = VALUES(pitch), yaw = VALUES(yaw), world = VALUES(world), detection = VALUES(detection), mode = VALUES(mode), difficulty = VALUES(difficulty), name = VALUES(name)")) {
+        try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO courses (x, y, z, pitch, yaw, world, detection, `mode`, difficulty, `name`, id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE x = VALUES(x), y = VALUES(y), z = VALUES(z), pitch = VALUES(pitch), yaw = VALUES(yaw), world = VALUES(world), detection = VALUES(detection), mode = VALUES(mode), difficulty = VALUES(difficulty), name = VALUES(name)")) {
             stmt.setDouble(1, teleport.getX());
             stmt.setDouble(2, teleport.getY());
             stmt.setDouble(3, teleport.getZ());
@@ -155,8 +156,8 @@ public class ParkourCourse {
 
     public Scoreboard getScoreboard(List<PlayerHighScore> highScores) {
         Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
-        Objective obj = sb.registerNewObjective("scores", "dummy");
-        obj.setDisplayName(Parkour.getString("scoreboard.title",name.substring(0,Math.min(name.length(),32-(String.valueOf(id).length()+6))),id));
+        Objective obj = sb.registerNewObjective("scores", "dummy", Parkour.getString("scoreboard.title",name.substring(0,Math.min(name.length(),32-(String.valueOf(id).length()+6))),id));
+        //obj.setDisplayName(Parkour.getString("scoreboard.title",name.substring(0,Math.min(name.length(),32-(String.valueOf(id).length()+6))),id));
 
         for (int count = 0; count < 10; count++) {
             if (highScores.size() <= count) {
@@ -165,6 +166,7 @@ public class ParkourCourse {
 
             PlayerHighScore highScore = highScores.get(count);
             String name = highScore.getPlayer().getName();
+            OfflinePlayer player = highScore.getPlayer();
             Team team = sb.registerNewTeam(name);
             ChatColor color = ChatColor.WHITE;
             if (count == 0) {
@@ -177,7 +179,7 @@ public class ParkourCourse {
 
             DecimalFormat df = new DecimalFormat("#.###");
 
-            OfflinePlayer result = Bukkit.getOfflinePlayer(name);
+            OfflinePlayer result = Bukkit.getOfflinePlayer(player.getUniqueId());
             team.setPrefix(Parkour.getString("scoreboard.prefix", df.format(((double) highScore.getTime()) / 1000.0D),"\u00A7"+color.getChar()));
             team.addPlayer(result);
             obj.getScore(result).setScore(-(count + 1));

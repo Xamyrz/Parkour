@@ -31,7 +31,7 @@ public class EventCourse {
     public static EventCourse loadCourse(Connection conn, int id) throws SQLException {
         ParkourCourse course = ParkourCourse.loadCourse(conn, id);
         if (course != null && course.getMode() == ParkourCourse.CourseMode.EVENT) {
-            try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM events WHERE id=?")) {
+            try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM events WHERE `id`=?")) {
                 stmt.setInt(1, id);
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (rs.next()) {

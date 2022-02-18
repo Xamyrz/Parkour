@@ -24,8 +24,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.SQLException;
+import java.lang.Runnable;
 
-public class GuildFinishHandling extends BukkitRunnable {
+public class GuildFinishHandling implements Runnable {
     private final Player player;
     private final Parkour plugin;
     private final long time;

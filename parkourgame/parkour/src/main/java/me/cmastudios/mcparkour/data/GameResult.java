@@ -17,6 +17,7 @@
 
 package me.cmastudios.mcparkour.data;
 
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
 import java.sql.Connection;
@@ -24,6 +25,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.Objects;
 
 public class GameResult {
 	public enum GameType {
@@ -33,7 +35,9 @@ public class GameResult {
 
 	private Timestamp time;
 	private String type;
+	private String uuidWin;
 	private String winner;
+	private String uuidLoss;
 	private String loser;
 
 	private GameResult() {
@@ -43,7 +47,9 @@ public class GameResult {
 	public GameResult(OfflinePlayer winner, OfflinePlayer loser) {
 		this();
 		this.type = GameType.DUEL.name();
+		this.uuidWin = winner.getUniqueId().toString();
 		this.winner = winner.getName();
+		this.uuidLoss = loser.getUniqueId().toString();
 		this.loser = loser.getName();
 	}
 
@@ -55,11 +61,22 @@ public class GameResult {
 	}
 
 	public void save(Connection conn) throws SQLException {
-		try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO gameresults (time, type, winner, loser) VALUES (?, ?, ?, ?)")) {
-			stmt.setTimestamp(1, time);
-			stmt.setString(2, type);
-			stmt.setString(3, winner);
-			stmt.setString(4, loser);
+		try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO gameresults (time, type, winner, loser, uuidwin, uuidloss) VALUES (?, ?, ?, ?, ?, ?)")) {
+			if(Objects.equals(type, "GUILDWAR")) {
+				stmt.setTimestamp(1, time);
+				stmt.setString(2, type);
+				stmt.setString(3, winner);
+				stmt.setString(4, loser);
+				stmt.setString(5, winner);
+				stmt.setString(6, loser);
+			}else if(Objects.equals(type, "DUEL")){
+				stmt.setTimestamp(1, time);
+				stmt.setString(2, type);
+				stmt.setString(3, winner);
+				stmt.setString(4, loser);
+				stmt.setString(5, uuidWin);
+				stmt.setString(6, uuidLoss);
+			}
 			stmt.executeUpdate();
 		}
 	}

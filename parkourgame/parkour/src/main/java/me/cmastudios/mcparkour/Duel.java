@@ -19,6 +19,7 @@ package me.cmastudios.mcparkour;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.lang.Runnable;
 
 import me.cmastudios.experience.IPlayerExperience;
 import me.cmastudios.mcparkour.data.GameResult;
@@ -145,7 +146,7 @@ public class Duel {
         plugin.getServer().getScheduler().runTaskLater(plugin, new DuelTimeoutTimer(this, plugin), 1200L);
     }
 
-    private class DuelStartTimer extends BukkitRunnable {
+    private class DuelStartTimer implements Runnable {
 
         private Duel duel;
 
@@ -166,7 +167,7 @@ public class Duel {
         }
     }
 
-    private class DuelTimeoutTimer extends BukkitRunnable {
+    private class DuelTimeoutTimer implements Runnable {
 
         private Duel duel;
         private Parkour plugin;
@@ -186,7 +187,7 @@ public class Duel {
         }
     }
 
-    private class DuelCountdownXpTimer extends BukkitRunnable {
+    private class DuelCountdownXpTimer implements Runnable {
 
         private Duel duel;
 

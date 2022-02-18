@@ -29,8 +29,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.lang.Runnable;
 
-public class TeleportToCourseTask extends BukkitRunnable {
+public class TeleportToCourseTask implements Runnable {
     private final int courseId;
     private final Player player;
     private final PlayerTeleportEvent.TeleportCause cause;

@@ -26,12 +26,12 @@ import java.util.*;
 
 public enum Item {
     NEXT_PAGE(ItemType.MISC,Material.ACTIVATOR_RAIL, Achievements.getString("achievement.item.next"), 1, (short) 0),
-    PREV_PAGE(ItemType.MISC,Material.RAILS, Achievements.getString("achievement.item.prev"), 1, (short) 0),
+    PREV_PAGE(ItemType.MISC,Material.RAIL, Achievements.getString("achievement.item.prev"), 1, (short) 0),
     ACHIEVEMENT(ItemType.MISC,Material.COAL, Achievements.getString("achievement.hidden"), 1,(short) 0),
     ACHIEVEMENT_ACHIEVED(ItemType.MISC,Material.DIAMOND, 1),
     MILESTONE(ItemType.MISC,Material.COAL, 1, (short) 1),
     MILESTONE_ACHIEVED(ItemType.MISC,Material.EMERALD, 1),
-    ACHIEVEMENTS_MENU(ItemType.SPAWN,Material.EXP_BOTTLE, Achievements.getString("achievement.inventory.opener"), 1, (short) 0, Achievements.getMessageArrayFromPrefix("achievement.inventory.opener.lore"));
+    ACHIEVEMENTS_MENU(ItemType.SPAWN,Material.EXPERIENCE_BOTTLE, Achievements.getString("achievement.inventory.opener"), 1, (short) 0, Achievements.getMessageArrayFromPrefix("achievement.inventory.opener.lore"));
     private final ItemStack item;
     private final ItemType type;
 

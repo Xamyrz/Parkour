@@ -4,8 +4,9 @@ description: ${project.description}
 author: maciekmm
 authors: [cmastudios]
 website: ${project.url}
-depend: [Parkour,Experience]
+depend: [Parkour,Experience,Achievements]
 main: ${main.class}
+api-version: 1.18
 commands:
   exp:
     description: Manage player''s experience

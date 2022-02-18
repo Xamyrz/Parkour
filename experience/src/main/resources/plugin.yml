@@ -5,6 +5,7 @@ author: cmastudios
 authors: [maciekmm]
 website: ${project.url}
 main: ${main.class}
+api-version: 1.18
 commands:
   exp:
     description: Manage player''s experience

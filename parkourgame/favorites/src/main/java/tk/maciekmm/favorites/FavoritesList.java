@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.lang.Runnable;
 
 import com.google.common.collect.ImmutableList;
 import me.cmastudios.mcparkour.Parkour;
@@ -44,6 +45,7 @@ public class FavoritesList {
     private List<Integer> favorites;
     private Favorites plugin;
     private int page = 1;
+    private OpenFavsTask favTask;
 
     public static FavoritesList loadFavoritesList(Player player, Favorites plugin) throws SQLException {
         ArrayList<Integer> favs = new ArrayList<>();
@@ -76,11 +78,17 @@ public class FavoritesList {
             player.sendMessage(Favorites.getString("favorites.empty"));
             return;
         }
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, new OpenFavsTask(ImmutableList.copyOf(favorites), plugin, page, player));
+        favTask = new OpenFavsTask(ImmutableList.copyOf(favorites), plugin, page, player);
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, favTask);
+    }
+
+    public Inventory getInventory(){
+        return favTask.getInv();
     }
 
     public void handleSelection(int page, int slot, ClickType click, Inventory inv) {
         int pos = (page - 1) * 45 + slot;
+        if(favorites.size() < pos) return;
         if (click.isLeftClick()) {
             if (slot == 45 && inv.getItem(45) != null) {
                 this.page--;
@@ -103,7 +111,8 @@ public class FavoritesList {
                 favorites.remove(pos);
                 inv.setItem(slot, null);
                 if (favorites.size() == 0) {
-                    getSaveTask().runTaskAsynchronously(plugin);
+                    Bukkit.getScheduler().runTaskAsynchronously(plugin, getSaveTask());
+                    //getSaveTask().runTaskAsynchronously(plugin);
                 }
             }
         }
@@ -132,7 +141,8 @@ public class FavoritesList {
             return;
         }
         if (async) {
-            getSaveTask().runTaskAsynchronously(plugin);
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, getSaveTask());
+            //getSaveTask().runTaskAsynchronously(plugin);
         } else {
             getSaveTask().run();
         }
@@ -147,7 +157,7 @@ public class FavoritesList {
     }
 }
 
-class SaveFavsTask extends BukkitRunnable {
+class SaveFavsTask implements Runnable {
     private final ImmutableList<Integer> favorites;
     private final Player player;
     private final Connection conn;
@@ -175,12 +185,17 @@ class SaveFavsTask extends BukkitRunnable {
     }
 }
 
-class OpenFavsTask extends BukkitRunnable {
+class OpenFavsTask implements Runnable {
     private final ImmutableList<Integer> favs;
     private final int page;
     private final Player player;
     private final Favorites plugin;
+    private Inventory inv = null;
 
+
+    public Inventory getInv(){
+        return this.inv;
+    }
 
     public OpenFavsTask(ImmutableList<Integer> parkours, Favorites plugin, int page, Player player) {
         this.favs = parkours;
@@ -191,7 +206,7 @@ class OpenFavsTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        final Inventory inv = getInventory(page);
+        inv = getInventory(page);
         Bukkit.getScheduler().runTask(plugin, new Runnable() {
             @Override
             public void run() {
@@ -201,7 +216,7 @@ class OpenFavsTask extends BukkitRunnable {
     }
 
     public Inventory getInventory(int page) {
-        Inventory inv = Bukkit.createInventory(null, 54, Favorites.getString("favorites.inventory.name"));
+        inv = Bukkit.createInventory(null, 54, Favorites.getString("favorites.inventory.name"));
         if (favs.size() > 45 * page) {
             ItemStack next = Item.NEXT_PAGE.getItem();
             next.setAmount(page + 1);

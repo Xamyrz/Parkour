@@ -32,6 +32,7 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 
 import java.util.*;
+import java.lang.Runnable;
 
 public class DistanceRushParkourEvent extends ScoreableParkourEvent implements TimerableEvent, OwnEndingEvent, SignConfigurableEvent {
 
@@ -105,7 +106,7 @@ public class DistanceRushParkourEvent extends ScoreableParkourEvent implements T
         this.showScoreboard(player);
     }
 
-    private class TimerTask extends BukkitRunnable {
+    private class TimerTask implements Runnable {
         @Override
         public void run() {
             for (Map.Entry<Player, Parkour.PlayerCourseData> entry : plugin.playerCourseTracker.entrySet()) {

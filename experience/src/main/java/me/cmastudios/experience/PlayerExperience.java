@@ -21,6 +21,7 @@ import me.cmastudios.experience.events.ChangeExperienceEvent;
 import me.cmastudios.experience.tasks.ExperienceSaveTask;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.SQLException;
 
@@ -40,7 +41,7 @@ public class PlayerExperience implements IPlayerExperience {
     public void save(boolean async) throws SQLException {
         ExperienceSaveTask task = new ExperienceSaveTask(plugin, player, experience);
         if (async) {
-            task.runTaskAsynchronously(plugin);
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, task);
         } else {
             task.run();
         }
@@ -53,17 +54,19 @@ public class PlayerExperience implements IPlayerExperience {
 
     public void setExperience(int experience, boolean fireEvent) throws SQLException {
         this.lastUsed = System.currentTimeMillis();
-        if (fireEvent) {
-            ChangeExperienceEvent event = new ChangeExperienceEvent(this.experience, experience, this);
-            Bukkit.getPluginManager().callEvent(event);
-            player.getPlayer().sendMessage(Experience.getString("xp.gain", event.getXp() - this.experience, this.experience));
-            this.experience = event.getXp();
-        } else {
-            player.getPlayer().sendMessage(Experience.getString("xp.gain", experience - this.experience, this.experience+(experience-this.experience
-            )));
+        if(player.isOnline()) {
+            if (fireEvent) {
+                ChangeExperienceEvent event = new ChangeExperienceEvent(this.experience, experience, this);
+                Bukkit.getScheduler().runTask(plugin, () -> Bukkit.getPluginManager().callEvent(event));
+                player.getPlayer().sendMessage(Experience.getString("xp.gain", event.getXp() - this.experience, this.experience));
+                this.experience = event.getXp();
+            } else {
+                player.getPlayer().sendMessage(Experience.getString("xp.gain", experience - this.experience, this.experience + (experience - this.experience
+                )));
+                this.experience = experience;
+            }
+        }else{
             this.experience = experience;
-        }
-        if (!player.isOnline()) {
             save(true);  // To be 100% sure that if we change experience while offline the player will get that if log in on other server
         }
     }

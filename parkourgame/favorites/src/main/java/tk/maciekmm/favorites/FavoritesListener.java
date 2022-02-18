@@ -18,6 +18,7 @@
 package tk.maciekmm.favorites;
 
 import me.cmastudios.mcparkour.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -46,7 +47,7 @@ public class FavoritesListener implements Listener {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             if (event.hasBlock() && event.getClickedBlock() != null && event.getClickedBlock().getType() == Material.GOLD_BLOCK) {
                 Block op = event.getClickedBlock().getRelative(event.getBlockFace().getOppositeFace(), 1);
-                if (op.getType() == Material.WALL_SIGN || op.getType() == Material.SIGN_POST) {
+                if (op.getType() == Material.OAK_WALL_SIGN || op.getType() == Material.OAK_SIGN) {
                     Sign favsign = (Sign) op.getState();
                     try {
                         int parkID = Integer.parseInt(favsign.getLine(1));
@@ -118,18 +119,24 @@ public class FavoritesListener implements Listener {
 
     @EventHandler
     public void onInvClick(InventoryClickEvent event) throws SQLException {
-        if (event.getInventory().getName().equalsIgnoreCase(Favorites.getString("favorites.inventory.name"))) {
-            event.setCancelled(true);
-            FavoritesList favs;
-            if (plugin.pendingFavs.containsKey(event.getWhoClicked())) {
-                favs = plugin.pendingFavs.get(event.getWhoClicked());
-            } else {
-                favs = FavoritesList.loadFavoritesList((Player) event.getWhoClicked(), plugin);
-            }
-            if (event.getCurrentItem() != null && event.getCurrentItem().getType() != Material.AIR) {
-                favs.handleSelection(favs.getCurrentPage(), event.getSlot(), event.getClick(), event.getInventory());
-            }
+        if(plugin.pendingFavs.get(event.getWhoClicked()) == null || plugin.pendingFavs.get(event.getWhoClicked()).getInventory() == null){
+            return;
         }
-
+        if(!event.getInventory().equals(plugin.pendingFavs.get(event.getWhoClicked()).getInventory())){
+            return;
+        }
+        if (event.getCurrentItem() == null || event.getCurrentItem().getType().isAir()) {
+            return;
+        }
+        event.setCancelled(true);
+        FavoritesList favs;
+        if (plugin.pendingFavs.containsKey(event.getWhoClicked())) {
+            favs = plugin.pendingFavs.get(event.getWhoClicked());
+        } else {
+            favs = FavoritesList.loadFavoritesList((Player) event.getWhoClicked(), plugin);
+        }
+        if (event.getCurrentItem() != null && event.getCurrentItem().getType() != Material.AIR) {
+            favs.handleSelection(favs.getCurrentPage(), event.getSlot(), event.getClick(), event.getInventory());
+        }
     }
 }

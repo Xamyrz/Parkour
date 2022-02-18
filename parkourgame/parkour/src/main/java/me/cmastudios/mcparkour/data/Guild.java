@@ -24,7 +24,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
+import java.lang.Runnable;
 
 import me.cmastudios.mcparkour.Parkour;
 
@@ -66,12 +68,12 @@ public class Guild {
     public List<GuildPlayer> getPlayers(Connection conn) throws SQLException {
         List<GuildPlayer> ret = new ArrayList<>();
         try (PreparedStatement stmt = conn
-                .prepareStatement("SELECT player, rank FROM guildplayers WHERE guild = ?")) {
+                .prepareStatement("SELECT player, 'rank', `uuid` FROM guildplayers WHERE guild = ?")) {
             stmt.setString(1, tag);
             try (ResultSet result = stmt.executeQuery()) {
                 while (result.next()) {
-                    OfflinePlayer player = Bukkit.getOfflinePlayer(result
-                            .getString("player"));
+                    OfflinePlayer player = Bukkit.getOfflinePlayer(UUID.fromString(result
+                            .getString("uuid")));
                     GuildRank rank = GuildRank.valueOf(result.getString("rank")
                             .toUpperCase());
                     ret.add(new GuildPlayer(player, this, rank));
@@ -142,18 +144,20 @@ public class Guild {
     }
 
     public static class GuildPlayer {
+        private final UUID uuid;
         private final String player;
         private Guild guild;
         private GuildRank rank;
 
         public GuildPlayer(OfflinePlayer player, Guild guild, GuildRank rank) {
+            this.uuid = player.getUniqueId();
             this.player = player.getName();
             this.setGuild(guild);
             this.setRank(rank);
         }
 
         public OfflinePlayer getPlayer() {
-            return Bukkit.getOfflinePlayer(player);
+            return Bukkit.getOfflinePlayer(uuid);
         }
 
         public Guild getGuild() {
@@ -177,18 +181,20 @@ public class Guild {
         }
 
         public void save(Connection conn) throws SQLException {
-            try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO guildplayers (guild, rank, player) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE rank = VALUES(rank), guild = VALUES(guild)")) {
+            try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO guildplayers (guild, `rank`, player, uuid) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE `rank` = VALUES(`rank`), guild = VALUES(guild)")) {
                 stmt.setString(1, guild.getTag());
                 stmt.setString(2, rank.name());
                 stmt.setString(3, player);
+                stmt.setString(4, uuid.toString());
+                Bukkit.getLogger().info(stmt.toString());
                 stmt.executeUpdate();
             }
         }
 
         public void delete(Connection conn) throws SQLException {
             try (PreparedStatement stmt = conn
-                    .prepareStatement("DELETE FROM guildplayers WHERE player = ?")) {
-                stmt.setString(1, player);
+                    .prepareStatement("DELETE FROM guildplayers WHERE uuid = ?")) {
+                stmt.setString(1, uuid.toString());
                 stmt.executeUpdate();
             }
         }
@@ -223,19 +229,19 @@ public class Guild {
             return true;
         }
 
-        public static GuildPlayer loadGuildPlayer(Connection conn,
-                OfflinePlayer player) throws SQLException {
+        public static GuildPlayer loadGuildPlayer(Connection conn, OfflinePlayer player) throws SQLException {
             GuildPlayer ret = new GuildPlayer(player, null, null);
             try (PreparedStatement stmt = conn
-                    .prepareStatement("SELECT guild, rank FROM guildplayers WHERE player = ?")) {
-                stmt.setString(1, player.getName());
+                    .prepareStatement("SELECT guild, `rank` FROM guildplayers WHERE uuid = ?")) {
+                stmt.setString(1, player.getUniqueId().toString());
                 try (ResultSet result = stmt.executeQuery()) {
                     if (result.next()) {
                         Guild guild = Guild.loadGuild(conn,
                                 result.getString("guild"));
                         GuildRank rank = GuildRank.valueOf(result.getString(
                                 "rank").toUpperCase());
-                        ret = new GuildPlayer(Bukkit.getOfflinePlayer(player.getName()), guild, rank);
+
+                        ret = new GuildPlayer(Bukkit.getOfflinePlayer(player.getUniqueId()), guild, rank);
                     }
                 }
             }
@@ -254,7 +260,7 @@ public class Guild {
 
     }
 
-    public static enum GuildRank {
+    public enum GuildRank {
         DEFAULT, OFFICER, LEADER;
         public boolean canKick() {
             return this == OFFICER || this == LEADER;
@@ -454,7 +460,7 @@ public class Guild {
 			plugin.getServer().getScheduler().runTaskAsynchronously(plugin, new SaveResultsTask(result, plugin.getCourseDatabase()));
         }
 
-		private class SaveResultsTask extends BukkitRunnable {
+		private class SaveResultsTask implements Runnable {
 			private final GameResult result;
 			private final Connection connection;
 
@@ -511,7 +517,7 @@ public class Guild {
             plugin.getServer().getScheduler().runTaskLater(plugin, new AcceptTimeoutTimer(this, plugin), 1200L);
         }
 
-        private class AcceptTimeoutTimer extends BukkitRunnable {
+        private class AcceptTimeoutTimer implements Runnable {
 
             private GuildWar war;
             private Parkour plugin;
@@ -541,7 +547,7 @@ public class Guild {
             plugin.getServer().getScheduler().runTaskLater(plugin, new WarTimeoutTimer(this, plugin), WAR_TIMEOUT);
         }
 
-        private class WarTimeoutTimer extends BukkitRunnable {
+        private class WarTimeoutTimer implements Runnable {
 
             private GuildWar war;
             private Parkour plugin;
@@ -558,7 +564,7 @@ public class Guild {
             }
         }
 
-        private class XpCounterTask extends BukkitRunnable {
+        private class XpCounterTask implements Runnable {
 
             private final GuildWar war;
 

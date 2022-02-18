@@ -37,7 +37,6 @@ public class AchievementsWrapper extends JavaPlugin {
     @Override
     public void onDisable() {
         this.getServer().getServicesManager().unregisterAll(this);
-        achievements = null;
     }
 
     private void setupAchievements() {
@@ -52,7 +51,7 @@ public class AchievementsWrapper extends JavaPlugin {
         if (xpProvider != null) {
             experience = xpProvider.getProvider();
         }
-
         return (experience != null);
     }
+
 }

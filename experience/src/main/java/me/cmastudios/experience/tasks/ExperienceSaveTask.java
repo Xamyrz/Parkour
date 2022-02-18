@@ -20,13 +20,13 @@ package me.cmastudios.experience.tasks;
 import me.cmastudios.experience.Experience;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.scheduler.BukkitRunnable;
+import java.lang.Runnable;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.logging.Level;
 
-public class ExperienceSaveTask extends BukkitRunnable {
+public class ExperienceSaveTask implements Runnable {
     private final int experience;
     private final OfflinePlayer player;
     private final Experience plugin;
@@ -37,9 +37,10 @@ public class ExperienceSaveTask extends BukkitRunnable {
     }
     @Override
     public void run() {
-        try (PreparedStatement stmt = plugin.getExperienceDatabase().prepareStatement("INSERT INTO experience (xp,player) VALUES (?, ?) ON DUPLICATE KEY UPDATE `xp`=VALUES(`xp`)")) {
+        try (PreparedStatement stmt = plugin.getExperienceDatabase().prepareStatement("INSERT INTO experience (`xp`,`player`,`uuid`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `xp`=VALUES(`xp`)")) {
             stmt.setInt(1, experience);
             stmt.setString(2, player.getName());
+            stmt.setString(3, player.getUniqueId().toString());
             stmt.executeUpdate();
         } catch (SQLException e) {
             Bukkit.getLogger().log(Level.SEVERE, String.format("Could not save %s experience", player.getName()));

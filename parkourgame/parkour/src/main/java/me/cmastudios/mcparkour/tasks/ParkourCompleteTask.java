@@ -30,8 +30,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.List;
+import java.lang.Runnable;
 
-public class ParkourCompleteTask extends BukkitRunnable {
+public class ParkourCompleteTask implements Runnable {
     private final Player player;
     private final Parkour plugin;
     private final Parkour.PlayerCourseData endData;

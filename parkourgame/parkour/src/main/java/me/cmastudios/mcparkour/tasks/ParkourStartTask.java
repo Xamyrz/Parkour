@@ -32,7 +32,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.SQLException;
 
-public class ParkourStartTask extends BukkitRunnable {
+public class ParkourStartTask implements Runnable {
     private final Sign data;
     private final Player player;
     private final Parkour plugin;

@@ -5,6 +5,7 @@ author: maciekmm
 authors: [cmastudios]
 website: ${project.url}
 main: ${main.class}
+api-version: 1.18
 commands:
   modifier:
     description: Checks modifier

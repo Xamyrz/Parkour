@@ -25,8 +25,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.SQLException;
 import java.util.logging.Level;
+import java.lang.Runnable;
 
-public class GuildRejoinHandling extends BukkitRunnable {
+public class GuildRejoinHandling implements Runnable {
     private final Player player;
     private final Parkour plugin;
 

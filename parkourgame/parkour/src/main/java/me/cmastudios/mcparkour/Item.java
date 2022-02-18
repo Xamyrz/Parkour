@@ -25,36 +25,36 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.*;
 
 public enum Item {
-    VISION(ItemType.SPAWN,Material.EYE_OF_ENDER, Parkour.getString("item.vision"), 1, (short) 0),
+    VISION(ItemType.SPAWN,Material.ENDER_EYE, Parkour.getString("item.vision"), 1, (short) 0),
     VISION_USED(ItemType.MISC,Material.ENDER_PEARL, Parkour.getString("item.vision.used"), 1, (short)0),
-    ITEM_MENU(ItemType.SPAWN, Material.PORTAL, Parkour.getString("item.choosemenu"),1, (short)0, Parkour.getMessageArrayFromPrefix("item.choosemenu.description")),
+    ITEM_MENU(ItemType.SPAWN, Material.BOOK, Parkour.getString("item.choosemenu"),1, (short)0, Parkour.getMessageArrayFromPrefix("item.choosemenu.description")),
     CHAT(ItemType.SETTINGS,Material.PAPER, Parkour.getString("item.chat"), 1, (short) 0, Parkour.getMessageArrayFromPrefix("item.chat.description")),
     SPAWN(ItemType.SPAWN,Material.NETHER_STAR, Parkour.getString("item.spawn"), 1, (short) 0),
     POINT(ItemType.SPAWN,Material.STICK, Parkour.getString("item.point"), 1, (short) 0, Parkour.getMessageArrayFromPrefix("item.point.description")),
-    HELMET(ItemType.VIP,Material.GOLD_HELMET, 1, (short) 0, new HashMap<Enchantment, Integer>() {{
+    HELMET(ItemType.VIP,Material.GOLDEN_HELMET, 1, (short) 0, new HashMap<Enchantment, Integer>() {{
         put(Enchantment.DURABILITY, 3);
     }}),
-    CHESTPLATE(ItemType.VIP,Material.GOLD_CHESTPLATE, 1, (short) 0, new HashMap<Enchantment, Integer>() {{
+    CHESTPLATE(ItemType.VIP,Material.GOLDEN_CHESTPLATE, 1, (short) 0, new HashMap<Enchantment, Integer>() {{
         put(Enchantment.DURABILITY, 3);
     }}),
-    LEGGINGS(ItemType.VIP,Material.GOLD_LEGGINGS, 1, (short) 0, new HashMap<Enchantment, Integer>() {{
+    LEGGINGS(ItemType.VIP,Material.GOLDEN_LEGGINGS, 1, (short) 0, new HashMap<Enchantment, Integer>() {{
         put(Enchantment.DURABILITY, 3);
     }}),
-    BOOTS(ItemType.VIP,Material.GOLD_BOOTS, 1, (short) 0, new HashMap<Enchantment, Integer>() {{
+    BOOTS(ItemType.VIP,Material.GOLDEN_BOOTS, 1, (short) 0, new HashMap<Enchantment, Integer>() {{
         put(Enchantment.DURABILITY, 3);
     }}),
-    FIREWORK_SPAWNER(ItemType.VIP,Material.FIREWORK, Parkour.getString("item.firework"), 1, (short) 0, Parkour.getMessageArrayFromPrefix("item.firework.description")),
+    FIREWORK_SPAWNER(ItemType.VIP,Material.FIREWORK_ROCKET, Parkour.getString("item.firework"), 1, (short) 0, Parkour.getMessageArrayFromPrefix("item.firework.description")),
     SCOREBOARD(ItemType.SETTINGS,Material.BOOK, Parkour.getString("item.scoreboard"), 1, (short) 0, Parkour.getMessageArrayFromPrefix("item.scoreboard.description")),
     SETTINGS(ItemType.SPAWN,Material.REDSTONE, Parkour.getString("item.settings"),1,(short) 0,Parkour.getMessageArrayFromPrefix("item.settings.description")),
     NEXT_PAGE(ItemType.MISC,Material.ACTIVATOR_RAIL, Parkour.getString("item.icons.nextpage"), 1, (short) 0),
-    PREV_PAGE(ItemType.MISC,Material.RAILS, Parkour.getString("item.icons.prevpage"), 1, (short) 0),
+    PREV_PAGE(ItemType.MISC,Material.RAIL, Parkour.getString("item.icons.prevpage"), 1, (short) 0),
     EASY(ItemType.MISC,Material.MINECART, Parkour.getString("item.icons.easy", "", "filter"), 1, (short) 0),
-    MEDIUM(ItemType.MISC,Material.STORAGE_MINECART, Parkour.getString("item.icons.medium", "", "filter"), 1, (short) 0),
+    MEDIUM(ItemType.MISC,Material.CHEST_MINECART, Parkour.getString("item.icons.medium", "", "filter"), 1, (short) 0),
     HIDDEN(ItemType.MISC,Material.HOPPER_MINECART, Parkour.getString("item.icons.hidden", "", "filter"), 1, (short) 0),
-    HARD(ItemType.MISC,Material.POWERED_MINECART, Parkour.getString("item.icons.hard", "", "filter"), 1, (short) 0),
-    VERYHARD(ItemType.MISC,Material.EXPLOSIVE_MINECART, Parkour.getString("item.icons.veryhard", "", "filter"), 1, (short) 0),
-    VIP(ItemType.MISC,Material.IRON_BARDING, Parkour.getString("item.icons.vip", "", "filter"), 1, (short) 0),
-    THEMATIC(ItemType.MISC,Material.BOAT, Parkour.getString("item.icons.thematic", "", "filter"), 1, (short) 0),
+    HARD(ItemType.MISC,Material.FURNACE_MINECART, Parkour.getString("item.icons.hard", "", "filter"), 1, (short) 0),
+    VERYHARD(ItemType.MISC,Material.TNT_MINECART, Parkour.getString("item.icons.veryhard", "", "filter"), 1, (short) 0),
+    VIP(ItemType.MISC,Material.IRON_HORSE_ARMOR, Parkour.getString("item.icons.vip", "", "filter"), 1, (short) 0),
+    THEMATIC(ItemType.MISC,Material.OAK_BOAT, Parkour.getString("item.icons.thematic", "", "filter"), 1, (short) 0),
     CUSTOM(ItemType.MISC,Material.POTION, Parkour.getString("item.icons.custom", "", "filter"), 1, (short) 0),
     ADVENTURE(ItemType.MISC,Material.SADDLE, Parkour.getString("item.icons.adventure", "", "filter"), 1, (short) 0);
 

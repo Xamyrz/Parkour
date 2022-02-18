@@ -26,6 +26,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
@@ -35,6 +36,7 @@ import java.util.Map;
 
 public class AchievementsListener implements Listener {
     private final Achievements plugin;
+    private Inventory achievementsInv;
 
     public AchievementsListener(Achievements plugin) {
         this.plugin = plugin;
@@ -63,12 +65,13 @@ public class AchievementsListener implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (event.getInventory().getName().equalsIgnoreCase(Achievements.getString("achievement.inventory.name"))) {
-            event.setCancelled(true);
-            PlayerAchievements achs = this.plugin.getManager().getPlayerAchievements((Player) event.getWhoClicked());
-            if (event.getCurrentItem() != null && event.getCurrentItem().getType() != Material.AIR) {
-                achs.handleSelection(achs.getPage(), event.getSlot(), event.getClick(), event.getInventory());
-            }
+        if(!event.getInventory().equals(achievementsInv)){
+            return;
+        }
+        event.setCancelled(true);
+        PlayerAchievements achs = this.plugin.getManager().getPlayerAchievements((Player) event.getWhoClicked());
+        if (event.getCurrentItem() != null && !event.getCurrentItem().getType().isAir()) {
+            achs.handleSelection(achs.getPage(), event.getSlot(), event.getClick(), event.getInventory());
         }
     }
 
@@ -87,6 +90,7 @@ public class AchievementsListener implements Listener {
             event.setCancelled(true);
             if(plugin.canUse(event.getPlayer(),"menu",1)) {
                 plugin.getManager().getPlayerAchievements(event.getPlayer()).openMenu();
+                achievementsInv = plugin.getManager().getPlayerAchievements(event.getPlayer()).achievementsInv;
             } else {
                 event.getPlayer().sendMessage(Achievements.getString("achievement.inventory.cooldown"));
             }

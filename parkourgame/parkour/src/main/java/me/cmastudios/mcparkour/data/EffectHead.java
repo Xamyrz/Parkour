@@ -144,7 +144,7 @@ public class EffectHead {
     public void setBlock(Parkour plugin) {
         Random rotator = new Random();
         Block block = this.getLocation().getBlock();
-        block.setType(Material.SKULL);
+        block.setType(Material.SKELETON_SKULL);
         block.setMetadata("mcparkour-head", new FixedMetadataValue(plugin, this));
         BlockState modify = block.getState();
         if (modify instanceof Skull) {

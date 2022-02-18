@@ -6,6 +6,7 @@ authors: [maciekmm]
 website: ${project.url}
 depend: [Experience]
 softdepend: [BarAPI]
+api-version: 1.18
 main: ${main.class}
 commands:
   parkour:

@@ -33,19 +33,16 @@ public class ExperienceManager {
 
     public ExperienceManager(Experience instance) {
         this.plugin = instance;
-        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, new Runnable() {
-            @Override
-            public void run() {
-                for (Map.Entry<OfflinePlayer, PlayerExperience> entry : plugin.playerExperience.entrySet()) {
-                    try {
-                        entry.getValue().save(false);
-                    } catch (SQLException e) {
-                        Bukkit.getLogger().log(Level.SEVERE, "Error occured while saving player experience");
-                    }
-                    if (System.currentTimeMillis() - entry.getValue().getLastUsed() > 180000) {
-                        plugin.playerExperience.remove(entry.getKey());
+        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+            for (Map.Entry<OfflinePlayer, PlayerExperience> entry : plugin.playerExperience.entrySet()) {
+                try {
+                    entry.getValue().save(false);
+                } catch (SQLException e) {
+                    Bukkit.getLogger().log(Level.SEVERE, "Error occured while saving player experience");
+                }
+                if (System.currentTimeMillis() - entry.getValue().getLastUsed() > 180000) {
+                    plugin.playerExperience.remove(entry.getKey());
 
-                    }
                 }
             }
         }, 3000, 3000);
@@ -53,8 +50,8 @@ public class ExperienceManager {
 
     private PlayerExperience loadExperience(Connection conn, OfflinePlayer player) throws SQLException {
         PlayerExperience ret = new PlayerExperience(player, 0,plugin);
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM experience WHERE player = ?")) {
-            stmt.setString(1, player.getName());
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM experience WHERE uuid = ?")) {
+            stmt.setString(1, player.getUniqueId().toString());
             try (ResultSet result = stmt.executeQuery()) {
                 if (result.next()) {
                     ret = new PlayerExperience(player, result.getInt("xp"),plugin);

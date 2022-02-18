@@ -100,17 +100,11 @@ public class EventCommand implements CommandExecutor {
                                     sender.sendMessage(Parkour.getString("event.admin.error.invalidcourse"));
                                     return true;
                                 }
-                                switch (pk.getType()) {
-                                    case DISTANCE_RUSH:
-                                        course = new DistanceRushParkourEvent(pk, plugin, getRandomFromRange(Integer.parseInt(interval[0]),Integer.parseInt(interval[1])));
-                                        break;
-                                    case PLAYS_RUSH:
-                                        course = new PlaysRushParkourEvent(pk, plugin, getRandomFromRange(Integer.parseInt(interval[0]),Integer.parseInt(interval[1])));
-                                        break;
-                                    case TIME_RUSH:
-                                        course = new TimeRushParkourEvent(pk, plugin, getRandomFromRange(Integer.parseInt(interval[0]),Integer.parseInt(interval[1])));
-                                        break;
-                                }
+                                course = switch (pk.getType()) {
+                                    case DISTANCE_RUSH -> new DistanceRushParkourEvent(pk, plugin, getRandomFromRange(Integer.parseInt(interval[0]), Integer.parseInt(interval[1])));
+                                    case PLAYS_RUSH -> new PlaysRushParkourEvent(pk, plugin, getRandomFromRange(Integer.parseInt(interval[0]), Integer.parseInt(interval[1])));
+                                    case TIME_RUSH -> new TimeRushParkourEvent(pk, plugin, getRandomFromRange(Integer.parseInt(interval[0]), Integer.parseInt(interval[1])));
+                                };
                             } else {
                                 return false;
                             }
@@ -118,17 +112,15 @@ public class EventCommand implements CommandExecutor {
                             int length = Integer.parseInt(args[1]);
                             int parkourId = Integer.parseInt(args[2]);
                             pk = EventCourse.loadCourse(plugin.getCourseDatabase(), parkourId);
-                            switch (pk.getType()) {
-                                case DISTANCE_RUSH:
-                                    course = new DistanceRushParkourEvent(pk, plugin, length);
-                                    break;
-                                case PLAYS_RUSH:
-                                    course = new PlaysRushParkourEvent(pk, plugin, length);
-                                    break;
-                                case TIME_RUSH:
-                                    course = new TimeRushParkourEvent(pk, plugin, length);
-                                    break;
+                            if (pk == null) {
+                                sender.sendMessage(Parkour.getString("event.admin.error.invalidcourse"));
+                                return true;
                             }
+                            course = switch (pk.getType()) {
+                                case DISTANCE_RUSH -> new DistanceRushParkourEvent(pk, plugin, length);
+                                case PLAYS_RUSH -> new PlaysRushParkourEvent(pk, plugin, length);
+                                case TIME_RUSH -> new TimeRushParkourEvent(pk, plugin, length);
+                            };
                         } else {
                             return false;
                         }

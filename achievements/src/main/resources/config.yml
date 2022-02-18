@@ -18,14 +18,6 @@ criterias:
     affected: []
     options:
     - parkours
-  PARKOUR_COMPLETED_IN_TIME:
-    progressing: false
-    option: LESS_THAN
-    affected:
-    - 1
-    options:
-    - parkour
-    - required_amount
   PLAYS_ON_CERTAIN_PARKOUR:
     progressing: false
     option: MORE_THAN

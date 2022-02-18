@@ -23,6 +23,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,17 +40,19 @@ public class PlayerHighScore {
 
     private final int course;
     private final String player;
+    private final UUID uuid;
     private long time;
     private int plays;
 
     public static PlayerHighScore loadHighScore(Connection conn, OfflinePlayer player, int course) throws SQLException {
-        PlayerHighScore ret = new PlayerHighScore(course, player.getName(), Long.MAX_VALUE, 0);
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE player = ? AND course = ?")) {
-            stmt.setString(1, player.getName());
-            stmt.setInt(2, course);
+        PlayerHighScore ret = new PlayerHighScore(course, player.getUniqueId(), player.getName(), Long.MAX_VALUE, 0);
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE uuid = ? AND player = ? AND course = ?")) {
+            stmt.setString(1, player.getUniqueId().toString());
+            stmt.setString(2, player.getName());
+            stmt.setInt(3, course);
             try (ResultSet result = stmt.executeQuery()) {
                 if (result.next()) {
-                    ret = new PlayerHighScore(course, player.getName(), result.getLong("time"), result.getInt("plays"));
+                    ret = new PlayerHighScore(course, player.getUniqueId(), player.getName(), result.getLong("time"), result.getInt("plays"));
                 }
             }
         }
@@ -58,11 +61,11 @@ public class PlayerHighScore {
 
     public static List<PlayerHighScore> loadHighScores(Connection conn, int course) throws SQLException {
         List<PlayerHighScore> ret = new ArrayList<>();
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE course = ? AND time>0 ORDER BY time")) {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM highscores WHERE course = ? AND time>0 ORDER BY time LIMIT 10")) {
             stmt.setInt(1, course);
             try (ResultSet result = stmt.executeQuery()) {
                 while (result.next()) {
-                    ret.add(new PlayerHighScore(course, result.getString("player"), result.getLong("time"), result.getInt("plays")));
+                    ret.add(new PlayerHighScore(course, UUID.fromString(result.getString("uuid")), result.getString("player"), result.getLong("time"), result.getInt("plays")));
                 }
             }
         }
@@ -76,7 +79,7 @@ public class PlayerHighScore {
             stmt.setInt(2, limit);
             try (ResultSet result = stmt.executeQuery()) {
                 while (result.next()) {
-                    ret.add(new PlayerHighScore(course, result.getString("player"), result.getLong("time"), result.getInt("plays")));
+                    ret.add(new PlayerHighScore(course, UUID.fromString(result.getString("uuid")), result.getString("player"), result.getLong("time"), result.getInt("plays")));
                 }
             }
         }
@@ -96,7 +99,7 @@ public class PlayerHighScore {
         try (PreparedStatement stmt = conn.prepareStatement(qs.toString())) {
             stmt.setInt(1, course);
             if (player != null) {
-                stmt.setString(2, player.getName());
+                stmt.setString(2, player.getUniqueId().toString());
             }
             stmt.executeUpdate();
         }
@@ -109,19 +112,21 @@ public class PlayerHighScore {
         }
     }
 
-    public PlayerHighScore(int course, String player, long time, int plays) {
+    public PlayerHighScore(int course, UUID uuid, String player, long time, int plays) {
         this.course = course;
+        this.uuid = uuid;
         this.player = player;
         this.time = time;
         this.plays = plays;
     }
 
     public void save(Connection conn) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO highscores (time, plays, player, course) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE time = VALUES(time), plays = VALUES(plays)")) {
+        try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO highscores (time, plays, player, course, uuid) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE time = VALUES(time), plays = VALUES(plays)")) {
             stmt.setLong(1, time);
             stmt.setInt(2, plays);
             stmt.setString(3, player);
             stmt.setInt(4, course);
+            stmt.setString(5, uuid.toString());
             stmt.executeUpdate();
         }
     }
@@ -135,7 +140,7 @@ public class PlayerHighScore {
     }
 
     public OfflinePlayer getPlayer() {
-        return Bukkit.getOfflinePlayer(player);
+        return Bukkit.getOfflinePlayer(uuid);
     }
 
     public long getTime() {

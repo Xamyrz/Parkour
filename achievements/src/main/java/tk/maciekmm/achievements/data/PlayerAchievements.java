@@ -41,6 +41,7 @@ public class PlayerAchievements extends OfflinePlayerAchievements implements Ite
     private Player player;
     private int page = 1;
     private final Achievements plugin;
+    public Inventory achievementsInv;
 
     public PlayerAchievements(Achievements plugin, Player p, ArrayList<AchievementMilestone> milestones, ArrayList<ParkourAchievement> achievements, HashMap<ParkourAchievement, ArrayList<Long>> progress) {
         super(milestones, achievements, progress);
@@ -53,6 +54,7 @@ public class PlayerAchievements extends OfflinePlayerAchievements implements Ite
         this.plugin = plugin;
         this.player = player;
     }
+
 
     /**
      * Check if criterias are fullfilled and awards player with achievement.
@@ -128,17 +130,17 @@ public class PlayerAchievements extends OfflinePlayerAchievements implements Ite
     }
 
     public void openMenu(int page) {
-        Inventory inv = Bukkit.createInventory(player, 54, Achievements.getString("achievement.inventory.name"));
+        achievementsInv = Bukkit.createInventory(player, 54, Achievements.getString("achievement.inventory.name"));
         if (achievements.size() + milestones.size() > 45 * page) {
             ItemStack next = Item.NEXT_PAGE.getItem();
             next.setAmount(page + 1);
-            inv.setItem(53, next);
+            achievementsInv.setItem(53, next);
         }
 
         if (page > 1) {
             ItemStack prev = Item.PREV_PAGE.getItem();
             prev.setAmount(page - 1);
-            inv.setItem(45, prev);
+            achievementsInv.setItem(45, prev);
         }
 
         int target = achievements.size();
@@ -166,7 +168,7 @@ public class PlayerAchievements extends OfflinePlayerAchievements implements Ite
             }
 
             item.setItemMeta(meta);
-            inv.setItem(i, item);
+            achievementsInv.setItem(i, item);
         }
         int startingPos = target;
         target = milestones.size() + achievements.size();
@@ -191,10 +193,10 @@ public class PlayerAchievements extends OfflinePlayerAchievements implements Ite
             desc.add(Achievements.getString("achievement.inventory.milestone.modifier", current.getRatioModifier()));
             meta.setLore(desc);
             item.setItemMeta(meta);
-            inv.setItem(i, item);
+            achievementsInv.setItem(i, item);
         }
 
-        player.openInventory(inv);
+        player.openInventory(achievementsInv);
     }
 
     public void handleSelection(int page, int slot, ClickType click, Inventory inv) {
@@ -234,7 +236,7 @@ public class PlayerAchievements extends OfflinePlayerAchievements implements Ite
     }
 
     public void save(boolean async) {
-        SaveTask task = new SaveTask(player.getName(), ImmutableList.copyOf(completedAchievements), ImmutableList.copyOf(completedMilestones), achievementProgress, plugin.getAchievementsDatabase());
+        SaveTask task = new SaveTask(player, ImmutableList.copyOf(completedAchievements), ImmutableList.copyOf(completedMilestones), achievementProgress, plugin.getAchievementsDatabase());
         if (async) {
             Bukkit.getScheduler().runTaskAsynchronously(plugin, task);
         } else {

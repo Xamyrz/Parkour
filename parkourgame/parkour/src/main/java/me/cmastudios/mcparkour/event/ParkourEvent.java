@@ -18,12 +18,13 @@
 package me.cmastudios.mcparkour.event;
 
 import me.cmastudios.mcparkour.Parkour;
-import me.confuser.barapi.BarAPI;
+import net.kyori.adventure.text.TextComponent;
+import org.bukkit.boss.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Instrument;
 import org.bukkit.Note;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
+import java.lang.Runnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ public abstract class ParkourEvent {
     private boolean started;
     private long startingTime = System.currentTimeMillis();
     protected int eventTime;
+    public BossBar bar;
 
     public ParkourEvent(EventCourse course, Parkour plugin, int eventTime) {
         this.course = course;
@@ -56,7 +58,10 @@ public abstract class ParkourEvent {
         tasks.clear();
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (Parkour.isBarApiEnabled) {
-                BarAPI.setMessage(player, Parkour.getString("event.ended"), 3);
+                bar.removeAll();
+                //bar.setVisible(true);
+                //bar.setTitle(Parkour.getString("event.ended"));
+                //BarAPI.setMessage(player, Parkour.getString("event.ended"), 3);
             } else {
                 Bukkit.broadcastMessage(Parkour.getString("event.ended"));
             }
@@ -93,15 +98,16 @@ public abstract class ParkourEvent {
 
     public abstract void showScoreboard(Player player);
 
-    protected class StartCountDown extends BukkitRunnable {
+    protected class StartCountDown implements Runnable {
         @Override
         public void run() {
             int secondsPassed = (int) ((System.currentTimeMillis() - startingTime) / 1000);
+
             for (Player player : Bukkit.getOnlinePlayers()) {
                 if (Parkour.isBarApiEnabled) {
-                    BarAPI.setMessage(player, Parkour.getString("event.starting", Parkour.getString(course.getType().getNameKey()), 5 - secondsPassed), (5 - secondsPassed) * (100F / 5));
+                    //bar.setTitle(Parkour.getString("event.starting", Parkour.getString(course.getType().getNameKey()), 5 - secondsPassed) + " " +(5 - secondsPassed) * (100F / 5));
                 } else {
-                    Bukkit.broadcastMessage(Parkour.getString("event.starting", Parkour.getString(course.getType().getNameKey()), 5 - secondsPassed));
+                    player.sendMessage(Parkour.getString("event.starting", Parkour.getString(course.getType().getNameKey()), 5 - secondsPassed));
                 }
 
                 if (5 - secondsPassed <= 0) {
@@ -115,14 +121,14 @@ public abstract class ParkourEvent {
         }
     }
 
-    protected class GameEndTask extends BukkitRunnable {
+    protected class GameEndTask implements Runnable {
         @Override
         public void run() {
             int secondsPassed = (int) ((System.currentTimeMillis() - startingTime) / 1000);
             if (secondsPassed < eventTime*60) {
                 if (Parkour.isBarApiEnabled) {
                     for (Player player : Bukkit.getOnlinePlayers()) {
-                        BarAPI.setMessage(player, Parkour.getString("event.started", Parkour.getString(getCourse().getType().getNameKey()), this.convertSecondsToUserFriendlyTime(eventTime*60-secondsPassed)),(eventTime*60-secondsPassed) * (100F/(eventTime*60)));
+                        //bar.setTitle(Parkour.getString("event.started", Parkour.getString(getCourse().getType().getNameKey()), this.convertSecondsToUserFriendlyTime(eventTime*60-secondsPassed)) + " " +(eventTime*60-secondsPassed) * (100F/(eventTime*60)));
                     }
                 }
             } else {

@@ -22,21 +22,22 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class Experience extends JavaPlugin {
+public class Experience extends JavaPlugin implements Listener {
     private static ResourceBundle messages = ResourceBundle.getBundle("messages");
     private Connection experienceDatabase;
     private ExperienceManager manager;
@@ -47,6 +48,7 @@ public class Experience extends JavaPlugin {
         this.saveDefaultConfig();
         this.connectDatabase();
         this.manager = new ExperienceManager(this);
+        Bukkit.getServer().getPluginManager().registerEvents(this,this);
         this.getServer().getServicesManager().register(ExperienceManager.class, manager, this, ServicePriority.Normal);
     }
 
@@ -100,7 +102,7 @@ public class Experience extends JavaPlugin {
                     this.getConfig().getString("mysql.host"), this.getConfig().getInt("mysql.port"), this.getConfig().getString("mysql.database")),
                     this.getConfig().getString("mysql.username"), this.getConfig().getString("mysql.password"));
             try (Statement initStatement = this.experienceDatabase.createStatement()) {
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS experience (player varchar(16), xp INTEGER)");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS experience (`uuid` varchar(255), player varchar(16), xp INTEGER,PRIMARY KEY (`uuid`))");
             }
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load database driver", ex);
@@ -112,6 +114,7 @@ public class Experience extends JavaPlugin {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         OfflinePlayer target;
+
         if (cmd.getName().equalsIgnoreCase("exp")) {
             if (args.length < 2) {
                 return false;
@@ -123,7 +126,18 @@ public class Experience extends JavaPlugin {
                         if (args.length < 3) {
                             return false;
                         }
-                        target = Bukkit.getOfflinePlayer(args[1]);
+                        try (PreparedStatement stmt = experienceDatabase.prepareStatement("SELECT uuid from experience WHERE `player`=?")){
+                            stmt.setString(1, args[1]);
+                            ResultSet rs = stmt.executeQuery();
+
+                            if(rs.next()){
+                                target = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("uuid")));
+                            }else{
+                                return false;
+                            }
+                        } catch (SQLException ex) {
+                            return false;
+                        }
 
                         IPlayerExperience pe = manager.getPlayerExperience(target);
                         int xp;
@@ -138,6 +152,7 @@ public class Experience extends JavaPlugin {
                             target.getPlayer().sendMessage(getString("experience.set.target", xp));
                         }
                         sender.sendMessage(getString("experience.set.success", target.getName(), xp));
+
 
                     } catch (NumberFormatException ex) {
                         sender.sendMessage(getString("error.invalidint"));

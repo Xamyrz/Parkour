@@ -27,9 +27,9 @@ import me.cmastudios.mcparkour.event.configurations.SignConfigurableEvent;
 import me.cmastudios.mcparkour.event.configurations.TimerableEvent;
 import me.cmastudios.mcparkour.events.*;
 import me.cmastudios.mcparkour.tasks.*;
-import me.confuser.barapi.BarAPI;
 import org.apache.commons.lang.Validate;
 import org.bukkit.*;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.Skull;
@@ -55,6 +55,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.lang.Runnable;
+import java.util.function.Supplier;
 
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -68,6 +70,8 @@ import org.bukkit.util.Vector;
 public class ParkourListener implements Listener {
 
     private final Parkour plugin;
+    private Inventory settings;
+    private Inventory chooseMenu;
     public static final int DETECTION_MIN = 1;
     public static final int SIGN_DETECTION_MAX = 6;
 
@@ -86,18 +90,18 @@ public class ParkourListener implements Listener {
             return;
         }
         Player player = event.getPlayer();
-        Block below = this.detectBlocks(event.getTo(), Material.SIGN_POST, DETECTION_MIN, SIGN_DETECTION_MAX)
-                ? this.getBlockInDepthRange(event.getTo(), Material.SIGN_POST, DETECTION_MIN, SIGN_DETECTION_MAX)
-                : this.getBlockInDepthRange(event.getTo(), Material.WALL_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX);
-        if (below != null && (below.getType() == Material.SIGN_POST
-                || below.getType() == Material.WALL_SIGN)) {
-            Block belowfrom = this.detectBlocks(event.getFrom(), Material.SIGN_POST, DETECTION_MIN, SIGN_DETECTION_MAX)
-                    ? this.getBlockInDepthRange(event.getFrom(), Material.SIGN_POST, DETECTION_MIN, SIGN_DETECTION_MAX)
-                    : this.getBlockInDepthRange(event.getFrom(), Material.WALL_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX);
+        Block below = this.detectBlocks(event.getTo(), Material.OAK_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX)
+                ? this.getBlockInDepthRange(event.getTo(), Material.OAK_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX)
+                : this.getBlockInDepthRange(event.getTo(), Material.OAK_WALL_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX);
+        if (below != null && (below.getType() == Material.OAK_SIGN
+                || below.getType() == Material.OAK_WALL_SIGN)) {
+            Block belowfrom = this.detectBlocks(event.getFrom(), Material.OAK_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX)
+                    ? this.getBlockInDepthRange(event.getFrom(), Material.OAK_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX)
+                    : this.getBlockInDepthRange(event.getFrom(), Material.OAK_WALL_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX);
             final Sign sign = (Sign) below.getState();
             final String controlLine = sign.getLine(0);
-            if(belowfrom!=null&&(belowfrom.getType() == Material.SIGN_POST
-                    || belowfrom.getType() == Material.WALL_SIGN)&&((Sign) belowfrom.getState()).getLine(0).equals(controlLine)) {
+            if(belowfrom!=null&&(belowfrom.getType() == Material.OAK_SIGN
+                    || belowfrom.getType() == Material.OAK_WALL_SIGN)&&((Sign) belowfrom.getState()).getLine(0).equals(controlLine)) {
                 return;
             }
             switch (controlLine) {
@@ -209,7 +213,7 @@ public class ParkourListener implements Listener {
         }
         GuildWar war = plugin.getWar(player);
         if (war != null && war.hasStarted()) {
-            Block potentialHead = this.getBlockInDepthRange(event.getTo(), Material.SKULL, 0, 1);
+            Block potentialHead = this.getBlockInDepthRange(event.getTo(), Material.SKELETON_SKULL, 0, 1);
             if (potentialHead != null && potentialHead.hasMetadata("mcparkour-head")) {
                 List<MetadataValue> metadata = potentialHead.getMetadata("mcparkour-head");
                 Validate.notEmpty(metadata); // assert
@@ -254,48 +258,42 @@ public class ParkourListener implements Listener {
 
     @EventHandler
     public void onInventoryClick(final InventoryClickEvent event) throws SQLException {
-        if (!(event.getWhoClicked() instanceof Player)) {
+        if (!event.getInventory().equals(settings) && !event.getInventory().equals(chooseMenu)) {
             return;
         }
-        if (event.getInventory().getName().equals(Parkour.getString("settings.inventory.name"))) {
-            event.setCancelled(true);
-            if (event.getCurrentItem() == null) {
-                return;
-            }
-            final Player player = (Player) event.getWhoClicked();
-            if (Item.CHAT.isSimilar(event.getCurrentItem())) {
-                synchronized (plugin.deafPlayers) {
-                    if (plugin.deafPlayers.contains(player)) {
-                        plugin.deafPlayers.remove(player);
-                        player.sendMessage(Parkour.getString("deaf.disable", new Object[]{}));
-                    } else {
-                        plugin.deafPlayers.add(player);
-                        player.sendMessage(Parkour.getString("deaf.enable", new Object[]{}));
-                    }
+        event.setCancelled(true);
+        if (event.getCurrentItem() == null || event.getCurrentItem().getType().isAir()) {
+            return;
+        }
+        final Player player = (Player) event.getWhoClicked();
+        if (Item.CHAT.isSimilar(event.getCurrentItem())) {
+            synchronized (plugin.deafPlayers) {
+                if (plugin.deafPlayers.contains(player)) {
+                    plugin.deafPlayers.remove(player);
+                    player.sendMessage(Parkour.getString("deaf.disable", new Object[]{}));
+                } else {
+                    plugin.deafPlayers.add(player);
+                    player.sendMessage(Parkour.getString("deaf.enable", new Object[]{}));
                 }
-            } else if (Item.SCOREBOARD.isSimilar(event.getCurrentItem())) {
-                event.setCancelled(true);
-                if (player.hasMetadata("disableScoreboard")) {
-                    if (player.getMetadata("disableScoreboard").get(0).asBoolean()) {
-                        player.sendMessage(Parkour.getString("scoreboard.enable"));
-                        if (plugin.playerCourseTracker.containsKey(event.getWhoClicked())) {
-                            Bukkit.getScheduler().runTaskAsynchronously(plugin, new DisplayHighscoresTask(plugin, player, plugin.playerCourseTracker.get(event.getWhoClicked()).course));
-                        }
-                        player.removeMetadata("disableScoreboard", plugin);
-                        return;
-                    }
-                }
-                player.setMetadata("disableScoreboard", new FixedMetadataValue(plugin, true));
-                player.sendMessage(Parkour.getString("scoreboard.disable"));
-                player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
             }
-        } else if(event.getInventory().getName().equals(Parkour.getString("choosemenu.title"))) {
+        } else if (Item.SCOREBOARD.isSimilar(event.getCurrentItem())) {
             event.setCancelled(true);
-            final Player player = (Player) event.getWhoClicked();
+            if (player.hasMetadata("disableScoreboard")) {
+                if (player.getMetadata("disableScoreboard").get(0).asBoolean()) {
+                    player.sendMessage(Parkour.getString("scoreboard.enable"));
+                    if (plugin.playerCourseTracker.containsKey(event.getWhoClicked())) {
+                        Bukkit.getScheduler().runTaskAsynchronously(plugin, new DisplayHighscoresTask(plugin, player, plugin.playerCourseTracker.get(event.getWhoClicked()).course));
+                    }
+                    player.removeMetadata("disableScoreboard", plugin);
+                    return;
+                }
+            }
+            player.setMetadata("disableScoreboard", new FixedMetadataValue(plugin, true));
+            player.sendMessage(Parkour.getString("scoreboard.disable"));
+            player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+        } else {
+            event.setCancelled(true);
             if(event.getSlot()==-1) {
-                return;
-            }
-            if (event.getCurrentItem() == null) {
                 return;
             }
             this.getChooseMenuData(player).handleClick(event.getInventory(),event.getCurrentItem(),plugin,player);
@@ -339,11 +337,11 @@ public class ParkourListener implements Listener {
             } else if (Item.SETTINGS.isSimilar(event.getItem())) {
                 event.setCancelled(true);
                 ArrayList<Item> items = Item.getItemsByType(Item.ItemType.SETTINGS);
-                Inventory inv = Bukkit.createInventory(event.getPlayer(), 9, Parkour.getString("settings.inventory.name"));
+                settings = Bukkit.createInventory(null, 9, Parkour.getString("settings.inventory.name"));
                 for (Item item : items) {
-                    inv.addItem(item.getItem());
+                    settings.addItem(item.getItem());
                 }
-                player.openInventory(inv);
+                player.openInventory(settings);
             } else if (Item.POINT.isSimilar(event.getItem())) {
                 event.setCancelled(true);
                 if (player.isSneaking() && plugin.playerCourseTracker.containsKey(event.getPlayer())) {
@@ -365,9 +363,9 @@ public class ParkourListener implements Listener {
                     player.sendMessage(Parkour.getString("choosemenu.delay"));
                     return;
                 }
-                Inventory inv = Bukkit.createInventory(event.getPlayer(),54,Parkour.getString("choosemenu.title"));
-                this.getChooseMenuData(player).render(inv,player,plugin);
-                player.openInventory(inv);
+                chooseMenu = Bukkit.createInventory(event.getPlayer(),54,Parkour.getString("choosemenu.title"));
+                this.getChooseMenuData(player).render(chooseMenu,player,plugin);
+                player.openInventory(chooseMenu);
                 return;
             } else if (Item.FIREWORK_SPAWNER.isSimilar(event.getItem())) {
                 event.setCancelled(true);
@@ -388,7 +386,7 @@ public class ParkourListener implements Listener {
             PotionMeta potion = (PotionMeta) event.getPlayer().getItemInHand().getItemMeta();
             event.getPlayer().addPotionEffects(potion.getCustomEffects());
             event.getPlayer().getInventory().remove(event.getPlayer().getItemInHand());
-            event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BURP, 10, 0);
+            event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.ENTITY_PLAYER_BURP, 10, 0);
         }
     }
 
@@ -442,10 +440,11 @@ public class ParkourListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerJoin(final PlayerJoinEvent event) throws SQLException {
-        event.setJoinMessage(null);
+        event.joinMessage(null);
         if (plugin.getEvent() != null && plugin.getEvent().hasStarted()) {
             if (Parkour.isBarApiEnabled) {
-                BarAPI.setMessage(event.getPlayer(), Parkour.getString("event.started", Parkour.getString(plugin.getEvent().getCourse().getType().getNameKey())));
+                //plugin.getEvent().bar.setVisible(true);
+                //plugin.getEvent().bar.setTitle(Parkour.getString("event.started", Parkour.getString(plugin.getEvent().getCourse().getType().getNameKey())));
             } else {
                 event.getPlayer().sendMessage(Parkour.getString("event.started", Parkour.getString(plugin.getEvent().getCourse().getType().getNameKey())));
             }
@@ -624,7 +623,7 @@ public class ParkourListener implements Listener {
                     event.setCancelled(true);
                     event.getPlayer().sendMessage(ChatColor.RED + ex.toString());
                 }
-                event.getPlayer().playSound(event.getBlock().getLocation(), Sound.ANVIL_BREAK, 10, 1); // Confirmation
+                event.getPlayer().playSound(event.getBlock().getLocation(), Sound.BLOCK_ANVIL_BREAK, 10, 1); // Confirmation
             } else {
                 event.getPlayer().sendMessage(Parkour.getString("sign.noperms"));
                 event.setCancelled(true);
@@ -634,7 +633,7 @@ public class ParkourListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockPlace(final BlockPlaceEvent event) throws SQLException {
-        if (event.getBlock().getType() == Material.SKULL
+        if (event.getBlock().getType() == Material.SKELETON_SKULL
                 && event.getItemInHand().getItemMeta().hasDisplayName()
                 && event.getPlayer().hasPermission("parkour.set")) {
             try {
@@ -650,7 +649,7 @@ public class ParkourListener implements Listener {
                 head.save(plugin.getCourseDatabase());
                 head.setBlock(plugin);
                 event.setCancelled(false);
-                event.getPlayer().playSound(event.getBlock().getLocation(), Sound.ANVIL_USE, 10, 1); // Confirmation
+                event.getPlayer().playSound(event.getBlock().getLocation(), Sound.BLOCK_ANVIL_USE, 10, 1); // Confirmation
             } catch (NumberFormatException ignored) { // Why a skull decoration would have a custom name, I don't know
             } catch (Exception ex) {
                 event.setCancelled(true);
@@ -659,7 +658,7 @@ public class ParkourListener implements Listener {
         }
     }
 
-    private class XpCounterTask extends BukkitRunnable {
+    private class XpCounterTask implements Runnable {
         @Override
         public void run() {
             for (Player player : plugin.playerCourseTracker.keySet()) {

@@ -124,7 +124,7 @@ public class Achievements extends JavaPlugin {
                     this.getConfig().getString("mysql.host"), this.getConfig().getInt("mysql.port"), this.getConfig().getString("mysql.database")),
                     this.getConfig().getString("mysql.username"), this.getConfig().getString("mysql.password"));
             try (Statement initStatement = this.achievementsDatabase.createStatement()) {
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS playerachievements (`player` varchar(16) NOT NULL,`completed` text NOT NULL,`progress` mediumtext NOT NULL,`milestones` text NOT NULL, PRIMARY KEY (`player`))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS playerachievements (`uuid` varchar(255) NOT NULL, `player` varchar(16) NOT NULL,`completed` text NOT NULL,`progress` mediumtext NOT NULL,`milestones` text NOT NULL, PRIMARY KEY (`uuid`))");
             }
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load database driver", ex);

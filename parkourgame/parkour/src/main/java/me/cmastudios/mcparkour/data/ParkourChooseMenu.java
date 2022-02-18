@@ -19,6 +19,7 @@ package me.cmastudios.mcparkour.data;
 
 import me.cmastudios.mcparkour.Item;
 import me.cmastudios.mcparkour.Parkour;
+import me.cmastudios.mcparkour.tasks.ParkourStartTask;
 import me.cmastudios.mcparkour.tasks.TeleportToCourseTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -33,6 +34,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
+import java.lang.Runnable;
 
 public class ParkourChooseMenu {
     private int page = 0;
@@ -55,7 +57,8 @@ public class ParkourChooseMenu {
     }
 
     public void render(Inventory inv, Player player, Parkour plugin) {
-        new GetAndRender(plugin, player, criterium, page, inv).runTaskAsynchronously(plugin);
+        Bukkit.getScheduler().runTaskAsynchronously(plugin,  new GetAndRender(plugin, player, criterium, page, inv));
+//        new GetAndRender(plugin, player, criterium, page, inv).runTaskAsynchronously(plugin);
     }
 
     public void handleClick(Inventory inv, ItemStack is, Parkour plugin, Player player) {
@@ -93,7 +96,9 @@ public class ParkourChooseMenu {
             player.openInventory(inv);
             return;
         }
-        new GetParkourIdAndTeleport(plugin, inv.first(is) + 1 + (page * 45), player).runTaskAsynchronously(plugin);
+        if(inv.first(is) + 1 + (page * 45) != 0)
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, new GetParkourIdAndTeleport(plugin, inv.first(is) + 1 + (page * 45), player));
+        //new GetParkourIdAndTeleport(plugin, inv.first(is) + 1 + (page * 45), player).runTaskAsynchronously(plugin);
     }
 
     public static interface ParkourChooseCriterium {
@@ -102,7 +107,7 @@ public class ParkourChooseMenu {
         public String getName();
     } //No better idea, sorry :D
 
-    private class GetParkourIdAndTeleport extends BukkitRunnable {
+    private class GetParkourIdAndTeleport implements Runnable {
         private final Parkour plugin;
         private final int rowNumber;
         private final Player player;
@@ -148,7 +153,7 @@ public class ParkourChooseMenu {
         }
     }
 
-    private class GetAndRender extends BukkitRunnable {
+    private class GetAndRender implements Runnable {
         private final int page;
         private final ParkourChooseCriterium criterium;
         private Inventory inventory;

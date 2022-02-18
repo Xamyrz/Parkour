@@ -34,7 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class OfflinePlayerAchievements {
-    protected static List<ParkourAchievement> achievements = new ArrayList<>();
+    public static List<ParkourAchievement> achievements = new ArrayList<>();
     protected static List<AchievementMilestone> milestones = new ArrayList<>();
     protected static List<AchievementCriterium> criterias = new ArrayList<>();
     ArrayList<ParkourAchievement> completedAchievements;
@@ -182,8 +182,8 @@ public class OfflinePlayerAchievements {
         ArrayList<ParkourAchievement> completedAchievements = new ArrayList<>();
         ArrayList<AchievementMilestone> completedMilestones = new ArrayList<>();
         HashMap<ParkourAchievement, ArrayList<Long>> progressAchievements = new HashMap<>();
-        try (PreparedStatement stmt = plugin.getAchievementsDatabase().prepareStatement("SELECT * FROM playerachievements WHERE player=?")) {
-            stmt.setString(1, p.getName());
+        try (PreparedStatement stmt = plugin.getAchievementsDatabase().prepareStatement("SELECT * FROM playerachievements WHERE uuid=?")) {
+            stmt.setString(1, p.getUniqueId().toString());
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     if (rs.getString("completed").length() > 0) {

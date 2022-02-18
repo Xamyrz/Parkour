@@ -38,13 +38,13 @@ public class TimeRushParkourEvent extends ScoreableParkourEvent implements OwnEn
     @Override
     public void showScoreboard(Player player) {
         Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
-        Objective obj = sb.registerNewObjective("scores", "dummy");
-        obj.setDisplayName(Parkour.getString("event.scoreboard.title"));
-        obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.hr"))).setScore(-1);
-        obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.time.title"))).setScore(-2);
-        obj.getScore(Bukkit.getOfflinePlayer(getFormatted(getPlayerBestScore(player)))).setScore(-3);
-        obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.scoredplaces"))).setScore(plugin.getConfig().getInt("events." + course.getType().key + ".scoredplaces"));
-        obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.position"))).setScore(getPlayerPosition(player));
+        Objective obj = sb.registerNewObjective("scores", "dummy", Parkour.getString("event.scoreboard.title"));
+//        obj.setDisplayName(Parkour.getString("event.scoreboard.title"));
+        obj.getScore(Parkour.getString("event.scoreboard.hr")).setScore(-1);
+        obj.getScore(Parkour.getString("event.scoreboard.time.title")).setScore(-2);
+        obj.getScore(getFormatted(getPlayerBestScore(player))).setScore(-3);
+        obj.getScore(Parkour.getString("event.scoreboard.scoredplaces") + plugin.getConfig().getInt("events." + course.getType().key + ".scoredplaces"));
+        obj.getScore(Parkour.getString("event.scoreboard.position") + " " + getPlayerPosition(player));
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
         player.setScoreboard(sb);
     }

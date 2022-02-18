@@ -26,8 +26,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.lang.Runnable;
 
-public class DisplayHighscoresTask extends BukkitRunnable {
+public class DisplayHighscoresTask implements Runnable {
     private final Parkour plugin;
     private final Player player;
     private final ParkourCourse course;

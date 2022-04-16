@@ -47,7 +47,11 @@ public class GuildFinishHandling implements Runnable {
                 @Override
                 public void run() {
                     if (gp != null && war != null && war.isAccepted()) {
-                        war.handleFinish(gp, plugin, time);
+                        try {
+                            war.handleFinish(gp, plugin, time);
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             });

@@ -86,7 +86,11 @@ public class Parkour extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new ParkourListener(this), this);
         this.setupExperience();
         this.saveDefaultConfig();
-        this.connectDatabase();
+        try {
+            this.connectDatabase();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         try {
             this.rebuildHeads();
         } catch (SQLException e) {
@@ -155,7 +159,7 @@ public class Parkour extends JavaPlugin {
         return mess;
     }
 
-    public void connectDatabase() {
+    public void connectDatabase() throws SQLException{
         try {
             if (courseDatabase != null && !courseDatabase.isClosed()) {
                 courseDatabase.close();
@@ -164,7 +168,7 @@ public class Parkour extends JavaPlugin {
             this.getLogger().log(Level.SEVERE, "Failed to close existing connection to database", ex);
         }
         try {
-            Class.forName("com.mysql.jdbc.Driver").newInstance();
+//            Class.forName("com.mysql.jdbc.Driver").newInstance();
             this.courseDatabase = DriverManager.getConnection(String.format("jdbc:mysql://%s:%d/%s",
                     this.getConfig().getString("mysql.host"), this.getConfig().getInt("mysql.port"), this.getConfig().getString("mysql.database")),
                     this.getConfig().getString("mysql.username"), this.getConfig().getString("mysql.password"));
@@ -179,15 +183,13 @@ public class Parkour extends JavaPlugin {
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courseheads (world_name varchar(32), x INTEGER, y INTEGER, z INTEGER, course_id INTEGER, skull_type_name varchar(32))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS gameresults (time TIMESTAMP, `type` ENUM('duel','guildwar'), uuidwin varchar(255), winner varchar(16), uuidloss varchar(255), loser varchar(16))");
             }
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
-            this.getLogger().log(Level.SEVERE, "Failed to load database driver", ex);
         } catch (SQLException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load course database", ex);
         }
     }
 
     // TODO replace with connection pool
-    public Connection getCourseDatabase() {
+    public Connection getCourseDatabase() throws SQLException {
         try {
             if (!courseDatabase.isValid(1)) {
                 this.connectDatabase();

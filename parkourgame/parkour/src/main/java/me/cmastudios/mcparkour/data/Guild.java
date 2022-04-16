@@ -371,7 +371,7 @@ public class Guild {
             this.startTimeoutTimer(plugin);
         }
 
-        public void handleDisconnect(GuildPlayer player, Parkour plugin) {
+        public void handleDisconnect(GuildPlayer player, Parkour plugin) throws SQLException {
             if (!warriors.contains(player)) return;
             warriors.remove(player);
             if (player.getGuild().equals(initiator)) {
@@ -411,7 +411,7 @@ public class Guild {
             }
         }
 
-        public void handleFinish(GuildPlayer player, Parkour plugin, long now) {
+        public void handleFinish(GuildPlayer player, Parkour plugin, long now) throws SQLException {
             warriors.remove(player);
             long time = now - startTime;
             if (player.getGuild().equals(initiator)) {
@@ -441,7 +441,7 @@ public class Guild {
             }
         }
 
-        public void win(Guild guild, Parkour plugin) {
+        public void win(Guild guild, Parkour plugin) throws SQLException {
             for (GuildPlayer warrior : warriors) {
                 Player player = warrior.getPlayer().getPlayer();
                 if (plugin.playerCourseTracker.containsKey(player)) {
@@ -560,7 +560,11 @@ public class Guild {
             @Override
             public void run() {
                 war.broadcast(Parkour.getString("guild.war.overtime"));
-                war.win(war.getWinner(), plugin);
+                try {
+                    war.win(war.getWinner(), plugin);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
 

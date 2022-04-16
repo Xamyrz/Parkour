@@ -86,7 +86,7 @@ public class FavoritesList {
         return favTask.getInv();
     }
 
-    public void handleSelection(int page, int slot, ClickType click, Inventory inv) {
+    public void handleSelection(int page, int slot, ClickType click, Inventory inv) throws SQLException {
         int pos = (page - 1) * 45 + slot;
         if(favorites.size() < pos) return;
         if (click.isLeftClick()) {
@@ -112,7 +112,6 @@ public class FavoritesList {
                 inv.setItem(slot, null);
                 if (favorites.size() == 0) {
                     Bukkit.getScheduler().runTaskAsynchronously(plugin, getSaveTask());
-                    //getSaveTask().runTaskAsynchronously(plugin);
                 }
             }
         }
@@ -132,17 +131,16 @@ public class FavoritesList {
         Collections.sort(favorites);
     }
 
-    private SaveFavsTask getSaveTask() {
+    private SaveFavsTask getSaveTask() throws SQLException {
         return new SaveFavsTask(ImmutableList.copyOf(favorites), plugin.getCourseDatabase(), player);
     }
 
-    public void save(boolean async) {
+    public void save(boolean async) throws SQLException {
         if (favorites.size() == 0) {
             return;
         }
         if (async) {
             Bukkit.getScheduler().runTaskAsynchronously(plugin, getSaveTask());
-            //getSaveTask().runTaskAsynchronously(plugin);
         } else {
             getSaveTask().run();
         }

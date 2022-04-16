@@ -56,7 +56,11 @@ public class Favorites extends JavaPlugin {
     @Override
     public void onDisable() {
         for(FavoritesList list : pendingFavs.values()) {
-            list.save(false);
+            try {
+                list.save(false);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
         pendingFavs.clear();
         parkour = null;
@@ -85,7 +89,7 @@ public class Favorites extends JavaPlugin {
         return mess;
     }
 
-    public Connection getCourseDatabase() {
+    public Connection getCourseDatabase() throws SQLException {
         return this.parkour.getCourseDatabase();
     }
 }

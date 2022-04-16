@@ -88,13 +88,14 @@ public class PlayerHighScore {
 
     public static void resetHighScores(Connection conn, int course, boolean hard, OfflinePlayer player) throws SQLException {
         StringBuilder qs = new StringBuilder();
+        Bukkit.getLogger().info(player.getName() + " hello");
         if (hard) {
             qs.append("DELETE `highscores` WHERE course=?");
         } else {
             qs.append("UPDATE `highscores` SET time=-1 WHERE course=?");
         }
         if (player != null) {
-            qs.append(" AND player LIKE ?");
+            qs.append(" AND `uuid` LIKE ?");
         }
         try (PreparedStatement stmt = conn.prepareStatement(qs.toString())) {
             stmt.setInt(1, course);

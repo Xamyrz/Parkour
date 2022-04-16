@@ -17,10 +17,8 @@
 
 package me.cmastudios.mcparkour;
 
-import org.bukkit.Color;
-import org.bukkit.FireworkEffect;
-import org.bukkit.Location;
-import org.bukkit.SkullType;
+import me.cmastudios.mcparkour.data.Guild;
+import org.bukkit.*;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
@@ -31,8 +29,13 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 public class Utils {
     public final static Random RANDOM = new Random();
@@ -163,5 +166,21 @@ public class Utils {
             }
             player.removePotionEffect(effect.getType());
         }
+    }
+
+    public static OfflinePlayer getPlayerUUID(String playerName, Connection conn) throws SQLException {
+        OfflinePlayer player = null;
+        try (PreparedStatement stmt = conn
+                .prepareStatement("SELECT `uuid` FROM `experience` WHERE `player` = ?")) {
+            stmt.setString(1, playerName);
+            try (ResultSet result = stmt.executeQuery()) {
+                while (result.next()) {
+                    player = Bukkit.getOfflinePlayer(UUID.fromString(result
+                            .getString("uuid")));
+                }
+            }
+        }
+        Bukkit.getLogger().info(player.getName());
+        return player;
     }
 }

@@ -23,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import me.cmastudios.mcparkour.Parkour;
+import me.cmastudios.mcparkour.Utils;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.PlayerHighScore;
 import org.bukkit.Bukkit;
@@ -61,7 +62,7 @@ public class HighscoresCommand implements CommandExecutor {
                             sender.sendMessage(Parkour.getString("error.playerorcourse404", args[2]));
                             return true;
                         }
-                        PlayerHighScore.resetHighScores(plugin.getCourseDatabase(), parkId, false, args.length > 3 ? Bukkit.getOfflinePlayer(args[3]) : null);
+                        PlayerHighScore.resetHighScores(plugin.getCourseDatabase(), parkId, false, args.length > 3 ? Utils.getPlayerUUID(args[3], plugin.getCourseDatabase()) : null);
                         sender.sendMessage(Parkour.getString("highscores.reset.success", parkId));
                         return true;
                     } catch (SQLException ex) {

@@ -68,7 +68,7 @@ public class Guild {
     public List<GuildPlayer> getPlayers(Connection conn) throws SQLException {
         List<GuildPlayer> ret = new ArrayList<>();
         try (PreparedStatement stmt = conn
-                .prepareStatement("SELECT player, 'rank', `uuid` FROM guildplayers WHERE guild = ?")) {
+                .prepareStatement("SELECT player, `rank`, `uuid` FROM guildplayers WHERE guild = ?")) {
             stmt.setString(1, tag);
             try (ResultSet result = stmt.executeQuery()) {
                 while (result.next()) {

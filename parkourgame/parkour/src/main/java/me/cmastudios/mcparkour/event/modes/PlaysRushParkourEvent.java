@@ -38,9 +38,9 @@ public class PlaysRushParkourEvent extends ScoreableParkourEvent implements OwnE
         Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
         Objective obj = sb.registerNewObjective("scores", "dummy");
         obj.setDisplayName(Parkour.getString("event.scoreboard.title"));
-        obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.plays.plays"))).setScore(getPlayerBestScore(player) != null ? getPlayerBestScore(player).intValue() : 0);
-        obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.scoredplaces"))).setScore(plugin.getConfig().getInt("events." + course.getType().key + ".scoredplaces"));
-        obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.position"))).setScore(getPlayerPosition(player));
+        obj.getScore(Parkour.getString("event.scoreboard.plays.plays")).setScore(getPlayerBestScore(player) != null ? getPlayerBestScore(player).intValue() : 0);
+        obj.getScore(Parkour.getString("event.scoreboard.scoredplaces")).setScore(plugin.getConfig().getInt("events." + course.getType().key + ".scoredplaces"));
+        obj.getScore(Parkour.getString("event.scoreboard.position")).setScore(getPlayerPosition(player));
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
         player.setScoreboard(sb);
     }

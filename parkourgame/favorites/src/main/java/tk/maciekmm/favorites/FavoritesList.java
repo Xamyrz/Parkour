@@ -83,6 +83,7 @@ public class FavoritesList {
     }
 
     public Inventory getInventory(){
+        if(favTask == null) return null;
         return favTask.getInv();
     }
 
@@ -214,7 +215,7 @@ class OpenFavsTask implements Runnable {
     }
 
     public Inventory getInventory(int page) {
-        inv = Bukkit.createInventory(null, 54, Favorites.getString("favorites.inventory.name"));
+        inv = Bukkit.createInventory(player, 54, Favorites.getString("favorites.inventory.name"));
         if (favs.size() > 45 * page) {
             ItemStack next = Item.NEXT_PAGE.getItem();
             next.setAmount(page + 1);

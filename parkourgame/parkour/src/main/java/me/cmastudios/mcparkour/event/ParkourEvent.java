@@ -56,16 +56,15 @@ public abstract class ParkourEvent {
             task.cancel();
         }
         tasks.clear();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (Parkour.isBarApiEnabled) {
+
+        bar.setColor(BarColor.RED);
+        bar.setTitle(Parkour.getString("event.ended"));
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+            @Override
+            public void run() {
                 bar.removeAll();
-                //bar.setVisible(true);
-                //bar.setTitle(Parkour.getString("event.ended"));
-                //BarAPI.setMessage(player, Parkour.getString("event.ended"), 3);
-            } else {
-                Bukkit.broadcastMessage(Parkour.getString("event.ended"));
             }
-        }
+        }, 100L);
         for (Map.Entry<Player, Parkour.PlayerCourseData> data : plugin.playerCourseTracker.entrySet()) {
             if (data.getValue() instanceof PlayerEventRushData) {
                 data.getKey().teleport(getCourse().getCourse().getTeleport());
@@ -82,13 +81,15 @@ public abstract class ParkourEvent {
         }
         tasks.clear();
         startingTime = System.currentTimeMillis();
-        if (!Parkour.isBarApiEnabled) {
-            Bukkit.broadcastMessage(Parkour.getString("event.started", Parkour.getString(getCourse().getType().getNameKey()),eventTime-(System.currentTimeMillis() - startingTime) / 60000));
-        }
         tasks.add(Bukkit.getScheduler().runTaskTimer(plugin, new GameEndTask(), 1, 20));
     }
 
     public void prepare() {
+        bar = Bukkit.createBossBar(Parkour.getString("event.starting"), BarColor.YELLOW, BarStyle.SOLID);
+        bar.setVisible(true);
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            bar.addPlayer(player);
+        }
         tasks.add(Bukkit.getScheduler().runTaskTimer(plugin, new StartCountDown(), 1, 20));
     }
 
@@ -102,14 +103,8 @@ public abstract class ParkourEvent {
         @Override
         public void run() {
             int secondsPassed = (int) ((System.currentTimeMillis() - startingTime) / 1000);
-
             for (Player player : Bukkit.getOnlinePlayers()) {
-                if (Parkour.isBarApiEnabled) {
-                    //bar.setTitle(Parkour.getString("event.starting", Parkour.getString(course.getType().getNameKey()), 5 - secondsPassed) + " " +(5 - secondsPassed) * (100F / 5));
-                } else {
-                    player.sendMessage(Parkour.getString("event.starting", Parkour.getString(course.getType().getNameKey()), 5 - secondsPassed));
-                }
-
+                bar.addPlayer(player);
                 if (5 - secondsPassed <= 0) {
                     player.playNote(player.getLocation(), Instrument.PIANO, Note.natural(0, Note.Tone.F));
                     start();
@@ -118,6 +113,7 @@ public abstract class ParkourEvent {
                 }
 
             }
+            bar.setTitle(Parkour.getString("event.starting", Parkour.getString(course.getType().getNameKey()), 5 - secondsPassed));
         }
     }
 
@@ -125,12 +121,12 @@ public abstract class ParkourEvent {
         @Override
         public void run() {
             int secondsPassed = (int) ((System.currentTimeMillis() - startingTime) / 1000);
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                bar.addPlayer(player);
+            }
             if (secondsPassed < eventTime*60) {
-                if (Parkour.isBarApiEnabled) {
-                    for (Player player : Bukkit.getOnlinePlayers()) {
-                        //bar.setTitle(Parkour.getString("event.started", Parkour.getString(getCourse().getType().getNameKey()), this.convertSecondsToUserFriendlyTime(eventTime*60-secondsPassed)) + " " +(eventTime*60-secondsPassed) * (100F/(eventTime*60)));
-                    }
-                }
+                bar.setColor(BarColor.GREEN);
+                bar.setTitle(Parkour.getString("event.started", Parkour.getString(getCourse().getType().getNameKey()), this.convertSecondsToUserFriendlyTime(eventTime*60-secondsPassed)));
             } else {
                 end();
             }

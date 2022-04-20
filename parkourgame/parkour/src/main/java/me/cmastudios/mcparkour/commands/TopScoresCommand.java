@@ -59,8 +59,8 @@ public class TopScoresCommand implements CommandExecutor {
                 sender.sendMessage(Parkour.getString("error.course404", new Object[]{}));
                 return true;
             }
-            if (args.length == 2) {
-                OfflinePlayer player = Bukkit.getOfflinePlayer(args[1]);
+            if (args.length == 2 && Utils.isNumeric(args[1])) {
+                OfflinePlayer player = Utils.getPlayerUUID(args[1], plugin.getCourseDatabase());
                 if (player.hasPlayedBefore()) {
                     PlayerHighScore highScores = PlayerHighScore.loadHighScore(plugin.getCourseDatabase(), player, id);
                     if (highScores.getPlays() > 0) {

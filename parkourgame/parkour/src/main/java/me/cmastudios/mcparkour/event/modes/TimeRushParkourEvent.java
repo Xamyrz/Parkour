@@ -38,8 +38,8 @@ public class TimeRushParkourEvent extends ScoreableParkourEvent implements OwnEn
     @Override
     public void showScoreboard(Player player) {
         Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
-        Objective obj = sb.registerNewObjective("scores", "dummy", Parkour.getString("event.scoreboard.title"));
-//        obj.setDisplayName(Parkour.getString("event.scoreboard.title"));
+        Objective obj = sb.registerNewObjective("scores", "dummy");
+        obj.setDisplayName(Parkour.getString("event.scoreboard.title"));
         obj.getScore(Parkour.getString("event.scoreboard.hr")).setScore(-1);
         obj.getScore(Parkour.getString("event.scoreboard.time.title")).setScore(-2);
         obj.getScore(getFormatted(getPlayerBestScore(player))).setScore(-3);

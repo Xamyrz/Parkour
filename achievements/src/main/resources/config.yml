@@ -59,7 +59,7 @@ criterias:
     affected: []
     options:
     - parkour
-  TOP_10:
+TOP_10:
     progressing: false
     option: NONE
     affected: []

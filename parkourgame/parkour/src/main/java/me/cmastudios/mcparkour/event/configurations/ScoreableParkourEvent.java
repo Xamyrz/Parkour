@@ -103,9 +103,6 @@ public abstract class ScoreableParkourEvent<N extends Number> extends ParkourEve
                 showScoreboard(player.getPlayer());
             }
             return;
-        }
-        if (bestResults.containsKey(stat)) {
-            bestResults.get(stat).add(player);
         } else {
             ArrayList<OfflinePlayer> players = new ArrayList<>();
             players.add(player);

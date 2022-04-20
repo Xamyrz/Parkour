@@ -34,7 +34,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import java.util.*;
 import java.lang.Runnable;
 
-public class DistanceRushParkourEvent extends ScoreableParkourEvent implements TimerableEvent, OwnEndingEvent, SignConfigurableEvent {
+public class DistanceRushParkourEvent extends ScoreableParkourEvent implements OwnEndingEvent, TimerableEvent, SignConfigurableEvent {
 
     public DistanceRushParkourEvent(EventCourse course, Parkour plugin, int eventTime) {
         super(course, plugin, eventTime, true);
@@ -83,12 +83,13 @@ public class DistanceRushParkourEvent extends ScoreableParkourEvent implements T
         Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
         Objective obj = sb.registerNewObjective("scores", "dummy");
         obj.setDisplayName(Parkour.getString("event.scoreboard.title"));
-        obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.distance.bestgate"))).setScore(getPlayerBestScore(player) != null ? getPlayerBestScore(player).intValue() : 0);
-        obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.position"))).setScore(getPlayerPosition(player));
-        obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.scoredplaces"))).setScore(plugin.getConfig().getInt("events." + course.getType().key + ".scoredplaces"));
-        obj.getScore(Bukkit.getOfflinePlayer(Parkour.getString("event.scoreboard.distance.gate"))).setScore((plugin.playerCourseTracker.containsKey(player) && (plugin.playerCourseTracker.get(player) instanceof PlayerEventRushData.PlayerDistanceRushData)) ? ((PlayerEventRushData.PlayerDistanceRushData) plugin.playerCourseTracker.get(player)).getGate() : 0);
+        obj.getScore(Parkour.getString("event.scoreboard.distance.bestgate")).setScore(getPlayerBestScore(player) != null ? getPlayerBestScore(player).intValue() : 0);
+        obj.getScore(Parkour.getString("event.scoreboard.position")).setScore(getPlayerPosition(player));
+        obj.getScore(Parkour.getString("event.scoreboard.scoredplaces")).setScore(plugin.getConfig().getInt("events." + course.getType().key + ".scoredplaces"));
+        obj.getScore(Parkour.getString("event.scoreboard.distance.gate")).setScore((plugin.playerCourseTracker.containsKey(player) && (plugin.playerCourseTracker.get(player) instanceof PlayerEventRushData.PlayerDistanceRushData)) ? ((PlayerEventRushData.PlayerDistanceRushData) plugin.playerCourseTracker.get(player)).getGate() : 0);
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
         player.setScoreboard(sb);
+        Bukkit.getLogger().info("scoreboard.....");
     }
 
     @Override

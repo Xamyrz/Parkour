@@ -23,6 +23,7 @@ import me.cmastudios.mcparkour.data.*;
 import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.Guild.GuildWar;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseDifficulty;
+import me.cmastudios.mcparkour.menu.Menu;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -51,8 +52,9 @@ public class Parkour extends JavaPlugin {
     private static ResourceBundle messages = ResourceBundle.getBundle("messages");
     private Connection courseDatabase;
     private double ratio = 1;
-    public static boolean isBarApiEnabled = false;
+    public static boolean isBarApiEnabled = true;
     private ParkourEvent event;
+    public Map<Player, Menu> playersMenus = new HashMap<>();
     public List<Player> blindPlayers = new ArrayList<>();
     public final List<Player> deafPlayers = new ArrayList<>();
     public ConcurrentHashMap<Player, Checkpoint> playerCheckpoints = new ConcurrentHashMap<>();

@@ -119,7 +119,10 @@ public class FavoritesListener implements Listener {
 
     @EventHandler
     public void onInvClick(InventoryClickEvent event) throws SQLException {
-        if(plugin.pendingFavs.get(event.getWhoClicked()) == null || plugin.pendingFavs.get(event.getWhoClicked()).getInventory() == null){
+        if(plugin.pendingFavs.get(event.getWhoClicked()) == null){
+            return;
+        }
+        if(plugin.pendingFavs.get(event.getWhoClicked()).getInventory() == null){
             return;
         }
         if(!event.getInventory().equals(plugin.pendingFavs.get(event.getWhoClicked()).getInventory())){

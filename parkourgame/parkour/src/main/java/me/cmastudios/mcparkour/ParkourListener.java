@@ -26,10 +26,10 @@ import me.cmastudios.mcparkour.event.configurations.OwnEndingEvent;
 import me.cmastudios.mcparkour.event.configurations.SignConfigurableEvent;
 import me.cmastudios.mcparkour.event.configurations.TimerableEvent;
 import me.cmastudios.mcparkour.events.*;
+import me.cmastudios.mcparkour.menu.Menu;
 import me.cmastudios.mcparkour.tasks.*;
 import org.apache.commons.lang.Validate;
 import org.bukkit.*;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.Skull;
@@ -48,16 +48,10 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.metadata.MetadataValue;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.SQLException;
-import java.time.temporal.ValueRange;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.lang.Runnable;
-import java.util.function.Supplier;
 
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -71,8 +65,6 @@ import org.bukkit.util.Vector;
 public class ParkourListener implements Listener {
 
     private final Parkour plugin;
-    private Inventory settings;
-    private Inventory chooseMenu;
     public static final int DETECTION_MIN = 1;
     public static final int SIGN_DETECTION_MAX = 6;
 
@@ -259,7 +251,8 @@ public class ParkourListener implements Listener {
 
     @EventHandler
     public void onInventoryClick(final InventoryClickEvent event) throws SQLException {
-        if (!event.getInventory().equals(settings) && !event.getInventory().equals(chooseMenu)) {
+        Menu playerMenus = plugin.playersMenus.get(event.getWhoClicked());
+        if (!event.getInventory().equals(playerMenus.getSettingsMenu()) && !event.getInventory().equals(playerMenus.getChooseMenu())) {
             return;
         }
         event.setCancelled(true);
@@ -297,7 +290,7 @@ public class ParkourListener implements Listener {
             if(event.getSlot()==-1) {
                 return;
             }
-            this.getChooseMenuData(player).handleClick(event.getInventory(),event.getCurrentItem(),plugin,player);
+            plugin.playersMenus.get(player).getChooseMenuData().handleClick(event.getInventory(),event.getCurrentItem(),plugin,player);
         }
     }
 
@@ -338,11 +331,11 @@ public class ParkourListener implements Listener {
             } else if (Item.SETTINGS.isSimilar(event.getItem())) {
                 event.setCancelled(true);
                 ArrayList<Item> items = Item.getItemsByType(Item.ItemType.SETTINGS);
-                settings = Bukkit.createInventory(null, 9, Parkour.getString("settings.inventory.name"));
+                Inventory playerSettings = plugin.playersMenus.get(event.getPlayer()).getSettingsMenu();
                 for (Item item : items) {
-                    settings.addItem(item.getItem());
+                    playerSettings.addItem(item.getItem());
                 }
-                player.openInventory(settings);
+                player.openInventory(playerSettings);
             } else if (Item.POINT.isSimilar(event.getItem())) {
                 event.setCancelled(true);
                 if (player.isSneaking() && plugin.playerCourseTracker.containsKey(event.getPlayer())) {
@@ -361,12 +354,14 @@ public class ParkourListener implements Listener {
             } else if (Item.ITEM_MENU.isSimilar(event.getItem())) {
                 event.setCancelled(true);
                 if (!Utils.canUse(plugin, event.getPlayer(), "choosemenu", 1)) {
-                    player.sendMessage(Parkour.getString("choosemenu.delay"));
+                    event.getPlayer().sendMessage(Parkour.getString("choosemenu.delay"));
                     return;
                 }
-                chooseMenu = Bukkit.createInventory(event.getPlayer(),54,Parkour.getString("choosemenu.title"));
-                this.getChooseMenuData(player).render(chooseMenu,player,plugin);
-                player.openInventory(chooseMenu);
+                plugin.playersMenus.get(player).renderChooseMenu();
+                Inventory playerChooseMenu = plugin.playersMenus.get(player).getChooseMenu();
+                event.getPlayer().openInventory(playerChooseMenu);
+//                this.getChooseMenuData(event.getPlayer()).render(chooseMenu,event.getPlayer(),plugin);
+//                event.getPlayer().openInventory(chooseMenu);
                 return;
             } else if (Item.FIREWORK_SPAWNER.isSimilar(event.getItem())) {
                 event.setCancelled(true);
@@ -389,19 +384,6 @@ public class ParkourListener implements Listener {
             event.getPlayer().getInventory().remove(event.getPlayer().getItemInHand());
             event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.ENTITY_PLAYER_BURP, 10, 0);
         }
-    }
-
-    private ParkourChooseMenu getChooseMenuData(Player player) {
-        if(player.hasMetadata("choosemenu")) {
-            for(MetadataValue value : player.getMetadata("choosemenu")) {
-                if(value.getOwningPlugin()==plugin) {
-                    return (ParkourChooseMenu) value.value();
-                }
-            }
-        }
-        ParkourChooseMenu menu = new ParkourChooseMenu();
-        player.setMetadata("choosemenu",new FixedMetadataValue(plugin,menu));
-        return menu;
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -442,6 +424,7 @@ public class ParkourListener implements Listener {
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerJoin(final PlayerJoinEvent event) throws SQLException {
         event.joinMessage(null);
+        plugin.playersMenus.put(event.getPlayer(), new Menu(event.getPlayer(), plugin));
         if (plugin.getEvent() != null && plugin.getEvent().hasStarted()) {
             if (Parkour.isBarApiEnabled) {
                 //plugin.getEvent().bar.setVisible(true);
@@ -507,7 +490,8 @@ public class ParkourListener implements Listener {
 
     @EventHandler
     public void onPlayerQuit(final PlayerQuitEvent event) throws SQLException {
-        event.setQuitMessage(null);
+        event.setQuitMessage("");
+        plugin.playersMenus.remove(event.getPlayer());
         plugin.blindPlayers.remove(event.getPlayer());
         plugin.deafPlayers.remove(event.getPlayer());
         plugin.playerCheckpoints.remove(event.getPlayer());
@@ -541,7 +525,7 @@ public class ParkourListener implements Listener {
 
     @EventHandler
     public void onPlayerKick(PlayerKickEvent event) {
-        event.setLeaveMessage(null);
+        event.setLeaveMessage("");
     }
 
     @EventHandler

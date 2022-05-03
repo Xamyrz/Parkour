@@ -171,7 +171,7 @@ public class Utils {
     public static OfflinePlayer getPlayerUUID(String playerName, Connection conn) throws SQLException {
         OfflinePlayer player = null;
         try (PreparedStatement stmt = conn
-                .prepareStatement("SELECT `uuid` FROM `experience` WHERE `player` = ?")) {
+                .prepareStatement("SELECT `uuid` FROM `players` WHERE `name` = ?")) {
             stmt.setString(1, playerName);
             try (ResultSet result = stmt.executeQuery()) {
                 while (result.next()) {
@@ -180,8 +180,17 @@ public class Utils {
                 }
             }
         }
-        Bukkit.getLogger().info(player.getName());
+        Bukkit.getLogger().info(playerName);
         return player;
+    }
+
+    public static void savePlayer(Connection conn, Player player) throws SQLException {
+        try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO `players` (`uuid`, `name`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `name`=VALUES(name)")){
+            stmt.setString(1, player.getUniqueId().toString());
+            stmt.setString(2, player.getName());
+
+            stmt.executeUpdate();
+        }
     }
 
     public static boolean isNumeric(String strNum) {

@@ -71,16 +71,15 @@ public class SaveTask implements Runnable {
             for (AchievementMilestone mile : milestones) {
                 sbmilestones.append(mile.getId()).append(",");
             }
-            PreparedStatement stmt = conn.prepareStatement("INSERT INTO playerachievements (`uuid`,`player`,`completed`,`progress`,`milestones`) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE `completed`=VALUES(completed), `progress`=VALUES(progress), `milestones`=VALUES(milestones)");
+            PreparedStatement stmt = conn.prepareStatement("INSERT INTO playerachievements (`uuid`,`completed`,`progress`,`milestones`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `completed`=VALUES(completed), `progress`=VALUES(progress), `milestones`=VALUES(milestones)");
             stmt.setString(1, uuid.toString());
-            stmt.setString(2, player);
-            stmt.setString(3, sbach.toString());
-            stmt.setString(4, sbprogress.toString());
-            stmt.setString(5, sbmilestones.toString());
+            stmt.setString(2, sbach.toString());
+            stmt.setString(3, sbprogress.toString());
+            stmt.setString(4, sbmilestones.toString());
             stmt.executeUpdate();
 
         } catch (SQLException ex) {
-            Bukkit.getLogger().log(Level.SEVERE, String.format("Couldn't save playerachievements for %s", player));
+            Bukkit.getLogger().log(Level.SEVERE, String.format("Couldn't save playerachievements for %s %s", player, uuid.toString()));
         }
     }
 }

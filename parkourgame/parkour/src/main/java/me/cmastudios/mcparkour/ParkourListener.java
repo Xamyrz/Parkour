@@ -423,7 +423,8 @@ public class ParkourListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerJoin(final PlayerJoinEvent event) throws SQLException {
-        event.joinMessage(null);
+        event.setJoinMessage(null);
+        Utils.savePlayer(plugin.getCourseDatabase(), event.getPlayer());
         plugin.playersMenus.put(event.getPlayer(), new Menu(event.getPlayer(), plugin));
         if (plugin.getEvent() != null && plugin.getEvent().hasStarted()) {
             if (Parkour.isBarApiEnabled) {

@@ -5,6 +5,7 @@ mysql:
   database: mcparkour
   username: root
   password: meow
+  playerstable: false  #Enable only if running without parkour plugin
 criterias:
   PARKOUR_COMPLETE:
     progressing: false
@@ -59,7 +60,7 @@ criterias:
     affected: []
     options:
     - parkour
-TOP_10:
+  TOP_10:
     progressing: false
     option: NONE
     affected: []

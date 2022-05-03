@@ -19,9 +19,10 @@ package me.cmastudios.experience;
 
 import me.cmastudios.experience.events.ChangeExperienceEvent;
 import me.cmastudios.experience.tasks.ExperienceSaveTask;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.SQLException;
 
@@ -31,11 +32,13 @@ public class PlayerExperience implements IPlayerExperience {
     private int experience;
     private long lastUsed;
     private final Experience plugin;
+    private String playerUUID;
 
-    public PlayerExperience(OfflinePlayer player, int experience, Experience plugin) {
+    public PlayerExperience(OfflinePlayer player, String playerUUID, int experience, Experience plugin) {
         this.plugin = plugin;
         this.player = player;
         this.experience = experience;
+        this.playerUUID = playerUUID;
     }
 
     public void save(boolean async) throws SQLException {
@@ -58,11 +61,10 @@ public class PlayerExperience implements IPlayerExperience {
             if (fireEvent) {
                 ChangeExperienceEvent event = new ChangeExperienceEvent(this.experience, experience, this);
                 Bukkit.getScheduler().runTask(plugin, () -> Bukkit.getPluginManager().callEvent(event));
-                player.getPlayer().sendMessage(Experience.getString("xp.gain", event.getXp() - this.experience, this.experience));
+                player.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(Experience.getString("xp.got", event.getXp() - this.experience)));
                 this.experience = event.getXp();
             } else {
-                player.getPlayer().sendMessage(Experience.getString("xp.gain", experience - this.experience, this.experience + (experience - this.experience
-                )));
+                player.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(Experience.getString("xp.got", experience - this.experience)));
                 this.experience = experience;
             }
         }else{
@@ -74,6 +76,10 @@ public class PlayerExperience implements IPlayerExperience {
     public OfflinePlayer getPlayer() {
         this.lastUsed = System.currentTimeMillis();
         return player;
+    }
+
+    public String getPlayerDbName(){
+        return this.playerUUID;
     }
 
     public long getLastUsed() {

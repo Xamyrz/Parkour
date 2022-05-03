@@ -66,7 +66,7 @@ public class GuildCommand implements CommandExecutor {
                 try {
                     GuildPlayer createPlayer = GuildPlayer.loadGuildPlayer(
                             plugin.getCourseDatabase(),
-                            Bukkit.getOfflinePlayer(leader));
+                            Utils.getPlayerUUID(leader, plugin.getCourseDatabase()));
                     if (createPlayer.inGuild()) {
                         sender.sendMessage(Parkour.getString("guild.create.inguild"));
                         return true;
@@ -107,7 +107,7 @@ public class GuildCommand implements CommandExecutor {
             try {
                 GuildPlayer createPlayer = GuildPlayer.loadGuildPlayer(
                         plugin.getCourseDatabase(),
-                        Bukkit.getOfflinePlayer(sender.getName()));
+                        Utils.getPlayerUUID(sender.getName(), plugin.getCourseDatabase()));
                 if (createPlayer.inGuild()) {
                     sender.sendMessage(Parkour.getString("guild.create.inguild"));
                     return true;
@@ -143,7 +143,7 @@ public class GuildCommand implements CommandExecutor {
             try {
                 GuildPlayer player = GuildPlayer.loadGuildPlayer(
                         plugin.getCourseDatabase(),
-                        Bukkit.getOfflinePlayer(sender.getName()));
+                        Bukkit.getOfflinePlayer(((Player) sender).getUniqueId()));
                 if (player == null || !player.inGuild()) {
                     sender.sendMessage(Parkour.getString("guild.notin"));
                     return true;
@@ -197,7 +197,7 @@ public class GuildCommand implements CommandExecutor {
                 }
                 GuildPlayer gp = GuildPlayer.loadGuildPlayer(
                         plugin.getCourseDatabase(),
-                        Bukkit.getOfflinePlayer(sender.getName()));
+                        Bukkit.getOfflinePlayer(((Player) sender).getUniqueId()));
                 if (gp.inGuild()) {
                     sender.sendMessage(Parkour
                             .getString("guild.create.inguild"));
@@ -235,7 +235,12 @@ public class GuildCommand implements CommandExecutor {
             if (args.length < 2) {
                 return false;
             }
-            OfflinePlayer kickPlayer = Bukkit.getOfflinePlayer(args[1]);
+            OfflinePlayer kickPlayer = null;
+            try {
+                kickPlayer = Utils.getPlayerUUID(args[1], plugin.getCourseDatabase());
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
             if (kickPlayer.getName().equals(sender.getName())) {
                 sender.getServer().dispatchCommand(sender, "guild leave");
                 return true;
@@ -243,7 +248,7 @@ public class GuildCommand implements CommandExecutor {
             try {
                 GuildPlayer player = GuildPlayer.loadGuildPlayer(
                         plugin.getCourseDatabase(),
-                        Bukkit.getOfflinePlayer(sender.getName()));
+                        Bukkit.getOfflinePlayer(((Player) sender).getUniqueId()));
                 if (player == null || !player.inGuild()) {
                     sender.sendMessage(Parkour.getString("guild.notin"));
                     return true;
@@ -338,7 +343,12 @@ public class GuildCommand implements CommandExecutor {
             if (args.length < 3) {
                 return false;
             }
-            OfflinePlayer rankPlayer = Bukkit.getOfflinePlayer(args[1]);
+            OfflinePlayer rankPlayer = null;
+            try {
+                rankPlayer = Utils.getPlayerUUID(args[1], plugin.getCourseDatabase());
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
             GuildRank rankNew = GuildRank.getRank(args[2]);
             if (rankNew == null) {
                 sender.sendMessage(Parkour.getString("guild.rank.rank404"));
@@ -347,7 +357,7 @@ public class GuildCommand implements CommandExecutor {
             try {
                 GuildPlayer player = GuildPlayer.loadGuildPlayer(
                         plugin.getCourseDatabase(),
-                        Bukkit.getOfflinePlayer(sender.getName()));
+                        Bukkit.getOfflinePlayer(((Player) sender).getUniqueId()));
                 if (player == null || !player.inGuild()) {
                     sender.sendMessage(Parkour.getString("guild.notin"));
                     return true;
@@ -388,7 +398,7 @@ public class GuildCommand implements CommandExecutor {
             try {
                 GuildPlayer player = GuildPlayer.loadGuildPlayer(
                         plugin.getCourseDatabase(),
-                        Bukkit.getOfflinePlayer(sender.getName()));
+                        Bukkit.getOfflinePlayer(((Player) sender).getUniqueId()));
                 if (player == null || !player.inGuild()) {
                     sender.sendMessage(Parkour.getString("guild.notin"));
                     return true;
@@ -411,7 +421,7 @@ public class GuildCommand implements CommandExecutor {
             try {
                 GuildPlayer player = GuildPlayer.loadGuildPlayer(
                         plugin.getCourseDatabase(),
-                        Bukkit.getOfflinePlayer(sender.getName()));
+                        Bukkit.getOfflinePlayer(((Player) sender).getUniqueId()));
                 if (player == null || !player.inGuild()) {
                     sender.sendMessage(Parkour.getString("guild.notin"));
                     return true;

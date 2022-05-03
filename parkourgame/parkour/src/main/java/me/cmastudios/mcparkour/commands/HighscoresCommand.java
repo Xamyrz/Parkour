@@ -19,6 +19,7 @@ package me.cmastudios.mcparkour.commands;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -62,6 +63,7 @@ public class HighscoresCommand implements CommandExecutor {
                             sender.sendMessage(Parkour.getString("error.playerorcourse404", args[2]));
                             return true;
                         }
+
                         PlayerHighScore.resetHighScores(plugin.getCourseDatabase(), parkId, false, args.length > 3 ? Utils.getPlayerUUID(args[3], plugin.getCourseDatabase()) : null);
                         sender.sendMessage(Parkour.getString("highscores.reset.success", parkId));
                         return true;

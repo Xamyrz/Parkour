@@ -31,6 +31,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.Objects;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.scoreboard.Team;
@@ -157,7 +158,6 @@ public class ParkourCourse {
     public Scoreboard getScoreboard(List<PlayerHighScore> highScores) {
         Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
         Objective obj = sb.registerNewObjective("scores", "dummy", Parkour.getString("scoreboard.title",name.substring(0,Math.min(name.length(),32-(String.valueOf(id).length()+6))),id));
-        //obj.setDisplayName(Parkour.getString("scoreboard.title",name.substring(0,Math.min(name.length(),32-(String.valueOf(id).length()+6))),id));
 
         for (int count = 0; count < 10; count++) {
             if (highScores.size() <= count) {
@@ -165,9 +165,7 @@ public class ParkourCourse {
             }
 
             PlayerHighScore highScore = highScores.get(count);
-            String name = highScore.getPlayer().getName();
-            OfflinePlayer player = highScore.getPlayer();
-            Team team = sb.registerNewTeam(name);
+
             ChatColor color = ChatColor.WHITE;
             if (count == 0) {
                 color = ChatColor.YELLOW;
@@ -176,13 +174,8 @@ public class ParkourCourse {
             } else if (count == 2) {
                 color = ChatColor.GOLD;
             }
-
             DecimalFormat df = new DecimalFormat("#.###");
-
-            OfflinePlayer result = Bukkit.getOfflinePlayer(player.getUniqueId());
-            team.setPrefix(Parkour.getString("scoreboard.prefix", df.format(((double) highScore.getTime()) / 1000.0D),"\u00A7"+color.getChar()));
-            team.addPlayer(result);
-            obj.getScore(result).setScore(-(count + 1));
+            obj.getScore(Parkour.getString("scoreboard.prefix", Bukkit.getOfflinePlayer(highScore.getPlayerUUID()).getName(), color+""+((double) highScore.getTime()) / 1000.0D)).setScore(-(count + 1));
         }
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
         return sb;

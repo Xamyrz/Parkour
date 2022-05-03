@@ -177,13 +177,14 @@ public class Parkour extends JavaPlugin {
             try (Statement initStatement = this.courseDatabase.createStatement()) {
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT, `mode` ENUM('normal', 'guildwar', 'adventure', 'vip', 'hidden', 'event', 'custom', 'thematic') NOT NULL DEFAULT 'normal', difficulty ENUM('easy', 'medium', 'hard', 'veryhard') NOT NULL DEFAULT 'easy', name VARCHAR(25) NOT NULL DEFAULT '',PRIMARY KEY (id))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS events (id INTEGER, type enum('TIME_RUSH', 'POSITION_RUSH', 'PLAYS_RUSH', 'DISTANCE_RUSH') NOT NULL DEFAULT 'TIME_RUSH',PRIMARY KEY (id))");
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (uuid varchar(255), player varchar(16), course INTEGER, time BIGINT, plays INT, UNIQUE KEY (uuid,course))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (uuid varchar(255), course INTEGER, time BIGINT, plays INT, UNIQUE KEY (uuid,course))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS custom (id int(11) NOT NULL AUTO_INCREMENT, effects mediumtext NOT NULL, PRIMARY KEY (id))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guilds (tag varchar(5), name varchar(32),PRIMARY KEY (tag))");
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guildplayers (uuid varchar(255), player varchar(16), guild varchar(5), `rank` ENUM('default', 'officer', 'leader') NOT NULL DEFAULT 'default', PRIMARY KEY (uuid))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS guildplayers (uuid varchar(255), guild varchar(5), `rank` ENUM('default', 'officer', 'leader') NOT NULL DEFAULT 'default', PRIMARY KEY (uuid))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS adventures (name varchar(32), course INTEGER,PRIMARY KEY (name))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courseheads (world_name varchar(32), x INTEGER, y INTEGER, z INTEGER, course_id INTEGER, skull_type_name varchar(32))");
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS gameresults (time TIMESTAMP, `type` ENUM('duel','guildwar'), uuidwin varchar(255), winner varchar(16), uuidloss varchar(255), loser varchar(16))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS gameresults (time TIMESTAMP, `type` ENUM('duel','guildwar'), uuidwin varchar(255), uuidloss varchar(255))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS `players` (`uuid` varchar(255) NOT NULL, `name` varchar(16) NOT NULL, PRIMARY KEY (`uuid`))");
             }
         } catch (SQLException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load course database", ex);

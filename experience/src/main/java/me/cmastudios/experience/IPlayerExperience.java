@@ -28,5 +28,7 @@ public interface IPlayerExperience {
 
     public OfflinePlayer getPlayer();
 
+    public String getPlayerDbName();
+
     public long getLastUsed();
 }

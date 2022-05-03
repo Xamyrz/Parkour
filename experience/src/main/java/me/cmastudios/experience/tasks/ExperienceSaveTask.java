@@ -37,10 +37,9 @@ public class ExperienceSaveTask implements Runnable {
     }
     @Override
     public void run() {
-        try (PreparedStatement stmt = plugin.getExperienceDatabase().prepareStatement("INSERT INTO experience (`xp`,`player`,`uuid`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `xp`=VALUES(`xp`)")) {
+        try (PreparedStatement stmt = plugin.getExperienceDatabase().prepareStatement("INSERT INTO experience (`xp`,`uuid`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `xp`=VALUES(`xp`)")) {
             stmt.setInt(1, experience);
-            stmt.setString(2, player.getName());
-            stmt.setString(3, player.getUniqueId().toString());
+            stmt.setString(2, player.getUniqueId().toString());
             stmt.executeUpdate();
         } catch (SQLException e) {
             Bukkit.getLogger().log(Level.SEVERE, String.format("Could not save %s experience", player.getName()));

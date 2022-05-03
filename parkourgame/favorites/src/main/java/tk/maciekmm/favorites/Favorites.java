@@ -46,7 +46,7 @@ public class Favorites extends JavaPlugin {
             this.getServer().getPluginManager().disablePlugin(this);
         }
         try {
-            parkour.getCourseDatabase().prepareStatement("CREATE TABLE IF NOT EXISTS favorites (`player` varchar(16) NOT NULL,`favorites` text NOT NULL, PRIMARY KEY (`player`))").execute();
+            parkour.getCourseDatabase().prepareStatement("CREATE TABLE IF NOT EXISTS favorites (`uuid` varchar(255) NOT NULL,`favorites` text NOT NULL, PRIMARY KEY (`uuid`))").execute();
         } catch (SQLException e) {
             this.getLogger().log(Level.SEVERE, "Failed to create tables", e);
         }

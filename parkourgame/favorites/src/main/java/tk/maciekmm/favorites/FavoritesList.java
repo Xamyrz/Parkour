@@ -49,8 +49,8 @@ public class FavoritesList {
 
     public static FavoritesList loadFavoritesList(Player player, Favorites plugin) throws SQLException {
         ArrayList<Integer> favs = new ArrayList<>();
-        try (PreparedStatement stmt = plugin.getCourseDatabase().prepareStatement("SELECT * FROM favorites WHERE player = ?")) {
-            stmt.setString(1, player.getName());
+        try (PreparedStatement stmt = plugin.getCourseDatabase().prepareStatement("SELECT * FROM favorites WHERE `uuid` = ?")) {
+            stmt.setString(1, player.getUniqueId().toString());
             try (ResultSet result = stmt.executeQuery()) {
                 if (result.next()) {
                     for (String s : result.getString("favorites").split(",")) {
@@ -169,12 +169,12 @@ class SaveFavsTask implements Runnable {
 
     @Override
     public void run() {
-        try (PreparedStatement statement = conn.prepareStatement("INSERT INTO favorites (`player`,`favorites`) VALUES (?,?) ON DUPLICATE KEY UPDATE favorites = ?")) {
+        try (PreparedStatement statement = conn.prepareStatement("INSERT INTO favorites (`uuid`,`favorites`) VALUES (?,?) ON DUPLICATE KEY UPDATE favorites = ?")) {
             StringBuilder favs = new StringBuilder();
             for (int i : favorites) {
                 favs.append(i).append(",");
             }
-            statement.setString(1, player.getName());
+            statement.setString(1, player.getUniqueId().toString());
             statement.setString(2, favs.toString());
             statement.setString(3, favs.toString());
             statement.executeUpdate();

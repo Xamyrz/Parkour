@@ -171,7 +171,7 @@ public class ParkourChooseMenu {
         @Override
         public void run() {
             try {
-                StringBuilder query = new StringBuilder("SELECT courses.id,courses.mode,courses.difficulty,courses.name,b.time,b.plays FROM courses LEFT JOIN (SELECT * FROM highscores WHERE player = ?) b ON b.course = courses.id WHERE (courses.mode = ?");
+                StringBuilder query = new StringBuilder("SELECT courses.id,courses.mode,courses.difficulty,courses.name,b.time,b.plays FROM courses LEFT JOIN (SELECT * FROM highscores WHERE `uuid` = ?) b ON b.course = courses.id WHERE (courses.mode = ?");
                 if (player.hasPermission("parkour.vip") && criterium == ParkourCourse.CourseMode.THEMATIC) {
                     query.append(" OR courses.mode = 'VIP'");
                 }
@@ -181,7 +181,7 @@ public class ParkourChooseMenu {
                 }
                 query.append(" LIMIT ?,?");
                 try (PreparedStatement stmt = plugin.getCourseDatabase().prepareStatement(query.toString())) {
-                    stmt.setString(1, player.getName());
+                    stmt.setString(1, player.getUniqueId().toString());
                     stmt.setString(2, criterium.getType().equalsIgnoreCase("mode") ? criterium.getName() : ParkourCourse.CourseMode.NORMAL.getName());
                     if (criterium.getType().equalsIgnoreCase("difficulty")) {
                         stmt.setString(3, criterium.getName());

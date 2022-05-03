@@ -17,6 +17,7 @@
 
 package me.cmastudios.experience;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -24,6 +25,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -31,17 +33,17 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Experience extends JavaPlugin implements Listener {
     private static ResourceBundle messages = ResourceBundle.getBundle("messages");
     private Connection experienceDatabase;
     private ExperienceManager manager;
-    ConcurrentHashMap<OfflinePlayer, PlayerExperience> playerExperience = new ConcurrentHashMap<>();
+    ConcurrentHashMap<UUID, PlayerExperience> playerExperience = new ConcurrentHashMap<>();
 
     @Override
     public void onEnable() {
@@ -62,7 +64,7 @@ public class Experience extends JavaPlugin implements Listener {
             }
         }
         this.getServer().getScheduler().cancelTasks(this);
-        for (Map.Entry<OfflinePlayer, PlayerExperience> entry : this.playerExperience.entrySet()) {
+        for (Map.Entry<UUID, PlayerExperience> entry : this.playerExperience.entrySet()) {
             try {
                 PlayerExperience exp = this.playerExperience.remove(entry.getKey());
                 exp.save(false);
@@ -77,11 +79,21 @@ public class Experience extends JavaPlugin implements Listener {
         return MessageFormat.format(messages.getString(key), args).replace("\u00A0", " ");
     }
 
+    @EventHandler(priority = EventPriority.LOW)
+    public void onPlayerJoin(final PlayerJoinEvent event) throws SQLException {
+        IPlayerExperience playerExp = manager.getPlayerExperience(event.getPlayer());
+        if(playerExp != null){
+            if(!playerExp.getPlayerDbName().equals(event.getPlayer().getName()) && this.getConfig().getBoolean("mysql.playerstable")){
+                Utils.savePlayer(this.experienceDatabase, event.getPlayer());
+            }
+        }
+    }
+
     @EventHandler
     public void onLeave(PlayerQuitEvent event) {
-        if (this.playerExperience.containsKey(event.getPlayer())) {
+        if (this.playerExperience.containsKey(event.getPlayer().getUniqueId())) {
             try {
-                this.playerExperience.remove(event.getPlayer()).save(true);
+                this.playerExperience.remove(event.getPlayer().getUniqueId()).save(true);
             } catch (SQLException e) {
                 Bukkit.getLogger().log(Level.SEVERE, "Error occured while saving player experience");
             }
@@ -97,15 +109,14 @@ public class Experience extends JavaPlugin implements Listener {
             this.getLogger().log(Level.SEVERE, "Failed to close existing connection to database", ex);
         }
         try {
-            Class.forName("com.mysql.jdbc.Driver").newInstance();
             this.experienceDatabase = DriverManager.getConnection(String.format("jdbc:mysql://%s:%d/%s",
                     this.getConfig().getString("mysql.host"), this.getConfig().getInt("mysql.port"), this.getConfig().getString("mysql.database")),
                     this.getConfig().getString("mysql.username"), this.getConfig().getString("mysql.password"));
             try (Statement initStatement = this.experienceDatabase.createStatement()) {
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS experience (`uuid` varchar(255), player varchar(16), xp INTEGER,PRIMARY KEY (`uuid`))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS experience (`uuid` varchar(255), xp INTEGER, PRIMARY KEY (`uuid`))");
+                if(this.getConfig().getBoolean("mysql.playerstable"))
+                    initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS `players` (`uuid` varchar(255) NOT NULL, `name` varchar(16) NOT NULL, PRIMARY KEY (`uuid`))");
             }
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
-            this.getLogger().log(Level.SEVERE, "Failed to load database driver", ex);
         } catch (SQLException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load course database", ex);
         }
@@ -113,7 +124,7 @@ public class Experience extends JavaPlugin implements Listener {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        OfflinePlayer target;
+        OfflinePlayer target = null;
 
         if (cmd.getName().equalsIgnoreCase("exp")) {
             if (args.length < 2) {
@@ -126,7 +137,7 @@ public class Experience extends JavaPlugin implements Listener {
                         if (args.length < 3) {
                             return false;
                         }
-                        try (PreparedStatement stmt = experienceDatabase.prepareStatement("SELECT uuid from experience WHERE `player`=?")){
+                        try (PreparedStatement stmt = experienceDatabase.prepareStatement("SELECT uuid from `players` WHERE `name`=?")){
                             stmt.setString(1, args[1]);
                             ResultSet rs = stmt.executeQuery();
 
@@ -163,9 +174,17 @@ public class Experience extends JavaPlugin implements Listener {
                     return true;
             }
         } else if (cmd.getName().equalsIgnoreCase("lvl")) {
-            target = Bukkit.getOfflinePlayer(sender.getName());
+            try {
+                target = Utils.getPlayerUUID(sender.getName(), getExperienceDatabase());
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
             if (args.length >= 1) {
-                target = Bukkit.getOfflinePlayer(args[0]);
+                try {
+                    target = Utils.getPlayerUUID(args[0], getExperienceDatabase());
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
             try {
                 IPlayerExperience xp = manager.getPlayerExperience(target);

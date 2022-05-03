@@ -5,6 +5,7 @@ mysql:
   database: mcparkour
   username: root
   password: meow
+  playerstable: false  #Enable only if running without parkour plugin
 levels:
   base: 200
   addition: 60

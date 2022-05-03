@@ -42,6 +42,7 @@ public class Achievements extends JavaPlugin {
     private static final ResourceBundle messages = ResourceBundle.getBundle("messages");
     private Connection achievementsDatabase;
     private AchievementsManager manager;
+    public Boolean playersTableEnabled = false;
 
     @Override
     public void onEnable() {
@@ -119,15 +120,16 @@ public class Achievements extends JavaPlugin {
             this.getLogger().log(Level.SEVERE, "Failed to close existing connection to database", ex);
         }
         try {
-            Class.forName("com.mysql.jdbc.Driver").newInstance();
             this.achievementsDatabase = DriverManager.getConnection(String.format("jdbc:mysql://%s:%d/%s",
                     this.getConfig().getString("mysql.host"), this.getConfig().getInt("mysql.port"), this.getConfig().getString("mysql.database")),
                     this.getConfig().getString("mysql.username"), this.getConfig().getString("mysql.password"));
             try (Statement initStatement = this.achievementsDatabase.createStatement()) {
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS playerachievements (`uuid` varchar(255) NOT NULL, `player` varchar(16) NOT NULL,`completed` text NOT NULL,`progress` mediumtext NOT NULL,`milestones` text NOT NULL, PRIMARY KEY (`uuid`))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS playerachievements (`uuid` varchar(255) NOT NULL, `completed` text NOT NULL,`progress` mediumtext NOT NULL,`milestones` text NOT NULL, PRIMARY KEY (`uuid`))");
+                if(this.getConfig().getBoolean("mysql.playerstable")) {
+                    this.playersTableEnabled = true;
+                    initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS `players` (`uuid` varchar(255) NOT NULL, `name` varchar(16) NOT NULL, PRIMARY KEY (`uuid`))");
+                }
             }
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ex) {
-            this.getLogger().log(Level.SEVERE, "Failed to load database driver", ex);
         } catch (SQLException ex) {
             this.getLogger().log(Level.SEVERE, "Failed to load course database", ex);
         }

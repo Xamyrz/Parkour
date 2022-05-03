@@ -21,6 +21,8 @@ import me.cmastudios.experience.IPlayerExperience;
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.Utils;
 import me.cmastudios.mcparkour.data.ParkourCourse;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -69,7 +71,7 @@ public class TeleportToCourseTask implements Runnable {
                     }
                 });
                 if (tpCourse.getMode() != ParkourCourse.CourseMode.ADVENTURE) {
-                    player.sendMessage(Parkour.getString("course.teleport", tpCourse.getName(),tpCourse.getId()));
+                    player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(Parkour.getString("course.name", tpCourse.getName()) + " ("+ tpCourse.getId()+")"));
                 }
             }
             return result;

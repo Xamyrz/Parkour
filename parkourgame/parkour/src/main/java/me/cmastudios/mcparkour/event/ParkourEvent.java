@@ -18,7 +18,6 @@
 package me.cmastudios.mcparkour.event;
 
 import me.cmastudios.mcparkour.Parkour;
-import net.kyori.adventure.text.TextComponent;
 import org.bukkit.boss.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Instrument;

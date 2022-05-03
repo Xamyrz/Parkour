@@ -22,15 +22,21 @@ import me.cmastudios.mcparkour.Checkpoint;
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.data.PlayerHighScore;
 import me.cmastudios.mcparkour.events.PlayerCompleteParkourEventBuilder;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import javax.swing.*;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
+import java.util.Hashtable;
 import java.util.List;
 import java.lang.Runnable;
+import java.util.Objects;
+import java.util.Properties;
 
 public class ParkourCompleteTask implements Runnable {
     private final Player player;
@@ -54,12 +60,15 @@ public class ParkourCompleteTask implements Runnable {
         try {
             PlayerHighScore highScore = PlayerHighScore.loadHighScore(plugin.getCourseDatabase(), player, endData.course.getId());
             IPlayerExperience playerXp = Parkour.experience.getPlayerExperience(player);
+            Hashtable<String, Boolean> highscores = new Hashtable<>();
+            highscores.put("personal", false);
+            highscores.put("best", false);
 
             final PlayerCompleteParkourEventBuilder eventBuilder = new PlayerCompleteParkourEventBuilder(endData, playerXp, highScore, completionTime);
             if (player.hasPermission("parkour.highscore")&&(!player.isFlying()||(player.isFlying()&&player.hasPermission("parkour.fly.bypass")))) {
                 if (highScore.getTime() > completionTime && highScore.getPlays() > 0) {
                     eventBuilder.setPersonalBest(true);
-                    player.sendMessage(Parkour.getString("course.end.personalbest", endData.course.getName(), endData.course.getId()));
+                    highscores.put("personal", true);
                 }
                 if (highScore.getTime() > completionTime || highScore.getTime() == -1) {
                     highScore.setTime(completionTime);
@@ -71,25 +80,34 @@ public class ParkourCompleteTask implements Runnable {
             highScore.save(plugin.getCourseDatabase());
             final DecimalFormat df = new DecimalFormat("#.###");
             final double completionTimeSeconds = ((double) completionTime) / 1000;
-            player.sendMessage(Parkour.getString("course.end", df.format(completionTimeSeconds)));
             final List<PlayerHighScore> scores = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), endData.course.getId(), 10);
 
             if (player.hasPermission("parkour.highscore")) {
                 PlayerHighScore bestScore = scores.get(0);
                 for (PlayerHighScore hs : scores) {
-                    if (hs.getPlayer().getName().equals(player.getName())) {
+                    if (Objects.equals(Bukkit.getOfflinePlayer(hs.getPlayerUUID()).getName(), player.getDisplayName())) {
                         eventBuilder.setTopTen(true);
                         break;
                     }
                 }
                 if (highScore.equals(bestScore) && highScore.getTime() == completionTime) {
                     eventBuilder.setBest(true);
+                    highscores.put("best", true);
                     Bukkit.getScheduler().runTask(plugin, new Runnable() {
                         @Override
                         public void run() {
                             plugin.getServer().broadcastMessage(Parkour.getString("course.end.best", player.getDisplayName() + ChatColor.RESET, endData.course.getName(), endData.course.getId(), df.format(completionTimeSeconds)));
                         }
                     });
+                }
+                if(highscores.get("best") || highscores.get("personal")){
+                    if(highscores.get("best")){
+                        player.sendTitle(Parkour.getString("course.end.bestsimple"),Parkour.getString("course.end.time",df.format(completionTimeSeconds)), 10, 70, 20);
+                    }else if(highscores.get("personal")){
+                        player.sendTitle(Parkour.getString("course.end.personalbest"),Parkour.getString("course.end.time",df.format(completionTimeSeconds)), 10, 70, 20);
+                    }
+                }else{
+                    player.sendTitle(Parkour.getString("course.end") ,Parkour.getString("course.end.time",df.format(completionTimeSeconds)) + " " + Parkour.getString("course.end.seconds"), 10, 70, 20);
                 }
             }
             int courseXp = Integer.parseInt(signExp);

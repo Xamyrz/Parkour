@@ -181,11 +181,10 @@ public class Guild {
         }
 
         public void save(Connection conn) throws SQLException {
-            try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO guildplayers (guild, `rank`, player, uuid) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE `rank` = VALUES(`rank`), guild = VALUES(guild)")) {
+            try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO guildplayers (guild, `rank`, uuid) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `rank` = VALUES(`rank`), guild = VALUES(guild)")) {
                 stmt.setString(1, guild.getTag());
                 stmt.setString(2, rank.name());
-                stmt.setString(3, player);
-                stmt.setString(4, uuid.toString());
+                stmt.setString(3, uuid.toString());
                 Bukkit.getLogger().info(stmt.toString());
                 stmt.executeUpdate();
             }
@@ -395,7 +394,7 @@ public class Guild {
         }
 
         public void handleRejoin(Player player, Parkour plugin) throws SQLException {
-            OfflinePlayer oplr = Bukkit.getOfflinePlayer(player.getName());
+            OfflinePlayer oplr = Utils.getPlayerUUID(player.getName(), plugin.getCourseDatabase());
             GuildPlayer gp = GuildPlayer.loadGuildPlayer(plugin.getCourseDatabase(), oplr);
             if (offlineCompPlayer.equals(gp) || offlineInitPlayer.equals(gp)) {
                 player.teleport(course.getTeleport(), TeleportCause.PLUGIN);

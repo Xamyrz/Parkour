@@ -25,6 +25,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 
 public class ExperienceManager {
@@ -34,7 +35,7 @@ public class ExperienceManager {
     public ExperienceManager(Experience instance) {
         this.plugin = instance;
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
-            for (Map.Entry<OfflinePlayer, PlayerExperience> entry : plugin.playerExperience.entrySet()) {
+            for (Map.Entry<UUID, PlayerExperience> entry : plugin.playerExperience.entrySet()) {
                 try {
                     entry.getValue().save(false);
                 } catch (SQLException e) {
@@ -49,12 +50,12 @@ public class ExperienceManager {
     }
 
     private PlayerExperience loadExperience(Connection conn, OfflinePlayer player) throws SQLException {
-        PlayerExperience ret = new PlayerExperience(player, 0,plugin);
+        PlayerExperience ret = new PlayerExperience(player, player.getName(), 0,plugin);
         try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM experience WHERE uuid = ?")) {
             stmt.setString(1, player.getUniqueId().toString());
             try (ResultSet result = stmt.executeQuery()) {
                 if (result.next()) {
-                    ret = new PlayerExperience(player, result.getInt("xp"),plugin);
+                    ret = new PlayerExperience(player, result.getString("uuid"), result.getInt("xp"),plugin);
                 }
             }
         }
@@ -62,12 +63,12 @@ public class ExperienceManager {
     }
 
     public IPlayerExperience getPlayerExperience(OfflinePlayer player) throws SQLException {
-        if (!plugin.playerExperience.containsKey(player)) {
+        if (!plugin.playerExperience.containsKey(player.getUniqueId())) {
             PlayerExperience exp = loadExperience(plugin.getExperienceDatabase(), player);
-            plugin.playerExperience.put(player, exp);
+            plugin.playerExperience.put(player.getUniqueId(), exp);
             return exp;
         } else {
-            return plugin.playerExperience.get(player);
+            return plugin.playerExperience.get(player.getUniqueId());
         }
     }
 

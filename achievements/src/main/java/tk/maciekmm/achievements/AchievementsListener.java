@@ -32,6 +32,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import tk.maciekmm.achievements.data.PlayerAchievements;
 
+import java.sql.SQLException;
 import java.util.Map;
 
 public class AchievementsListener implements Listener {
@@ -43,7 +44,8 @@ public class AchievementsListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
+    public void onPlayerJoin(PlayerJoinEvent event) throws SQLException {
+        if (plugin.playersTableEnabled) Utils.savePlayer(plugin.getAchievementsDatabase(), event.getPlayer());
         parent:
         for (Item item : Item.getItemsByType(Item.ItemType.SPAWN)) {
             if (!event.getPlayer().getInventory().contains(item.getItem().getType())) {

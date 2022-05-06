@@ -1,0 +1,10 @@
+name: Platformer
+version: '${project.version}'
+main: xamyr.net.platformer.Platformer
+api-version: 1.18
+authors: [ Xamyr ]
+description: moving platforms
+depend: [WorldEdit]
+commands:
+  platform:
+    description: spawn moving platform

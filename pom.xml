@@ -26,6 +26,7 @@
         <module>parkourgame</module>
         <module>achievements</module>
         <module>experience</module>
+        <module>Platformer</module>
     </modules>
 
     <developers>

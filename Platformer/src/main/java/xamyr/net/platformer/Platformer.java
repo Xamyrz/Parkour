@@ -1,26 +1,27 @@
 package xamyr.net.platformer;
 
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-import xamyr.net.platformer.commands.PlatformCommand;
+import xamyr.net.platformer.commands.PlatformCreate;
+import xamyr.net.platformer.platform.Platform;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 
 public final class Platformer extends JavaPlugin {
     private Connection platformerDatabase;
+    public Map<String, Platform> platforms = new HashMap<>();
 
     @Override
     public void onEnable() {
         this.saveDefaultConfig();
         this.connectDatabase();
 
-        getCommand("platform").setExecutor(new PlatformCommand(this));
+        getCommand("platformcreate").setExecutor(new PlatformCreate(this));
         //getCommand("platformmove").setExecutor(new PlatformMoveCommand());
 
     }

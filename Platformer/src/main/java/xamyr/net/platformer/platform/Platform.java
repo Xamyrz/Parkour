@@ -4,27 +4,29 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
-import org.bukkit.util.Vector;
-import scala.Int;
 import xamyr.net.platformer.Platformer;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class PlatformCreate {
+public class Platform {
     private final List<PlatformBlock> platformBlocks = new ArrayList<>();
     private final Platformer plugin;
     double xMove = 0;
     double yMove = 0;
     double zMove = 0;
     double moveByBlocks;
-    double waitTime= 0;
+    int waitTime= 0;
     int schedulerId = 0;
     String direction = "";
+    String name = "";
+    String world = "";
 
-    public PlatformCreate(Platformer plugin, List<Block> blocks){
+    public Platform(Platformer plugin, List<Block> blocks, String name){
         this.plugin = plugin;
+        this.name = name;
+        this.world = blocks.get(0).getWorld().getName();
         for (Block block : blocks) {
             platformBlocks.add(new PlatformBlock(block, true));
         }
@@ -32,7 +34,7 @@ public class PlatformCreate {
 
     public List<PlatformBlock> getPlatformBlocks(){return this.platformBlocks;}
 
-    public void movePlatform(double xMove, double yMove, double zMove, String direction, double moveByBlocks, double waitTime){
+    public void movePlatform(double xMove, double yMove, double zMove, String direction, double moveByBlocks, int waitTime){
         this.xMove = xMove;
         this.yMove = yMove;
         this.zMove = zMove;
@@ -88,16 +90,6 @@ public class PlatformCreate {
                     block.zMove *= -1;
                 }
             }
-//            if((block.getxLocation()+moveByBlocks < armorLocation.getBlockX() && (Objects.equals(direction, "east")))
-//                    || (block.getxLocation()-moveByBlocks > armorLocation.getBlockX() && Objects.equals(direction, "west"))
-//                    || (block.getyLocation()+moveByBlocks < armorLocation.getBlockY() && Objects.equals(direction, "up"))
-//                    || (block.getyLocation()-moveByBlocks > armorLocation.getBlockY() && Objects.equals(direction, "down"))
-//                    || (block.getzLocation()+moveByBlocks < armorLocation.getBlockZ() && Objects.equals(direction, "north"))
-//                    || (block.getzLocation()-moveByBlocks > armorLocation.getBlockZ() && Objects.equals(direction, "south"))){
-//                block.xMove *= -1;
-//                block.yMove *= -1;
-//                block.zMove *= -1;
-//            }
             if(block.xMove > 0) location = new Location(block.armorstand.getWorld(),block.armorstand.getLocation().getX()+block.xMove,block.armorstand.getLocation().getY(),block.armorstand.getLocation().getZ());
             if(block.xMove < 0) location = new Location(block.armorstand.getWorld(),block.armorstand.getLocation().getX()+block.xMove,block.armorstand.getLocation().getY(),block.armorstand.getLocation().getZ());
             if(block.yMove > 0) location = new Location(block.armorstand.getWorld(),block.armorstand.getLocation().getX(),block.armorstand.getLocation().getY()+block.yMove,block.armorstand.getLocation().getZ());

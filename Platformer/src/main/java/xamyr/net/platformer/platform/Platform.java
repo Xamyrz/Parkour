@@ -1,54 +1,102 @@
 package xamyr.net.platformer.platform;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import xamyr.net.platformer.Platformer;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Platform {
     private final List<PlatformBlock> platformBlocks = new ArrayList<>();
     private final Platformer plugin;
-    double xMove = 0;
-    double yMove = 0;
-    double zMove = 0;
-    double moveByBlocks;
-    int waitTime= 0;
-    int schedulerId = 0;
-    String direction = "";
-    String name = "";
-    String world = "";
+    public double xMove = 0;
+    public double yMove = 0;
+    public double zMove = 0;
+    public double moveNoBlocks;
+    public double speed = 0;
+    public int waitTime= 0;
+    public boolean newVersion;
+    public String direction = "";
+    public String name = "";
+    public String world = "";
+    public World w;
 
-    public Platform(Platformer plugin, List<Block> blocks, String name){
+    public Platform(Platformer plugin, List<Block> blocks, Boolean newVersion, String direction, double moveNoBlocks, int waitTime, double speed, String name){
         this.plugin = plugin;
-        this.name = name;
         this.world = blocks.get(0).getWorld().getName();
+        this.w = blocks.get(0).getWorld();
+        this.newVersion = newVersion;
+        this.direction = direction;
+        this.moveNoBlocks = moveNoBlocks;
+        this.waitTime = waitTime;
+        this.speed = speed;
+        this.name = name;
         for (Block block : blocks) {
-            platformBlocks.add(new PlatformBlock(block, true));
+            PlatformBlock b;
+            Chunk blockChunk = Bukkit.getWorld(world).getChunkAt(block);
+
+            if(newVersion){
+                b = new PlatformBlock(block, true);
+                b.armorstand.setCustomName(name);
+                b.fallingblock.setCustomName(name);
+                b.shulker.setCustomName(name);
+            }else{
+                b = new PlatformBlock(block, false);
+                b.armorstand.setCustomName(name);
+                b.fallingblock.setCustomName(name);
+            }
+            if(!Bukkit.getWorld(world).getChunkAt(block).isForceLoaded()){
+                blockChunk.setForceLoaded(true);
+            }
+            platformBlocks.add(b);
         }
     }
 
     public List<PlatformBlock> getPlatformBlocks(){return this.platformBlocks;}
 
-    public void movePlatform(double xMove, double yMove, double zMove, String direction, double moveByBlocks, int waitTime){
-        this.xMove = xMove;
-        this.yMove = yMove;
-        this.zMove = zMove;
-        this.moveByBlocks = moveByBlocks;
-        this.waitTime = waitTime;
-        this.direction = direction;
-
-        for (PlatformBlock block: platformBlocks) {
-            block.xMove = xMove;
-            block.yMove = yMove;
-            block.zMove = zMove;
-            schedulerId = Bukkit.getScheduler().runTaskTimer(plugin, new MovePlatformBlock(block), 2L, 2L).getTaskId();
+    public void showPlatformName(){
+        for(PlatformBlock b : platformBlocks){
+            b.fallingblock.setCustomNameVisible(true);
         }
     }
+
+    public void hidePlatformName(){
+        for(PlatformBlock b : platformBlocks){
+            b.fallingblock.setCustomNameVisible(false);
+        }
+    }
+
+    public void movePlatform(){
+        if (Objects.equals(direction, "up"))
+            this.yMove = speed;
+        if (Objects.equals(direction, "down"))
+            this.yMove = speed * -1;
+        if (Objects.equals(direction, "north"))
+            this.zMove = speed * -1;
+        if (Objects.equals(direction, "south"))
+            this.zMove = speed;
+        if (Objects.equals(direction, "west"))
+            this.xMove = speed * -1;
+        if (Objects.equals(direction, "east"))
+            this.xMove = speed;
+
+        for (PlatformBlock block: platformBlocks) {
+            block.xMove = this.xMove;
+            block.yMove = this.yMove;
+            block.zMove = this.zMove;
+            block.schedulerId = Bukkit.getScheduler().runTaskTimer(plugin, new MovePlatformBlock(block), 2L, 2L).getTaskId();
+        }
+    }
+
     public class MovePlatformBlock implements Runnable{
 
         private final PlatformBlock block;
@@ -61,32 +109,74 @@ public class Platform {
             Location armorLocation = block.armorstand.getLocation();
 
             if(Objects.equals(direction, "east")){
-                if(block.getxLocation() + moveByBlocks < armorLocation.getX() || block.getxLocation() > armorLocation.getX()){
+                if(!newVersion){
+                    if(armorLocation.getBlockX() != block.barrier.getX()){
+                        block.barrier.setType(Material.AIR);
+                        block.barrier = w.getBlockAt(armorLocation.getBlockX(), block.barrier.getY(), block.barrier.getZ());
+                        block.barrier.setType(Material.BARRIER);
+                    }
+                }
+                if(block.getxLocation() + moveNoBlocks < armorLocation.getX() || block.getxLocation() > armorLocation.getX()){
                     block.xMove *= -1;
                 }
             }
             if(Objects.equals(direction, "west")) {
-                if(block.getxLocation() - moveByBlocks > armorLocation.getX() || block.getxLocation() < armorLocation.getX()) {
+                if(!newVersion){
+                    if(armorLocation.getBlockX() != block.barrier.getX()){
+                        block.barrier.setType(Material.AIR);
+                        block.barrier = w.getBlockAt(armorLocation.getBlockX(), block.barrier.getY(), block.barrier.getZ());
+                        block.barrier.setType(Material.BARRIER);
+                    }
+                }
+                if(block.getxLocation() - moveNoBlocks > armorLocation.getX() || block.getxLocation() < armorLocation.getX()) {
                     block.xMove *= -1;
                 }
             }
             if(Objects.equals(direction, "up")){
-                if(block.getyLocation() + moveByBlocks-1.5 < armorLocation.getY() || block.getyLocation() - 1.51870 > armorLocation.getY()) {
+                if(!newVersion){
+                    if(armorLocation.getBlockY()+2 != block.barrier.getY()){
+                        block.barrier.setType(Material.AIR);
+                        block.barrier = w.getBlockAt(block.barrier.getX(), armorLocation.getBlockY()+2, block.barrier.getZ());
+                        block.barrier.setType(Material.BARRIER);
+                    }
+                }
+                if(block.getyLocation() + moveNoBlocks -1.5 < armorLocation.getY() || block.getyLocation() - 1.51870 > armorLocation.getY()) {
                     block.yMove *= -1;
                 }
             }
             if(Objects.equals(direction, "down")){
-                if(block.getyLocation() - moveByBlocks-1.5 > armorLocation.getY() || block.getyLocation()-1.5 < armorLocation.getY()) {
+                if(!newVersion){
+                    if(armorLocation.getBlockY()+2 != block.barrier.getY()){
+                        block.barrier.setType(Material.AIR);
+                        block.barrier = w.getBlockAt(block.barrier.getX(), armorLocation.getBlockY()+2, block.barrier.getZ());
+                        block.barrier.setType(Material.BARRIER);
+                    }
+                }
+                if(block.getyLocation() - moveNoBlocks -1.5 > armorLocation.getY() || block.getyLocation()-1.5 < armorLocation.getY()) {
                     block.yMove *= -1;
                 }
             }
             if(Objects.equals(direction, "north")){
-                if(block.getzLocation() - moveByBlocks > armorLocation.getZ() || block.getzLocation() < armorLocation.getZ()) {
+                if(!newVersion){
+                    if(armorLocation.getBlockZ() != block.barrier.getZ()){
+                        block.barrier.setType(Material.AIR);
+                        block.barrier = w.getBlockAt(block.barrier.getX(), block.barrier.getY(), armorLocation.getBlockZ());
+                        block.barrier.setType(Material.BARRIER);
+                    }
+                }
+                if(block.getzLocation() - moveNoBlocks > armorLocation.getZ() || block.getzLocation() < armorLocation.getZ()) {
                     block.zMove *= -1;
                 }
             }
             if(Objects.equals(direction, "south")){
-                if(block.getzLocation() + moveByBlocks < armorLocation.getZ() || block.getzLocation() > armorLocation.getZ()){
+                if(!newVersion){
+                    if(armorLocation.getBlockZ() != block.barrier.getZ()){
+                        block.barrier.setType(Material.AIR);
+                        block.barrier = w.getBlockAt(block.barrier.getX(), block.barrier.getY(), armorLocation.getBlockZ());
+                        block.barrier.setType(Material.BARRIER);
+                    }
+                }
+                if(block.getzLocation() + moveNoBlocks < armorLocation.getZ() || block.getzLocation() > armorLocation.getZ()){
                     block.zMove *= -1;
                 }
             }
@@ -103,6 +193,28 @@ public class Platform {
             for (Entity e: entities) {
                 block.armorstand.addPassenger(e);
             }
+        }
+    }
+
+    public void savePlatform() throws SQLException {
+        Connection conn = plugin.getDatabase();
+        try (PreparedStatement statement = conn.prepareStatement("INSERT INTO `platforms` (`name`,`world`,`blocks`,`direction`,`movenoblocks`,`wait`,`speed`, `newversion`) VALUES (?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE `world` = VALUES(`world`), `blocks` = VALUES(`blocks`), `direction` = VALUES(`direction`), `movenoblocks` = VALUES(`movenoblocks`), `wait` = VALUES(`wait`), `speed` = VALUES(`speed`), `newversion` = VALUES(`newversion`)")) {
+            StringBuilder blocks = new StringBuilder();
+            for(PlatformBlock b: platformBlocks){
+                blocks.append(b.fallingblock.getBlockData().getMaterial().name()).append("/").append(b.getxLocation()-0.5).append("/").append(b.getyLocation()-0.03745).append("/").append(b.getzLocation()-0.5).append(",");
+            }
+            blocks.deleteCharAt(blocks.lastIndexOf(","));
+            statement.setString(1, name);
+            statement.setString(2, world);
+            statement.setString(3, blocks.toString());
+            statement.setString(4, direction);
+            statement.setDouble(5, moveNoBlocks);
+            statement.setInt(6, waitTime);
+            statement.setDouble(7, speed);
+            statement.setBoolean(8, newVersion);
+            statement.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger("error saving block to DB....").log(Level.SEVERE, null, ex);
         }
     }
 }

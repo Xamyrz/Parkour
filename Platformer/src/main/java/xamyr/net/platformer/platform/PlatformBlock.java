@@ -18,24 +18,31 @@ public class PlatformBlock {
     public Shulker shulker;
     public Block barrier;
     public FallingBlock fallingblock;
-    private double xLocation;
-    private double yLocation;
-    private double zLocation;
+    private final double xLocation;
+    private final double yLocation;
+    private final double zLocation;
     public double xMove = 0;
     public double yMove = 0;
     public double zMove = 0;
+    public int schedulerId = 0;
+    public boolean newVersion;
 
     public PlatformBlock(Block block, Boolean newerVersion){
         World world = block.getWorld();
         xLocation = block.getX()+0.5;
         yLocation = block.getY()+0.03745;
         zLocation = block.getZ()+0.5;
+        newVersion = newerVersion;
         if(newerVersion){
             initArmorstand(world);
             initShulker(world);
             initFallingblock(world, block);
+            removeBlock(block);
+        }else{
+            initArmorstand(world);
+            initFallingblock(world, block);
+            initBarrierBlock(world, block);
         }
-        removeBlock(block);
     }
 
     private void initArmorstand(World world){
@@ -62,6 +69,11 @@ public class PlatformBlock {
         fallingblock.setVelocity(new Vector(0,0,0));
         NBTEditor.set(fallingblock, -1000000, "Time");
         armorstand.addPassenger(fallingblock);
+    }
+
+    private  void initBarrierBlock(World world, Block block){
+        block.setType(Material.BARRIER);
+        barrier = world.getBlockAt(block.getLocation());
     }
 
     private void removeBlock(Block block){

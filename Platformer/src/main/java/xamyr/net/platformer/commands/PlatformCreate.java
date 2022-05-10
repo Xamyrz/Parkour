@@ -1,6 +1,5 @@
 package xamyr.net.platformer.commands;
 
-import com.sk89q.worldedit.internal.annotation.Selection;
 import org.bukkit.command.*;
 import org.bukkit.entity.*;
 import xamyr.net.platformer.Platformer;
@@ -8,6 +7,7 @@ import xamyr.net.platformer.platform.Platform;
 import xamyr.net.platformer.utils.Utils;
 import xamyr.net.platformer.worldedit.BlocksSelection;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -22,8 +22,8 @@ public class PlatformCreate implements TabExecutor {
         if(sender instanceof Player){
             Player player = (Player) sender;
             if(args.length == 6){
-                if(Objects.equals(args[0], ">1.8")){
-                    if(Objects.equals(args[1], "up") || Objects.equals(args[1], "down") || Objects.equals(args[1], "north") || Objects.equals(args[1], "south") || Objects.equals(args[1], "west") || Objects.equals(args[1], "east")){
+                if(Objects.equals(args[0], ">1.8") || Objects.equals(args[0], "1.8")){
+                    if(Objects.equals(args[1].toLowerCase(), "up") || Objects.equals(args[1], "down") || Objects.equals(args[1], "north") || Objects.equals(args[1], "south") || Objects.equals(args[1], "west") || Objects.equals(args[1], "east")){
                         if(Utils.isNumeric(args[2])){
                             if(args[3].matches("-?(0|[1-9]\\d*)")){
                                 if(Utils.isNumeric(args[4])){
@@ -33,20 +33,11 @@ public class PlatformCreate implements TabExecutor {
                                             player.sendMessage("No blocks selected");
                                             return false;
                                         }else{
-                                            plugin.platforms.put(args[5], new Platform(plugin, selection.selectionToList(), args[5]));
+
+                                            plugin.platforms.put(args[5], new Platform(plugin, selection.selectionToList(), Objects.equals(args[0], ">1.8"), args[1], Double.parseDouble(args[2]), Integer.parseInt(args[3]), Double.parseDouble(args[4]), args[5]));
                                             Platform platform = plugin.platforms.get(args[5]);
-                                            if (Objects.equals(args[1], "up"))
-                                                platform.movePlatform(0, Double.parseDouble(args[4]), 0, args[1], Double.parseDouble(args[2]), Integer.parseInt(args[3]));
-                                            if (Objects.equals(args[1], "down"))
-                                                platform.movePlatform(0, Double.parseDouble(args[4]) * -1, 0, args[1], Double.parseDouble(args[2]), Integer.parseInt(args[3]));
-                                            if (Objects.equals(args[1], "north"))
-                                                platform.movePlatform(0, 0, Double.parseDouble(args[4]) * -1, args[1], Double.parseDouble(args[2]), Integer.parseInt(args[3]));
-                                            if (Objects.equals(args[1], "south"))
-                                                platform.movePlatform(0, 0, Double.parseDouble(args[4]), args[1], Double.parseDouble(args[2]), Integer.parseInt(args[3]));
-                                            if (Objects.equals(args[1], "west"))
-                                                platform.movePlatform(Double.parseDouble(args[4]) * -1, 0, 0, args[1], Double.parseDouble(args[2]), Integer.parseInt(args[3]));
-                                            if (Objects.equals(args[1], "east"))
-                                                platform.movePlatform(Double.parseDouble(args[4]), 0, 0, args[1], Double.parseDouble(args[2]), Integer.parseInt(args[3]));
+                                            try {platform.savePlatform();} catch (SQLException e) {e.printStackTrace();}
+                                            platform.movePlatform();
                                         }
                                     }
                                 }else{

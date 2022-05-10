@@ -12,4 +12,22 @@ commands:
     aliases: [platcreate, pcreate]
     permission: platformer.create
   platformdelete:
-
+    description: Show/hide platform names
+    usage: /<command> <put platform name>
+    aliases: [ pdelete, platdelete ]
+    permission: platformer.delete
+  platformedit:
+    description: edit platform
+    usage: /<command> <name> <1.8/>1.8> <direction> <Move-No-Blocks> <wait-time> <speed>
+    aliases: [ pedit, platedit ]
+    permission: platformer.edit
+  platformreload:
+    description: Show/hide platform names
+    usage: /<command> <all/name> <if name, put platform name>
+    aliases: [ preload, platreload ]
+    permission: platformer.reload
+  platformshowname:
+    description: Show/hide platform names
+    usage: /<command> <true/false>
+    aliases: [platshow, pshow]
+    permission: platformer.show

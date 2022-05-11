@@ -26,6 +26,7 @@ public class PlatformBlock {
     public double zMove = 0;
     public int schedulerId = 0;
     public boolean newVersion;
+    public Boolean colliding = false;
 
     public PlatformBlock(Block block, Boolean newerVersion){
         World world = block.getWorld();

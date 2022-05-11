@@ -3,7 +3,6 @@ package xamyr.net.platformer.platform;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
 import xamyr.net.platformer.Platformer;
 
 import java.sql.Connection;
@@ -93,6 +92,7 @@ public class Platform {
             block.xMove = this.xMove;
             block.yMove = this.yMove;
             block.zMove = this.zMove;
+            block.colliding = false;
             block.schedulerId = Bukkit.getScheduler().runTaskTimer(plugin, new MovePlatformBlock(block), 2L, 2L).getTaskId();
         }
     }
@@ -109,73 +109,37 @@ public class Platform {
             Location armorLocation = block.armorstand.getLocation();
 
             if(Objects.equals(direction, "east")){
-                if(!newVersion){
-                    if(armorLocation.getBlockX() != block.barrier.getX()){
-                        block.barrier.setType(Material.AIR);
-                        block.barrier = w.getBlockAt(armorLocation.getBlockX(), block.barrier.getY(), block.barrier.getZ());
-                        block.barrier.setType(Material.BARRIER);
-                    }
-                }
+                barrierMoveX(armorLocation);
                 if(block.getxLocation() + moveNoBlocks < armorLocation.getX() || block.getxLocation() > armorLocation.getX()){
                     block.xMove *= -1;
                 }
             }
             if(Objects.equals(direction, "west")) {
-                if(!newVersion){
-                    if(armorLocation.getBlockX() != block.barrier.getX()){
-                        block.barrier.setType(Material.AIR);
-                        block.barrier = w.getBlockAt(armorLocation.getBlockX(), block.barrier.getY(), block.barrier.getZ());
-                        block.barrier.setType(Material.BARRIER);
-                    }
-                }
+                barrierMoveX(armorLocation);
                 if(block.getxLocation() - moveNoBlocks > armorLocation.getX() || block.getxLocation() < armorLocation.getX()) {
                     block.xMove *= -1;
                 }
             }
             if(Objects.equals(direction, "up")){
-                if(!newVersion){
-                    if(armorLocation.getBlockY()+2 != block.barrier.getY()){
-                        block.barrier.setType(Material.AIR);
-                        block.barrier = w.getBlockAt(block.barrier.getX(), armorLocation.getBlockY()+2, block.barrier.getZ());
-                        block.barrier.setType(Material.BARRIER);
-                    }
-                }
+                barrierMoveY(armorLocation);
                 if(block.getyLocation() + moveNoBlocks -1.5 < armorLocation.getY() || block.getyLocation() - 1.51870 > armorLocation.getY()) {
                     block.yMove *= -1;
                 }
             }
             if(Objects.equals(direction, "down")){
-                if(!newVersion){
-                    if(armorLocation.getBlockY()+2 != block.barrier.getY()){
-                        block.barrier.setType(Material.AIR);
-                        block.barrier = w.getBlockAt(block.barrier.getX(), armorLocation.getBlockY()+2, block.barrier.getZ());
-                        block.barrier.setType(Material.BARRIER);
-                    }
-                }
+                barrierMoveY(armorLocation);
                 if(block.getyLocation() - moveNoBlocks -1.5 > armorLocation.getY() || block.getyLocation()-1.5 < armorLocation.getY()) {
                     block.yMove *= -1;
                 }
             }
             if(Objects.equals(direction, "north")){
-                if(!newVersion){
-                    if(armorLocation.getBlockZ() != block.barrier.getZ()){
-                        block.barrier.setType(Material.AIR);
-                        block.barrier = w.getBlockAt(block.barrier.getX(), block.barrier.getY(), armorLocation.getBlockZ());
-                        block.barrier.setType(Material.BARRIER);
-                    }
-                }
+                barrierMoveZ(armorLocation);
                 if(block.getzLocation() - moveNoBlocks > armorLocation.getZ() || block.getzLocation() < armorLocation.getZ()) {
                     block.zMove *= -1;
                 }
             }
             if(Objects.equals(direction, "south")){
-                if(!newVersion){
-                    if(armorLocation.getBlockZ() != block.barrier.getZ()){
-                        block.barrier.setType(Material.AIR);
-                        block.barrier = w.getBlockAt(block.barrier.getX(), block.barrier.getY(), armorLocation.getBlockZ());
-                        block.barrier.setType(Material.BARRIER);
-                    }
-                }
+                barrierMoveZ(armorLocation);
                 if(block.getzLocation() + moveNoBlocks < armorLocation.getZ() || block.getzLocation() > armorLocation.getZ()){
                     block.zMove *= -1;
                 }
@@ -192,6 +156,52 @@ public class Platform {
             block.armorstand.teleport(location);
             for (Entity e: entities) {
                 block.armorstand.addPassenger(e);
+            }
+        }
+
+        private void barrierMoveX(Location armorLocation) {
+            if(!newVersion){
+                Block b = w.getBlockAt(armorLocation.getBlockX(), block.barrier.getY(), block.barrier.getZ());
+                if(armorLocation.getBlockX() != block.barrier.getX()){
+                    onBarrierCollision(b);
+                }else{
+                    block.barrier = b;
+                    block.barrier.setType(Material.BARRIER);
+                }
+            }
+        }
+
+        private void barrierMoveY(Location armorLocation) {
+            if(!newVersion){
+                Block b = w.getBlockAt(block.barrier.getX(), armorLocation.getBlockY()+2, block.barrier.getZ());
+                if(armorLocation.getBlockY()+2 != block.barrier.getY()){
+                    onBarrierCollision(b);
+                }else{
+                    block.barrier = b;
+                    block.barrier.setType(Material.BARRIER);
+                }
+            }
+        }
+
+        private void barrierMoveZ(Location armorLocation) {
+            if(!newVersion){
+                Block b = w.getBlockAt(block.barrier.getX(), block.barrier.getY(), armorLocation.getBlockZ());
+                if(armorLocation.getBlockZ() != block.barrier.getZ()){
+                    onBarrierCollision(b);
+                }else{
+                    block.barrier = b;
+                    block.barrier.setType(Material.BARRIER);
+                }
+            }
+        }
+
+        private void onBarrierCollision(Block b) {
+            if(b.getType() == Material.AIR || b.getType() == Material.BARRIER){
+                block.barrier.setType(Material.AIR);
+                block.barrier = b;
+                block.barrier.setType(Material.BARRIER);
+            }else{
+                block.barrier.setType(Material.AIR);
             }
         }
     }

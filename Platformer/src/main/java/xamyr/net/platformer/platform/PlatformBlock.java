@@ -1,17 +1,20 @@
 package xamyr.net.platformer.platform;
 
 import io.github.bananapuncher714.nbteditor.NBTEditor;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.FallingBlock;
-import org.bukkit.entity.Shulker;
+import org.bukkit.entity.*;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
+import xamyr.net.platformer.Platformer;
+
+import java.awt.*;
+import java.util.List;
+import java.util.Objects;
 
 public class PlatformBlock {
     public ArmorStand armorstand;
@@ -75,6 +78,138 @@ public class PlatformBlock {
     private  void initBarrierBlock(World world, Block block){
         block.setType(Material.BARRIER);
         barrier = world.getBlockAt(block.getLocation());
+    }
+
+    public void moveBlock(Platformer plugin, String direction, Double moveNoBlocks, double speed){
+        if (Objects.equals(direction, "up"))
+            this.yMove = speed;
+        if (Objects.equals(direction, "down"))
+            this.yMove = speed * -1;
+        if (Objects.equals(direction, "north"))
+            this.zMove = speed * -1;
+        if (Objects.equals(direction, "south"))
+            this.zMove = speed;
+        if (Objects.equals(direction, "west"))
+            this.xMove = speed * -1;
+        if (Objects.equals(direction, "east"))
+            this.xMove = speed;
+        this.schedulerId = Bukkit.getScheduler().runTaskTimer(plugin, new PlatformBlock.MovePlatformBlock(this, direction, moveNoBlocks), 2L, 2L).getTaskId();
+    }
+
+    public static class MovePlatformBlock implements Runnable{
+        private final String direction;
+        private final double moveNoBlocks;
+        private PlatformBlock block;
+        private World w;
+
+        public MovePlatformBlock(PlatformBlock block, String direction, Double moveNoBlocks){
+            this.direction = direction;
+            this.moveNoBlocks = moveNoBlocks;
+            this.block = block;
+            this.w = block.armorstand.getWorld();
+        }
+
+        @Override
+        public void run() {
+            Location location = null;
+            Location armorLocation = block.armorstand.getLocation();
+
+            if(Objects.equals(direction, "east")){
+                barrierMoveX(armorLocation);
+                if(block.getxLocation() + moveNoBlocks < armorLocation.getX() || block.getxLocation() > armorLocation.getX()){
+                    block.xMove *= -1;
+                }
+            }
+            if(Objects.equals(direction, "west")) {
+                barrierMoveX(armorLocation);
+                if(block.getxLocation() - moveNoBlocks > armorLocation.getX() || block.getxLocation() < armorLocation.getX()) {
+                    block.xMove *= -1;
+                }
+            }
+            if(Objects.equals(direction, "up")){
+                barrierMoveY(armorLocation);
+                if(block.getyLocation() + moveNoBlocks -1.5 < armorLocation.getY() || block.getyLocation() - 1.51870 > armorLocation.getY()) {
+                    block.yMove *= -1;
+                }
+            }
+            if(Objects.equals(direction, "down")){
+                barrierMoveY(armorLocation);
+                if(block.getyLocation() - moveNoBlocks -1.5 > armorLocation.getY() || block.getyLocation()-1.5 < armorLocation.getY()) {
+                    block.yMove *= -1;
+                }
+            }
+            if(Objects.equals(direction, "north")){
+                barrierMoveZ(armorLocation);
+                if(block.getzLocation() - moveNoBlocks > armorLocation.getZ() || block.getzLocation() < armorLocation.getZ()) {
+                    block.zMove *= -1;
+                }
+            }
+            if(Objects.equals(direction, "south")){
+                barrierMoveZ(armorLocation);
+                if(block.getzLocation() + moveNoBlocks < armorLocation.getZ() || block.getzLocation() > armorLocation.getZ()){
+                    block.zMove *= -1;
+                }
+            }
+            if(block.xMove > 0) location = new Location(block.armorstand.getWorld(),block.armorstand.getLocation().getX()+block.xMove,block.armorstand.getLocation().getY(),block.armorstand.getLocation().getZ());
+            if(block.xMove < 0) location = new Location(block.armorstand.getWorld(),block.armorstand.getLocation().getX()+block.xMove,block.armorstand.getLocation().getY(),block.armorstand.getLocation().getZ());
+            if(block.yMove > 0) location = new Location(block.armorstand.getWorld(),block.armorstand.getLocation().getX(),block.armorstand.getLocation().getY()+block.yMove,block.armorstand.getLocation().getZ());
+            if(block.yMove < 0) location = new Location(block.armorstand.getWorld(),block.armorstand.getLocation().getX(),block.armorstand.getLocation().getY()+block.yMove,block.armorstand.getLocation().getZ());
+            if(block.zMove > 0) location = new Location(block.armorstand.getWorld(),block.armorstand.getLocation().getX(),block.armorstand.getLocation().getY(),block.armorstand.getLocation().getZ()+block.zMove);
+            if(block.zMove < 0) location = new Location(block.armorstand.getWorld(),block.armorstand.getLocation().getX(),block.armorstand.getLocation().getY(),block.armorstand.getLocation().getZ()+block.zMove);
+
+            List<Entity> entities = block.armorstand.getPassengers();
+            block.armorstand.eject();
+            block.armorstand.teleport(location);
+            for (Entity e: entities) {
+                block.armorstand.addPassenger(e);
+            }
+        }
+
+        private void barrierMoveX(Location armorLocation) {
+            if(!block.newVersion){
+                Block b = w.getBlockAt(armorLocation.getBlockX(), block.barrier.getY(), block.barrier.getZ());
+                if(armorLocation.getBlockX() != block.barrier.getX()){
+                    onBarrierCollision(b);
+                }else{
+                    block.barrier = b;
+                    block.barrier.setType(Material.BARRIER);
+                }
+            }
+        }
+
+        private void barrierMoveY(Location armorLocation) {
+            if(!block.newVersion){
+                Block b = w.getBlockAt(block.barrier.getX(), armorLocation.getBlockY()+2, block.barrier.getZ());
+                if(armorLocation.getBlockY()+2 != block.barrier.getY()){
+                    onBarrierCollision(b);
+                }else{
+                    block.barrier = b;
+                    block.barrier.setType(Material.BARRIER);
+                }
+            }
+        }
+
+        private void barrierMoveZ(Location armorLocation) {
+            if(!block.newVersion){
+                Block b = w.getBlockAt(block.barrier.getX(), block.barrier.getY(), armorLocation.getBlockZ());
+                if(armorLocation.getBlockZ() != block.barrier.getZ()){
+                    onBarrierCollision(b);
+                }else{
+                    block.barrier = b;
+                    block.barrier.setType(Material.BARRIER);
+                }
+            }
+        }
+
+        private void onBarrierCollision(Block b) {
+            if(b.getType() == Material.AIR || b.getType() == Material.BARRIER){
+                block.barrier.setType(Material.AIR);
+                block.barrier = b;
+                block.barrier.setType(Material.BARRIER);
+            }else{
+                block.barrier.setType(Material.AIR);
+            }
+        }
     }
 
     private void removeBlock(Block block){

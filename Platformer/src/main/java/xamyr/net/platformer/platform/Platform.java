@@ -10,16 +10,12 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Platform {
     private final List<PlatformBlock> platformBlocks = new ArrayList<>();
     private final Platformer plugin;
-    public double xMove = 0;
-    public double yMove = 0;
-    public double zMove = 0;
     public double moveNoBlocks;
     public double speed = 0;
     public int waitTime= 0;
@@ -70,7 +66,7 @@ public class Platform {
 
     public void hidePlatformName(){
         for(PlatformBlock b : platformBlocks){
-            b.fallingblock.setCustomNameVisible(false);
+            b.fallingblock.setCustomNameVisible(false);;
         }
     }
 

@@ -271,7 +271,6 @@ public class ParkourListener implements Listener {
                 }
             }
         } else if (Item.SCOREBOARD.isSimilar(event.getCurrentItem())) {
-            event.setCancelled(true);
             if (player.hasMetadata("disableScoreboard")) {
                 if (player.getMetadata("disableScoreboard").get(0).asBoolean()) {
                     player.sendMessage(Parkour.getString("scoreboard.enable"));
@@ -285,6 +284,47 @@ public class ParkourListener implements Listener {
             player.setMetadata("disableScoreboard", new FixedMetadataValue(plugin, true));
             player.sendMessage(Parkour.getString("scoreboard.disable"));
             player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+        } else if (Item.CLOCK.isSimilar(event.getCurrentItem())) {
+            if (player.hasMetadata("clockSwitch")){
+                int playerTime =  player.getMetadata("clockSwitch").get(0).asInt()+1;
+                switch (playerTime){
+                    case 1: player.setPlayerTime(6000L, false);
+                            player.sendMessage(Parkour.getString("clock.noon"));
+                            break;
+
+                    case 2: player.setPlayerTime(12000L, false);
+                            player.sendMessage(Parkour.getString("clock.sunset"));
+                            break;
+
+                    case 3: player.setPlayerTime(13000L, false);
+                            player.sendMessage(Parkour.getString("clock.night"));
+                            break;
+
+                    case 4: player.setPlayerTime(18000L, false);
+                            player.sendMessage(Parkour.getString("clock.midnight"));
+                            playerTime = 0;
+                            break;
+
+                }
+                player.setMetadata("clockSwitch", new FixedMetadataValue(plugin, playerTime));
+                return;
+            }
+            player.setPlayerTime(12000L, false);
+            player.sendMessage(Parkour.getString("clock.sunset"));
+            player.setMetadata("clockSwitch", new FixedMetadataValue(plugin, 1));
+        } else if (Item.VISION_USED.isSimilar(event.getCurrentItem())) {
+            plugin.blindPlayers.remove(player);
+            plugin.refreshVision(player);
+            event.getClickedInventory().remove(event.getCurrentItem());
+            event.getClickedInventory().addItem(Item.VISION.getItem());
+            player.sendMessage(Parkour.getString("blind.disable"));
+        } else if (Item.VISION.isSimilar(event.getCurrentItem())) {
+            plugin.blindPlayers.remove(player);
+            plugin.blindPlayers.add(player);
+            plugin.refreshVision(player);
+            event.getClickedInventory().remove(event.getCurrentItem());
+            event.getClickedInventory().addItem(Item.VISION_USED.getItem());
+            player.sendMessage(Parkour.getString("blind.enable"));
         } else {
             event.setCancelled(true);
             if(event.getSlot()==-1) {
@@ -302,38 +342,17 @@ public class ParkourListener implements Listener {
                 return;
             }
             Player player = event.getPlayer();
-            if (Item.VISION_USED.isSimilar(event.getItem())) {
-                event.setCancelled(true);
-                plugin.blindPlayers.remove(player);
-                plugin.refreshVision(player);
-                if (player.getItemInHand().isSimilar(event.getItem())) { //Should be always true
-                    player.setItemInHand(Item.VISION.getItem());
-                } else {
-                    player.getInventory().remove(event.getItem());
-                    player.getInventory().addItem(Item.VISION.getItem());
-                }
-                player.sendMessage(Parkour.getString("blind.disable"));
-            } else if (Item.VISION.isSimilar(event.getItem())) {
-                event.setCancelled(true);
-                plugin.blindPlayers.remove(event.getPlayer());
-                plugin.blindPlayers.add(event.getPlayer());
-                plugin.refreshVision(event.getPlayer());
-                player.sendMessage(Parkour.getString("blind.enable"));
-                if (player.getItemInHand().isSimilar(event.getItem())) {
-                    player.setItemInHand(Item.VISION_USED.getItem());
-                } else {
-                    player.getInventory().remove(event.getItem());
-                    player.getInventory().addItem(Item.VISION_USED.getItem());
-                }
-            } else if (Item.SPAWN.isSimilar(event.getItem())) {
+            if (Item.SPAWN.isSimilar(event.getItem())) {
                 event.setCancelled(true);
                 player.teleport(plugin.getSpawn(), TeleportCause.COMMAND);
             } else if (Item.SETTINGS.isSimilar(event.getItem())) {
                 event.setCancelled(true);
                 ArrayList<Item> items = Item.getItemsByType(Item.ItemType.SETTINGS);
                 Inventory playerSettings = plugin.playersMenus.get(event.getPlayer()).getSettingsMenu();
-                for (Item item : items) {
-                    playerSettings.addItem(item.getItem());
+                if(playerSettings.isEmpty()) {
+                    for (Item item : items) {
+                        playerSettings.addItem(item.getItem());
+                    }
                 }
                 player.openInventory(playerSettings);
             } else if (Item.POINT.isSimilar(event.getItem())) {

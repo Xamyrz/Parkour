@@ -68,7 +68,7 @@ public final class Platformer extends JavaPlugin {
 
     public void loadPlatforms() throws SQLException {
 
-        try (PreparedStatement statement = this.platformerDatabase.prepareStatement("SELECT * FROM platforms")){
+        try (PreparedStatement statement = getDatabase().prepareStatement("SELECT * FROM platforms")){
             try(ResultSet result = statement.executeQuery()){
                 while(result.next()) {
                     String name = result.getString("name");
@@ -100,7 +100,7 @@ public final class Platformer extends JavaPlugin {
     }
 
     public void loadPlatform(String name){
-        try (PreparedStatement stmt = platformerDatabase.prepareStatement("SELECT * from `platforms` WHERE `name`=?")){
+        try (PreparedStatement stmt = getDatabase().prepareStatement("SELECT * from `platforms` WHERE `name`=?")){
             stmt.setString(1, name);
             ResultSet result = stmt.executeQuery();
 
@@ -135,7 +135,7 @@ public final class Platformer extends JavaPlugin {
     }
 
     public void deletePlatform(String name){
-        try (PreparedStatement stmt = platformerDatabase.prepareStatement("DELETE FROM `platforms` WHERE name = ?")) {
+        try (PreparedStatement stmt = getDatabase().prepareStatement("DELETE FROM `platforms` WHERE name = ?")) {
             stmt.setString(1, name);
             stmt.executeUpdate();
         } catch (SQLException throwables) {
@@ -154,5 +154,14 @@ public final class Platformer extends JavaPlugin {
         return deleted;
     }
 
-    public Connection getDatabase(){return platformerDatabase;}
+    public Connection getDatabase(){
+        try {
+            if (!platformerDatabase.isValid(1)) {
+                this.connectDatabase();
+            }
+        } catch (SQLException ex) {
+            this.connectDatabase();
+        }
+        return platformerDatabase;
+    }
 }

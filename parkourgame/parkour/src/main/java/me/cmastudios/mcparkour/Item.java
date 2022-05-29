@@ -25,8 +25,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.*;
 
 public enum Item {
-    VISION(ItemType.SPAWN,Material.ENDER_EYE, Parkour.getString("item.vision"), 1, (short) 0),
-    VISION_USED(ItemType.MISC,Material.ENDER_PEARL, Parkour.getString("item.vision.used"), 1, (short)0),
+    CLOCK(ItemType.SETTINGS,Material.CLOCK, Parkour.getString("item.clock"), 1, (short) 0),
+    VISION(ItemType.SETTINGS,Material.ENDER_EYE, Parkour.getString("item.vision"), 1, (short) 0),
+    VISION_USED(ItemType.TOGGLE,Material.ENDER_PEARL, Parkour.getString("item.vision.used"), 1, (short)0),
     ITEM_MENU(ItemType.SPAWN, Material.BOOK, Parkour.getString("item.choosemenu"),1, (short)0, Parkour.getMessageArrayFromPrefix("item.choosemenu.description")),
     CHAT(ItemType.SETTINGS,Material.PAPER, Parkour.getString("item.chat"), 1, (short) 0, Parkour.getMessageArrayFromPrefix("item.chat.description")),
     SPAWN(ItemType.SPAWN,Material.NETHER_STAR, Parkour.getString("item.spawn"), 1, (short) 0),
@@ -127,6 +128,7 @@ public enum Item {
         SPAWN,
         VIP,
         MISC,
-        SETTINGS
+        SETTINGS,
+        TOGGLE
     }
 }

@@ -58,7 +58,6 @@ public class ParkourChooseMenu {
 
     public void render(Inventory inv, Player player, Parkour plugin) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin,  new GetAndRender(plugin, player, criterium, page, inv));
-//        new GetAndRender(plugin, player, criterium, page, inv).runTaskAsynchronously(plugin);
     }
 
     public void handleClick(Inventory inv, ItemStack is, Parkour plugin, Player player) {

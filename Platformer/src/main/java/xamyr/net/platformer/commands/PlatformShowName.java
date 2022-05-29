@@ -22,7 +22,6 @@ public class PlatformShowName implements TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if(sender instanceof Player){
-            Player player = (Player) sender;
             if(args.length == 1){
                 if(Objects.equals(args[0], "true")){
                     plugin.platforms.forEach((key, value) -> value.showPlatformName());
@@ -30,7 +29,7 @@ public class PlatformShowName implements TabExecutor {
                 }
                 if(Objects.equals(args[0], "false")){
                     plugin.platforms.forEach((key, value) -> value.hidePlatformName());
-                    return false;
+                    return true;
                 }
             }
 

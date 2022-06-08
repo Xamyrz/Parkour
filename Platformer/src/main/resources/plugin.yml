@@ -5,6 +5,7 @@ api-version: 1.18
 authors: [ Xamyr ]
 description: moving platforms
 depend: [WorldEdit]
+softdepend: [Multiverse-Core]
 commands:
   platformcreate:
     description: Create a moving platform

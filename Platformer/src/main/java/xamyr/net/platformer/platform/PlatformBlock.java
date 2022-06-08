@@ -29,6 +29,7 @@ public class PlatformBlock {
     public double zMove = 0;
     public int schedulerId = 0;
     public boolean newVersion;
+    public Material blockType;
 
     public PlatformBlock(Block block, Boolean newerVersion){
         World world = block.getWorld();
@@ -36,27 +37,31 @@ public class PlatformBlock {
         yLocation = block.getY()+0.03745;
         zLocation = block.getZ()+0.5;
         newVersion = newerVersion;
+        blockType = block.getType();
+        Location location = new Location(world, xLocation, yLocation, zLocation);
         if(newerVersion){
-            initArmorstand(world);
-            initShulker(world);
-            initFallingblock(world, block);
+            initArmorstand(location);
+            initShulker(location);
+            initFallingblock(location);
             removeBlock(block);
         }else{
-            initArmorstand(world);
-            initFallingblock(world, block);
-            initBarrierBlock(world, block);
+            initArmorstand(location);
+            initFallingblock(location);
+            initBarrierBlock(block);
         }
     }
 
-    private void initArmorstand(World world){
-        this.armorstand = (ArmorStand) world.spawnEntity(new Location(world, xLocation, yLocation -1.5187, zLocation), EntityType.ARMOR_STAND);
+    private void initArmorstand(Location location){
+        location.setY(yLocation - 1.5187);
+//        this.armorstand = (ArmorStand) world.spawnEntity(new Location(world, xLocation, yLocation -1.5187, zLocation), EntityType.ARMOR_STAND);
+        this.armorstand = (ArmorStand) location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
         armorstand.setGravity(false);
         armorstand.setInvulnerable(true);
         armorstand.setInvisible(true);
     }
 
-    private void initShulker(World world){
-        this.shulker = (Shulker) world.spawnEntity(new Location(world, xLocation, yLocation, zLocation), EntityType.SHULKER);
+    private void initShulker(Location location){
+        this.shulker = (Shulker) location.getWorld().spawnEntity(location, EntityType.SHULKER);
         shulker.setAI(false);
         shulker.setSilent(true);
         shulker.setGravity(false);
@@ -66,17 +71,17 @@ public class PlatformBlock {
         armorstand.addPassenger(shulker);
     }
 
-    private void initFallingblock(World world, Block block){
-        this.fallingblock = world.spawnFallingBlock(new Location(world, xLocation, yLocation, zLocation), block.getType().createBlockData());
+    private void initFallingblock(Location location){
+        this.fallingblock = location.getWorld().spawnFallingBlock(location, blockType.createBlockData());
         fallingblock.setGravity(false);
         fallingblock.setVelocity(new Vector(0,0,0));
-        NBTEditor.set(fallingblock, -1000000, "Time");
+        NBTEditor.set(fallingblock, -1000000000, "Time");
         armorstand.addPassenger(fallingblock);
     }
 
-    private  void initBarrierBlock(World world, Block block){
+    private  void initBarrierBlock(Block block){
         block.setType(Material.BARRIER);
-        barrier = world.getBlockAt(block.getLocation());
+        barrier = block;
     }
 
     public void moveBlock(Platformer plugin, String direction, Double moveNoBlocks, double speed){
@@ -112,6 +117,9 @@ public class PlatformBlock {
         public void run() {
             Location location = null;
             Location armorLocation = block.armorstand.getLocation();
+            if(block.fallingblock.isDead()){
+                block.initFallingblock(block.fallingblock.getLocation());
+            }
 
             if(Objects.equals(direction, "east")){
                 barrierMoveX(armorLocation);

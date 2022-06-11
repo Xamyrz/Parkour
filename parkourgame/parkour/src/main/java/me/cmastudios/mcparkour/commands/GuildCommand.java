@@ -505,7 +505,7 @@ public class GuildCommand implements CommandExecutor {
                 // declaring war on other guild
                 if (args.length < 3) return false;
                 int courseId = Integer.parseInt(args[2]);
-                ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), courseId);
+                ParkourCourse course = plugin.courses.get(courseId);
                 if (course == null) {
                     sender.sendMessage(Parkour.getString("error.course404"));
                     return true;

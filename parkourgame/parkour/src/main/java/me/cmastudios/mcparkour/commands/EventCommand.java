@@ -53,7 +53,7 @@ public class EventCommand implements CommandExecutor {
                     try {
                         int pkid = Integer.parseInt(args[1]);
                         EventCourse.EventType type = EventCourse.EventType.valueOf(args[2]);
-                        EventCourse course = EventCourse.loadCourse(plugin.getCourseDatabase(), pkid);
+                        EventCourse course = EventCourse.loadCourse(plugin.courses.get(pkid), plugin.getCourseDatabase(), pkid);
 
                         if (course != null) {
                             course.setType(type);
@@ -61,7 +61,7 @@ public class EventCommand implements CommandExecutor {
                             sender.sendMessage(Parkour.getString("event.admin.modified", pkid));
                             return true;
                         }
-                        ParkourCourse parkour = ParkourCourse.loadCourse(plugin.getCourseDatabase(), pkid);
+                        ParkourCourse parkour = plugin.courses.get(pkid);
                         if (parkour == null) {
                             sender.sendMessage(Parkour.getString("event.admin.error.invalidcourse"));
                             return true;
@@ -90,7 +90,7 @@ public class EventCommand implements CommandExecutor {
                     try {
                         if (args.length == 2) {
                             if (args[1].equalsIgnoreCase("random")) {
-                                pk = EventCourse.getRandomCourse(plugin.getCourseDatabase());
+                                pk = EventCourse.getRandomCourse(plugin.courses, plugin.getCourseDatabase());
                                 String[] interval = plugin.getConfig().getString("events."+pk.getType().key+".preferredTimeInterval").split("-");
                                 if(interval.length!=2) {
                                     sender.sendMessage(Parkour.getString("event.admin.error.badlyconfigured"));
@@ -111,7 +111,7 @@ public class EventCommand implements CommandExecutor {
                         } else if (args.length == 3) {
                             int length = Integer.parseInt(args[1]);
                             int parkourId = Integer.parseInt(args[2]);
-                            pk = EventCourse.loadCourse(plugin.getCourseDatabase(), parkourId);
+                            pk = EventCourse.loadCourse(plugin.courses.get(parkourId), plugin.getCourseDatabase(), parkourId);
                             if (pk == null) {
                                 sender.sendMessage(Parkour.getString("event.admin.error.invalidcourse"));
                                 return true;

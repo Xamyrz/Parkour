@@ -57,7 +57,7 @@ public class AdventureCommand implements CommandExecutor {
                 switch (args[1]) {
                     case "add":
                         if (sender.hasPermission("parkour.set")) {
-                            ParkourCourse chap = ParkourCourse.loadCourse(plugin.getCourseDatabase(), Integer.parseInt(args[2]));
+                            ParkourCourse chap = plugin.courses.get(Integer.parseInt(args[2]));
                             if (chap == null) {
                                 sender.sendMessage(Parkour.getString("error.course404"));
                             } else {

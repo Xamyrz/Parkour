@@ -54,7 +54,7 @@ public class TopScoresCommand implements CommandExecutor {
         }
         try {
             int id = Integer.parseInt(args[0]);
-            ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), id);
+            ParkourCourse course = plugin.courses.get(id);
             if (course == null) {
                 sender.sendMessage(Parkour.getString("error.course404", new Object[]{}));
                 return true;

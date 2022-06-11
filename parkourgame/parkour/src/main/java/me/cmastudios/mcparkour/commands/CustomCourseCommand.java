@@ -45,8 +45,8 @@ public class CustomCourseCommand implements CommandExecutor {
         }
         try {
             int parkourId = Integer.parseInt(args[1]);
-            CustomCourse custom = CustomCourse.loadCourse(plugin.getCourseDatabase(), parkourId);
-            ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), parkourId);
+            CustomCourse custom = CustomCourse.loadCourse(plugin.courses.get(parkourId), plugin.getCourseDatabase(), parkourId);
+            ParkourCourse course = plugin.courses.get(parkourId);
             if (course == null) {
                 sender.sendMessage(Parkour.getString("error.course404"));
                 return true;

@@ -26,6 +26,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class CustomCourse {
 
@@ -33,8 +34,7 @@ public class CustomCourse {
     private ArrayList<PotionEffect> effects;
 
     //Template EFFECT:LEVEL;EFFECT:LEVEL
-    public static CustomCourse loadCourse(Connection conn, int id) throws SQLException {
-        ParkourCourse pk = ParkourCourse.loadCourse(conn, id);
+    public static CustomCourse loadCourse(ParkourCourse pk, Connection conn, int id) throws SQLException {
         try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM custom WHERE id=?")) {
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {

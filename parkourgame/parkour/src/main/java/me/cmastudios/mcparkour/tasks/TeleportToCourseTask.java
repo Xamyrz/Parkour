@@ -53,7 +53,7 @@ public class TeleportToCourseTask implements Runnable {
 
     public Parkour.PlayResult performWithResult() {
         try {
-            final ParkourCourse tpCourse = ParkourCourse.loadCourse(plugin.getCourseDatabase(), courseId);
+            final ParkourCourse tpCourse = plugin.courses.get(courseId);
             if (tpCourse == null||((tpCourse.getMode() == ParkourCourse.CourseMode.HIDDEN || tpCourse.getMode() == ParkourCourse.CourseMode.EVENT) && cause == PlayerTeleportEvent.TeleportCause.COMMAND && !player.hasPermission("parkour.teleport"))) {
                 player.sendMessage(Parkour.getString("error.course404"));
                 return Parkour.PlayResult.NOT_FOUND;

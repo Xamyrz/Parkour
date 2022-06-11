@@ -26,22 +26,30 @@ import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
 public class PlaysRushParkourEvent extends ScoreableParkourEvent implements OwnEndingEvent {
+    private Scoreboard sb;
 
     public PlaysRushParkourEvent(EventCourse course, Parkour plugin, int eventTime) {
         super(course, plugin, eventTime, true);
+        Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
+        Objective obj = sb.registerNewObjective("scores", "dummy", Parkour.getString("event.scoreboard.title"));
+        Team team = sb.registerNewTeam("parkourRush");
     }
 
     @Override
     public void showScoreboard(Player player) {
-        Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
-        Objective obj = sb.registerNewObjective("scores", "dummy", Parkour.getString("event.scoreboard.title"));
+        Objective obj = sb.getObjective("scores");
         obj.setDisplayName(Parkour.getString("event.scoreboard.title"));
         obj.getScore(Parkour.getString("event.scoreboard.plays.plays")).setScore(getPlayerBestScore(player) != null ? getPlayerBestScore(player).intValue() : 0);
         obj.getScore(Parkour.getString("event.scoreboard.scoredplaces")).setScore(plugin.getConfig().getInt("events." + course.getType().key + ".scoredplaces"));
         obj.getScore(Parkour.getString("event.scoreboard.position")).setScore(getPlayerPosition(player));
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
+        Team team = sb.getTeam("parkourRush");
+        team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
+        team.removeEntry(player.getUniqueId().toString());
+        team.addEntry(player.getName());
         player.setScoreboard(sb);
     }
 

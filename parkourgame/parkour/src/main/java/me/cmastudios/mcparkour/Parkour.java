@@ -30,10 +30,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.Map.Entry;
@@ -55,6 +52,7 @@ public class Parkour extends JavaPlugin {
     public static boolean isBarApiEnabled = true;
     private ParkourEvent event;
     public Map<Player, Menu> playersMenus = new HashMap<>();
+    public Map<Integer, ParkourCourse> courses = new HashMap<>();
     public List<Player> blindPlayers = new ArrayList<>();
     public final List<Player> deafPlayers = new ArrayList<>();
     public ConcurrentHashMap<Player, Checkpoint> playerCheckpoints = new ConcurrentHashMap<>();
@@ -90,6 +88,7 @@ public class Parkour extends JavaPlugin {
         this.saveDefaultConfig();
         try {
             this.connectDatabase();
+            this.loadCourses(courseDatabase);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -170,7 +169,6 @@ public class Parkour extends JavaPlugin {
             this.getLogger().log(Level.SEVERE, "Failed to close existing connection to database", ex);
         }
         try {
-//            Class.forName("com.mysql.jdbc.Driver").newInstance();
             this.courseDatabase = DriverManager.getConnection(String.format("jdbc:mysql://%s:%d/%s",
                     this.getConfig().getString("mysql.host"), this.getConfig().getInt("mysql.port"), this.getConfig().getString("mysql.database")),
                     this.getConfig().getString("mysql.username"), this.getConfig().getString("mysql.password"));
@@ -201,6 +199,26 @@ public class Parkour extends JavaPlugin {
             this.connectDatabase();
         }
         return courseDatabase;
+    }
+
+    public void loadCourses(Connection conn) throws SQLException {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM courses")) {
+            try (ResultSet result = stmt.executeQuery()) {
+                while(result.next()) {
+                    courses.put(result.getInt("id"), new ParkourCourse(result.getInt("id"),
+                            result.getString("name"),new Location(
+                            Bukkit.getWorld(result.getString("world")),
+                            result.getDouble("x"), result.getDouble("y"),
+                            result.getDouble("z"), result.getFloat("yaw"),
+                            result.getFloat("pitch")),
+                            result.getInt("detection"),
+                            CourseMode.valueOf(result.getString("mode").toUpperCase()),
+                            CourseDifficulty.valueOf(result.getString("difficulty").toUpperCase())));
+                }
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }
     }
 
     public void refreshVision(Player player) {

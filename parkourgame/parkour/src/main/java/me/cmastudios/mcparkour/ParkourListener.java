@@ -52,11 +52,16 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.metadata.MetadataValue;
 
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.lang.Runnable;
 
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
 /**
@@ -69,10 +74,18 @@ public class ParkourListener implements Listener {
     private final Parkour plugin;
     public static final int DETECTION_MIN = 1;
     public static final int SIGN_DETECTION_MAX = 6;
+    private Scoreboard sb;
+    private Team team;
 
     public ParkourListener(Parkour instance) {
         this.plugin = instance;
         plugin.getServer().getScheduler().runTaskTimer(plugin, new XpCounterTask(), 1L, 1L);
+        sb = Bukkit.getScoreboardManager().getMainScoreboard();
+        if(sb.getTeam("pk") == null){
+            sb.registerNewTeam("pk");
+        }
+        team = sb.getTeam("pk");
+        team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
     }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
@@ -310,10 +323,11 @@ public class ParkourListener implements Listener {
                 }
                 player.setMetadata("clockSwitch", new FixedMetadataValue(plugin, playerTime));
                 return;
+            }else{
+                player.setPlayerTime(6000L, false);
+                player.sendMessage(Parkour.getString("clock.noon"));
+                player.setMetadata("clockSwitch", new FixedMetadataValue(plugin, 1));
             }
-            player.setPlayerTime(12000L, false);
-            player.sendMessage(Parkour.getString("clock.sunset"));
-            player.setMetadata("clockSwitch", new FixedMetadataValue(plugin, 1));
         } else if (Item.VISION_USED.isSimilar(event.getCurrentItem())) {
             plugin.blindPlayers.remove(player);
             plugin.refreshVision(player);
@@ -445,6 +459,8 @@ public class ParkourListener implements Listener {
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerJoin(final PlayerJoinEvent event) throws SQLException {
         event.setJoinMessage(null);
+        team.addEntry(event.getPlayer().getName());
+        event.getPlayer().setScoreboard(sb);
         Utils.savePlayer(plugin.getCourseDatabase(), event.getPlayer());
         plugin.playersMenus.put(event.getPlayer(), new Menu(event.getPlayer(), plugin));
         if (plugin.getEvent() != null && plugin.getEvent().hasStarted()) {
@@ -647,7 +663,7 @@ public class ParkourListener implements Listener {
             try {
                 int courseId = Integer.parseInt(event.getItemInHand().getItemMeta().getDisplayName());
                 event.setCancelled(true);
-                ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), courseId);
+                ParkourCourse course = plugin.courses.get(courseId);
                 Validate.notNull(course, Parkour.getString("error.course404"));
                 Validate.isTrue(course.getMode() == CourseMode.GUILDWAR, Parkour.getString("error.coursewar"));
                 Validate.isTrue(event.getBlock().getState() instanceof Skull); // assert

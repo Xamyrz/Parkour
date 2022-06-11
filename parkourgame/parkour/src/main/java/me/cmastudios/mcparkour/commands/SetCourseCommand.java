@@ -53,7 +53,7 @@ public class SetCourseCommand implements CommandExecutor {
             int detection = Integer.parseInt(args[1]);
             CourseMode mode = CourseMode.valueOf(args[2].toUpperCase());
             CourseDifficulty diff = CourseDifficulty.valueOf(args[3].toUpperCase());
-            ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), id);
+            ParkourCourse course = plugin.courses.get(id);
             String[] nameArr = Arrays.copyOfRange(args,4,args.length);
             StringBuilder name = new StringBuilder();
             for(String string : nameArr) {

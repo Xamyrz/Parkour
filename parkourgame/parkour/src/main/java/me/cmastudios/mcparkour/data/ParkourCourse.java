@@ -44,6 +44,7 @@ public class ParkourCourse {
     private CourseMode mode;
     private String name;
     private CourseDifficulty diff;
+    private Scoreboard sb;
 
     public static ParkourCourse loadCourse(Connection conn, int id) throws SQLException {
         ParkourCourse ret = null;
@@ -73,6 +74,8 @@ public class ParkourCourse {
         this.mode = mode;
         this.diff = diff;
         this.name = name;
+        this.sb = Bukkit.getScoreboardManager().getNewScoreboard();
+        this.sb.registerNewObjective("scores", "dummy", Parkour.getString("scoreboard.title",name.substring(0,Math.min(name.length(),32-(String.valueOf(id).length()+6))),id));
     }
 
     public void save(Connection conn) throws SQLException {
@@ -156,9 +159,10 @@ public class ParkourCourse {
     public void setName(String name) { this.name = name;}
 
     public Scoreboard getScoreboard(List<PlayerHighScore> highScores) {
-        Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
-        Objective obj = sb.registerNewObjective("scores", "dummy", Parkour.getString("scoreboard.title",name.substring(0,Math.min(name.length(),32-(String.valueOf(id).length()+6))),id));
-
+        Objective obj = sb.getObjective("scores");
+        obj.unregister();
+        obj = sb.registerNewObjective("scores", "dummy", Parkour.getString("scoreboard.title",name.substring(0,Math.min(name.length(),32-(String.valueOf(id).length()+6))),id));
+        //sb.resetScores();
         for (int count = 0; count < 10; count++) {
             if (highScores.size() <= count) {
                 break;
@@ -176,6 +180,10 @@ public class ParkourCourse {
             }
             DecimalFormat df = new DecimalFormat("#.###");
             obj.getScore(Parkour.getString("scoreboard.prefix", Bukkit.getOfflinePlayer(highScore.getPlayerUUID()).getName(), color+""+((double) highScore.getTime()) / 1000.0D)).setScore(-(count + 1));
+        }
+        if(sb.getTeam("parkour") == null){
+            Team team = sb.registerNewTeam("parkour");
+            team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
         }
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
         return sb;

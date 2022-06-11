@@ -58,7 +58,7 @@ public class HighscoresCommand implements CommandExecutor {
                 case "course":
                     try {
                         int parkId = Integer.parseInt(args[2]);
-                        ParkourCourse pc = ParkourCourse.loadCourse(plugin.getCourseDatabase(), parkId);
+                        ParkourCourse pc = plugin.courses.get(parkId);
                         if (pc == null) {
                             sender.sendMessage(Parkour.getString("error.playerorcourse404", args[2]));
                             return true;

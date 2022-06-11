@@ -48,13 +48,13 @@ public class ParkourStartTask implements Runnable {
     @Override
     public void run() {
         try {
-            final ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), Integer.parseInt(data.getLine(1)));
+            final ParkourCourse course = plugin.courses.get(Integer.parseInt(data.getLine(1)));
             final IPlayerExperience exp = Parkour.experience.getPlayerExperience(player);
             if(course==null) {
                 return;
             }
             final Parkour.PlayResult result = plugin.canPlay(player, exp.getExperience(), course);
-            final CustomCourse customCourse = course.getMode() == ParkourCourse.CourseMode.CUSTOM ? CustomCourse.loadCourse(plugin.getCourseDatabase(),course.getId()): null;
+            final CustomCourse customCourse = course.getMode() == ParkourCourse.CourseMode.CUSTOM ? CustomCourse.loadCourse(plugin.courses.get(course.getId()), plugin.getCourseDatabase(),course.getId()): null;
             if (result == Parkour.PlayResult.ALLOWED && course.getMode() != ParkourCourse.CourseMode.EVENT) {
                 new DisplayHighscoresTask(plugin, player, course).run();
             }

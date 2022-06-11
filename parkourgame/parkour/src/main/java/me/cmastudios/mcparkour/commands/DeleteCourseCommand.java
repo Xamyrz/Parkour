@@ -41,8 +41,7 @@ public class DeleteCourseCommand implements CommandExecutor {
         }
         try {
             int id = Integer.parseInt(args[0]);
-            ParkourCourse course = ParkourCourse.loadCourse(
-                    plugin.getCourseDatabase(), id);
+                ParkourCourse course = plugin.courses.get(id);
             if (course != null) {
                 course.delete(plugin.getCourseDatabase());
                 course.clearHeads(plugin);

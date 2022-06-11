@@ -108,7 +108,7 @@ public class DuelCommand implements CommandExecutor {
             }
             try {
                 int courseId = Integer.parseInt(args[1]);
-                ParkourCourse course = ParkourCourse.loadCourse(plugin.getCourseDatabase(), courseId);
+                ParkourCourse course = plugin.courses.get(courseId);
                 if (course == null) {
                     sender.sendMessage(Parkour.getString("error.course404"));
                     return true;

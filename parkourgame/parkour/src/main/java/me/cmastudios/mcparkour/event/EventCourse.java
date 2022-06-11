@@ -17,19 +17,23 @@
 
 package me.cmastudios.mcparkour.event;
 
+import com.google.gson.internal.LinkedHashTreeMap;
 import me.cmastudios.mcparkour.data.ParkourCourse;
+import org.bukkit.plugin.Plugin;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class EventCourse {
     private EventType type;
     private ParkourCourse course;
 
-    public static EventCourse loadCourse(Connection conn, int id) throws SQLException {
-        ParkourCourse course = ParkourCourse.loadCourse(conn, id);
+    public static EventCourse loadCourse(ParkourCourse course, Connection conn, int id) throws SQLException {
         if (course != null && course.getMode() == ParkourCourse.CourseMode.EVENT) {
             try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM events WHERE `id`=?")) {
                 stmt.setInt(1, id);
@@ -43,7 +47,7 @@ public class EventCourse {
         return null;
     }
 
-    public static EventCourse getRandomCourse(Connection conn) throws SQLException {
+    public static EventCourse getRandomCourse(Map<Integer, ParkourCourse> courses, Connection conn) throws SQLException {
         try (PreparedStatement stmt = conn.prepareStatement("SELECT FLOOR(RAND() * COUNT(*)) AS `offset` FROM `events`");
              ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
@@ -52,7 +56,7 @@ public class EventCourse {
                     statement.setInt(1, offset);
                     try (ResultSet result = statement.executeQuery()) {
                         if (result.next()) {
-                            return new EventCourse(EventType.valueOf(result.getString("type")), ParkourCourse.loadCourse(conn, result.getInt("id")));
+                            return new EventCourse(EventType.valueOf(result.getString("type")), courses.get(result.getInt("id")));
                         }
                     }
                 }

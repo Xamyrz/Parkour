@@ -20,6 +20,7 @@ public class Platform {
     public double speed = 0;
     public int waitTime= 0;
     public boolean newVersion;
+    public boolean blockDiedRecently = false;
     public String direction = "";
     public String name = "";
     public String world = "";

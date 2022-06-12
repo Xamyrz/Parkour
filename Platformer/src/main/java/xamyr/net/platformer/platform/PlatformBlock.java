@@ -75,7 +75,7 @@ public class PlatformBlock {
         armorstand.addPassenger(shulker);
     }
 
-    private void initFallingblock(Location location){
+    public void initFallingblock(Location location){
         this.fallingblock = location.getWorld().spawnFallingBlock(location, blockType.createBlockData());
         fallingblock.setCustomName(name);
         fallingblock.setGravity(false);
@@ -102,7 +102,7 @@ public class PlatformBlock {
             this.xMove = speed * -1;
         if (Objects.equals(direction, "east"))
             this.xMove = speed;
-        this.schedulerId = Bukkit.getScheduler().runTaskTimer(plugin, new PlatformBlock.MovePlatformBlock(this, direction, moveNoBlocks), 2L, 2L).getTaskId();
+        this.schedulerId = Bukkit.getScheduler().runTaskTimer(plugin, new PlatformBlock.MovePlatformBlock(this, direction, moveNoBlocks, plugin.platforms.get(name)), 2L, 2L).getTaskId();
     }
 
     public static class MovePlatformBlock implements Runnable{
@@ -111,19 +111,31 @@ public class PlatformBlock {
         private PlatformBlock block;
         private World w;
 
-        public MovePlatformBlock(PlatformBlock block, String direction, Double moveNoBlocks){
+        //I shouldn't have to store it, but atm only solution
+        //I can think of to get a boolean for blockDiedRecently
+        private Platform platform;
+
+        public MovePlatformBlock(PlatformBlock block, String direction, Double moveNoBlocks, Platform platform){
             this.direction = direction;
             this.moveNoBlocks = moveNoBlocks;
             this.block = block;
             this.w = block.armorstand.getWorld();
+            this.platform = platform;
         }
 
         @Override
         public void run() {
             Location location = null;
             Location armorLocation = block.armorstand.getLocation();
-            if(block.fallingblock.isDead()){
-                block.initFallingblock(block.fallingblock.getLocation());
+
+            //must be better solution for this...
+            if(block.fallingblock.isDead() && !platform.blockDiedRecently){
+                platform.blockDiedRecently = true;
+                for (PlatformBlock b: platform.getPlatformBlocks()) {
+                    b.fallingblock.remove();
+                    b.initFallingblock(b.fallingblock.getLocation());
+                }
+                platform.blockDiedRecently = false;
             }
 
             if(Objects.equals(direction, "east")){

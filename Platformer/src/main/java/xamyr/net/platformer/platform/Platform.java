@@ -40,14 +40,9 @@ public class Platform {
             Chunk blockChunk = Bukkit.getWorld(world).getChunkAt(block);
 
             if(newVersion){
-                b = new PlatformBlock(block, true);
-                b.armorstand.setCustomName(name);
-                b.fallingblock.setCustomName(name);
-                b.shulker.setCustomName(name);
+                b = new PlatformBlock(block, name, true);
             }else{
-                b = new PlatformBlock(block, false);
-                b.armorstand.setCustomName(name);
-                b.fallingblock.setCustomName(name);
+                b = new PlatformBlock(block, name, false);
             }
             if(!Bukkit.getWorld(world).getChunkAt(block).isForceLoaded()){
                 blockChunk.setForceLoaded(true);

@@ -30,9 +30,11 @@ public class PlatformBlock {
     public int schedulerId = 0;
     public boolean newVersion;
     public Material blockType;
+    private String name;
 
-    public PlatformBlock(Block block, Boolean newerVersion){
+    public PlatformBlock(Block block, String name, Boolean newerVersion){
         World world = block.getWorld();
+        this.name = name;
         xLocation = block.getX()+0.5;
         yLocation = block.getY()+0.03745;
         zLocation = block.getZ()+0.5;
@@ -55,6 +57,7 @@ public class PlatformBlock {
         location.setY(yLocation - 1.5187);
 //        this.armorstand = (ArmorStand) world.spawnEntity(new Location(world, xLocation, yLocation -1.5187, zLocation), EntityType.ARMOR_STAND);
         this.armorstand = (ArmorStand) location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
+        armorstand.setCustomName(name);
         armorstand.setGravity(false);
         armorstand.setInvulnerable(true);
         armorstand.setInvisible(true);
@@ -62,6 +65,7 @@ public class PlatformBlock {
 
     private void initShulker(Location location){
         this.shulker = (Shulker) location.getWorld().spawnEntity(location, EntityType.SHULKER);
+        shulker.setCustomName(name);
         shulker.setAI(false);
         shulker.setSilent(true);
         shulker.setGravity(false);
@@ -73,6 +77,7 @@ public class PlatformBlock {
 
     private void initFallingblock(Location location){
         this.fallingblock = location.getWorld().spawnFallingBlock(location, blockType.createBlockData());
+        fallingblock.setCustomName(name);
         fallingblock.setGravity(false);
         fallingblock.setVelocity(new Vector(0,0,0));
         NBTEditor.set(fallingblock, -1000000000, "Time");

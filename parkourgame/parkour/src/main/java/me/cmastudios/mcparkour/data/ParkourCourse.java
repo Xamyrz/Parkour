@@ -162,7 +162,6 @@ public class ParkourCourse {
         Objective obj = sb.getObjective("scores");
         obj.unregister();
         obj = sb.registerNewObjective("scores", "dummy", Parkour.getString("scoreboard.title",name.substring(0,Math.min(name.length(),32-(String.valueOf(id).length()+6))),id));
-        //sb.resetScores();
         for (int count = 0; count < 10; count++) {
             if (highScores.size() <= count) {
                 break;

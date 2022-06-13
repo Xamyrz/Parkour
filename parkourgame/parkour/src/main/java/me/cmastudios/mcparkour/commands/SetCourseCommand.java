@@ -71,7 +71,8 @@ public class SetCourseCommand implements CommandExecutor {
                 course.setName(name.toString());
                 sender.sendMessage(Parkour.getString("course.updated", id));
             } else {
-                course = new ParkourCourse(id, name.toString(), player.getLocation(), detection, mode, diff);
+                plugin.courses.put(id, new ParkourCourse(id, name.toString(), player.getLocation(), detection, mode, diff));
+                course = plugin.courses.get(id);
                 sender.sendMessage(Parkour.getString("course.created", id, name));
             }
             course.save(plugin.getCourseDatabase());

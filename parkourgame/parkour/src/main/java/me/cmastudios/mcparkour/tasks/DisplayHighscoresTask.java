@@ -48,7 +48,9 @@ public class DisplayHighscoresTask implements Runnable {
                 @Override
                 public void run() {
                     if (!player.hasMetadata("disableScoreboard")) {
-                        player.getScoreboard().getTeam("parkour").removeEntry(player.getName());
+                        if (player.getScoreboard().getTeam("parkour") != null) {
+                            player.getScoreboard().getTeam("parkour").removeEntry(player.getName());
+                        }
                         player.setScoreboard(course.getScoreboard(startScores));
                         player.getScoreboard().getTeam("parkour").addEntry(player.getName());
                     } else {

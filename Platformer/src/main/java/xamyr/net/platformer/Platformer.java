@@ -91,6 +91,7 @@ public final class Platformer extends JavaPlugin {
                         Block b = world.getBlockAt(location);
                         blocks.add(b);
                     }
+
                     removeOldPlatform(world, name);
                     platforms.put(name, new Platform(this, blocks, newVersion,direction,moveNoBlocks,wait,speed,name));
                     platforms.get(name).movePlatform();

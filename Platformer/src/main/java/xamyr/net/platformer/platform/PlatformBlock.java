@@ -27,12 +27,14 @@ public class PlatformBlock {
     public double xMove = 0;
     public double yMove = 0;
     public double zMove = 0;
+    private boolean front;
+    private boolean back;
     public int schedulerId = 0;
     public boolean newVersion;
     public Material blockType;
     private String name;
 
-    public PlatformBlock(Block block, String name, Boolean newerVersion){
+    public PlatformBlock(Block block, String name, Boolean newerVersion, Boolean front, Boolean back){
         World world = block.getWorld();
         this.name = name;
         xLocation = block.getX()+0.5;
@@ -40,6 +42,8 @@ public class PlatformBlock {
         zLocation = block.getZ()+0.5;
         newVersion = newerVersion;
         blockType = block.getType();
+        this.front = front;
+        this.back = back;
         Location location = new Location(world, xLocation, yLocation, zLocation);
         if(newerVersion){
             initArmorstand(location);
@@ -193,10 +197,22 @@ public class PlatformBlock {
             if(!block.newVersion){
                 Block b = w.getBlockAt(armorLocation.getBlockX(), block.barrier.getY(), block.barrier.getZ());
                 if(armorLocation.getBlockX() != block.barrier.getX()){
-                    onBarrierCollision(b);
-                }else{
-                    block.barrier = b;
-                    block.barrier.setType(Material.BARRIER);
+                    if(block.xMove > 0) {
+                        if (block.front) {
+                            removeBarrier(b);
+                        }
+                        if(block.back) {
+                            setBarrier(b);
+                        }
+                    }
+                    if(block.xMove < 0) {
+                        if (block.back) {
+                            removeBarrier(b);
+                        }
+                        if(block.front) {
+                            setBarrier(b);
+                        }
+                    }
                 }
             }
         }
@@ -216,23 +232,48 @@ public class PlatformBlock {
         private void barrierMoveZ(Location armorLocation) {
             if(!block.newVersion){
                 Block b = w.getBlockAt(block.barrier.getX(), block.barrier.getY(), armorLocation.getBlockZ());
-                if(armorLocation.getBlockZ() != block.barrier.getZ()){
-                    onBarrierCollision(b);
-                }else{
-                    block.barrier = b;
-                    block.barrier.setType(Material.BARRIER);
+                if(armorLocation.getBlockZ() != block.barrier.getZ()) {
+                    if(block.zMove > 0) {
+                        if (block.front) {
+                            removeBarrier(b);
+                        }
+                        if(block.back) {
+                            setBarrier(b);
+                        }
+                    }
+                    if(block.zMove < 0) {
+                        if (block.back) {
+                            removeBarrier(b);
+                        }
+                        if(block.front) {
+                            setBarrier(b);
+                        }
+                    }
                 }
             }
         }
 
-        private void onBarrierCollision(Block b) {
-            if(b.getType() == Material.AIR || b.getType() == Material.BARRIER){
+        private void removeBarrier(Block b) {
+            if (b.getType() == Material.BARRIER) {
                 block.barrier.setType(Material.AIR);
                 block.barrier = b;
-                block.barrier.setType(Material.BARRIER);
-            }else{
+            }
+        }
+
+        private void setBarrier(Block b) {
+            if (b.getType() == Material.AIR) {
+                b.setType(Material.BARRIER);
+                block.barrier = b;
+            }
+        }
+
+        private void onBarrierCollision(Block b) {
+            if (b.getType() == Material.AIR) {
+                b.setType(Material.BARRIER);
+            } else if (b.getType() == Material.BARRIER) {
                 block.barrier.setType(Material.AIR);
             }
+            block.barrier = b;
         }
     }
 

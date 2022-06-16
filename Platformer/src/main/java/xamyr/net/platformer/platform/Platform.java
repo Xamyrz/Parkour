@@ -10,6 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,20 +37,75 @@ public class Platform {
         this.waitTime = waitTime;
         this.speed = speed;
         this.name = name;
+
         for (Block block : blocks) {
             PlatformBlock b;
             Chunk blockChunk = Bukkit.getWorld(world).getChunkAt(block);
 
+
+
             if(newVersion){
-                b = new PlatformBlock(block, name, true);
+                b = new PlatformBlock(block, name, true, false, false);
             }else{
-                b = new PlatformBlock(block, name, false);
+                boolean[] check = checkEdgeBlock(blocks, block);
+                b = new PlatformBlock(block, name, false, check[0], check[1]);
             }
             if(!Bukkit.getWorld(world).getChunkAt(block).isForceLoaded()){
                 blockChunk.setForceLoaded(true);
             }
             platformBlocks.add(b);
         }
+    }
+
+    private boolean[] checkEdgeBlock(List<Block> blocks, Block block) {
+        boolean front = false;
+        boolean back = false;
+
+        Boolean x1 = !blocks.contains(w.getBlockAt(block.getX()+1, block.getY(), block.getZ()));
+        Boolean x2 = !blocks.contains(w.getBlockAt(block.getX()-1, block.getY(), block.getZ()));
+
+        Boolean z1 = !blocks.contains(w.getBlockAt(block.getX(), block.getY(), block.getZ()+1));
+        Boolean z2 = !blocks.contains(w.getBlockAt(block.getX(), block.getY(), block.getZ()-1));
+
+        if (Objects.equals(direction, "south") || Objects.equals(direction, "north")) {
+            if (z2 && x2) {
+                front = true;
+            } else if (x1 && z2){
+                front = true;
+            } else if (x1 && z1) {
+                back = true;
+            } else if (x2 && z1) {
+                back = true;
+            } else if (x1 && x2) {
+                back = false;
+                front = false;
+            } else if (z2) {
+                front = true;
+            } else if (z1) {
+                back = true;
+            }
+        }
+
+        if (Objects.equals(direction, "east") || Objects.equals(direction, "west")) {
+            if (x1 && z1) {
+                back = true;
+            } else if (x1 && z2) {
+                back = true;
+            } else if (x2 && z1) {
+                front = true;
+            } else if (x2 && z2) {
+                front = true;
+            } else if (z1 && z2) {
+                back = false;
+                front = false;
+            } else if (x2) {
+                front = true;
+            } else if (x1) {
+                back = true;
+            }
+        }
+
+        return new boolean[] {front, back};
     }
 
     public List<PlatformBlock> getPlatformBlocks(){return this.platformBlocks;}

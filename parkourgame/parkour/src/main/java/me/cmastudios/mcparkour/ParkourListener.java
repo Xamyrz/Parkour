@@ -16,16 +16,19 @@
  */
 package me.cmastudios.mcparkour;
 
+import com.jeff_media.customblockdata.CustomBlockData;
 import me.cmastudios.experience.IPlayerExperience;
 import me.cmastudios.mcparkour.Parkour.PlayerCourseData;
-import me.cmastudios.mcparkour.data.*;
+import me.cmastudios.mcparkour.data.EffectHead;
 import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.Guild.GuildWar;
+import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
 import me.cmastudios.mcparkour.event.configurations.OwnEndingEvent;
 import me.cmastudios.mcparkour.event.configurations.SignConfigurableEvent;
 import me.cmastudios.mcparkour.event.configurations.TimerableEvent;
-import me.cmastudios.mcparkour.events.*;
+import me.cmastudios.mcparkour.events.PlayerCancelParkourEvent;
+import me.cmastudios.mcparkour.events.PlayerCompleteDuelEvent;
 import me.cmastudios.mcparkour.menu.Menu;
 import me.cmastudios.mcparkour.tasks.*;
 import org.apache.commons.lang.Validate;
@@ -42,27 +45,25 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.metadata.MetadataValue;
-
-import java.sql.SQLException;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.lang.Runnable;
-
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
+import org.bukkit.metadata.MetadataValue;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Responds to Bukkit events for the Parkour plugin.
@@ -74,6 +75,7 @@ public class ParkourListener implements Listener {
     private final Parkour plugin;
     public static final int DETECTION_MIN = 1;
     public static final int SIGN_DETECTION_MAX = 6;
+
     private Scoreboard sb;
     private Team team;
 
@@ -84,6 +86,7 @@ public class ParkourListener implements Listener {
         if(sb.getTeam("pk") == null){
             sb.registerNewTeam("pk");
         }
+
         team = sb.getTeam("pk");
         team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
     }
@@ -92,11 +95,11 @@ public class ParkourListener implements Listener {
     //Nocheat is listening at LOWEST, lower value = faster callback
     public void onPlayerMove(final PlayerMoveEvent event) throws SQLException {
         final long now = System.currentTimeMillis();
-        if (event.getFrom().getBlockX() == event.getTo().getBlockX()
-                && event.getFrom().getBlockY() == event.getTo().getBlockY()
-                && event.getFrom().getBlockZ() == event.getTo().getBlockZ()) {
+
+        if (event.getFrom().getBlock() == event.getTo().getBlock()) {
             return;
         }
+
         Player player = event.getPlayer();
         Block below = this.detectBlocks(event.getTo(), Material.OAK_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX)
                 ? this.getBlockInDepthRange(event.getTo(), Material.OAK_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX)
@@ -192,8 +195,9 @@ public class ParkourListener implements Listener {
             }
         }
         if (plugin.playerCourseTracker.containsKey(player)) {
-            int detection = plugin.playerCourseTracker.get(player).course.getDetection();
-            if (detectBlocks(event.getTo(), Material.BEDROCK, DETECTION_MIN, detection)) {
+//            int detection = plugin.playerCourseTracker.get(player).course.getDetection();
+//            if (detectBlocks(event.getTo(), Material.BEDROCK, DETECTION_MIN, detection)) {
+            if (!isJumpBlock(event.getTo())) {
                 PlayerCourseData data = plugin.playerCourseTracker.get(player);
                 player.setFallDistance(0.0F);
                 Checkpoint cp = plugin.playerCheckpoints.get(event.getPlayer());
@@ -210,7 +214,8 @@ public class ParkourListener implements Listener {
             }
         } else if (plugin.completedCourseTracker.containsKey(player)) {
             int detection = plugin.completedCourseTracker.get(player).course.getDetection();
-            if (detectBlocks(event.getTo(), Material.BEDROCK, DETECTION_MIN, detection)) {
+//            if (detectBlocks(event.getTo(), Material.BEDROCK, DETECTION_MIN, detection)) {
+            if (!isJumpBlock(event.getTo())) {
                 player.setFallDistance(0.0F);
                 event.setTo(plugin.completedCourseTracker.remove(player).course.getTeleport());
             }
@@ -232,6 +237,13 @@ public class ParkourListener implements Listener {
                 event.getPlayer().getInventory().addItem(head.getPotion());
             }
         }
+    }
+
+    private boolean isJumpBlock(Location loc) {
+        Block block = loc.getWorld().getBlockAt(loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ());
+        PersistentDataContainer jumpBlock = new CustomBlockData(block, plugin);
+
+        return jumpBlock.has(plugin.jumpBlockKey, PersistentDataType.INTEGER) || block.getType().isAir();
     }
 
     private boolean detectBlocks(Location loc, Material type, int min, int max) {
@@ -354,9 +366,18 @@ public class ParkourListener implements Listener {
     public void onPlayerInteract(final PlayerInteractEvent event) throws SQLException {
         if (event.getAction() == Action.LEFT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_AIR
                 || event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) {
+
+            if(event.getPlayer().hasMetadata("setJumps")){
+                event.setCancelled(true);
+                plugin.jumpBlocks.editJumpBlocks(event);
+//                showJumpBlocks(event.getPlayer().getTargetBlock(null, 70).getLocation());
+                return;
+            }
+
             if (!event.hasItem()) {
                 return;
             }
+
             Player player = event.getPlayer();
             if (Item.SPAWN.isSimilar(event.getItem())) {
                 event.setCancelled(true);

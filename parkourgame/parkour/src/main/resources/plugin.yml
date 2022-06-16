@@ -19,6 +19,11 @@ commands:
     usage: /<command> <course-number> <detection-range> <normal/vip/adventure/guildwar/thematic/hidden/event/custom> <easy/medium/hard> <name>
     aliases: [pkset]
     permission: parkour.set
+  setjumps:
+    description: Set jump blocks toggle
+    usage: /<command> <radius>
+    aliases: [pksetjumps, pkj]
+    permission: parkour.setJumps
   listcourses:
     description: List all valid parkour courses
     usage: /<command> [adventure]

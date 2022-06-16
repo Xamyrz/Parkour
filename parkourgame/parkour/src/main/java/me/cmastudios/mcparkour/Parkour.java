@@ -18,15 +18,18 @@ package me.cmastudios.mcparkour;
 
 import me.cmastudios.experience.ExperienceManager;
 import me.cmastudios.mcparkour.commands.*;
-import me.cmastudios.mcparkour.event.ParkourEvent;
 import me.cmastudios.mcparkour.data.*;
 import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.Guild.GuildWar;
 import me.cmastudios.mcparkour.data.ParkourCourse.CourseDifficulty;
+import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
+import me.cmastudios.mcparkour.event.ParkourEvent;
 import me.cmastudios.mcparkour.menu.Menu;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -36,8 +39,6 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
-
-import me.cmastudios.mcparkour.data.ParkourCourse.CourseMode;
 
 /**
  * Main class for mcparkour Bukkit plugin.
@@ -64,11 +65,14 @@ public class Parkour extends JavaPlugin {
     public List<Duel> activeDuels = new ArrayList<>();
     public List<GuildWar> activeWars = new ArrayList<>();
     public static ExperienceManager experience;
+    public NamespacedKey jumpBlockKey;
+    public JumpBlocks jumpBlocks;
 
     @Override
     public void onEnable() {
         this.getCommand("parkour").setExecutor(new ParkourCommand(this));
         this.getCommand("setcourse").setExecutor(new SetCourseCommand(this));
+        this.getCommand("setjumps").setExecutor(new SetJumpsCommand(this));
         this.getCommand("deletecourse").setExecutor(new DeleteCourseCommand(this));
         this.getCommand("listcourses").setExecutor(new ListCoursesCommand(this));
         this.getCommand("topscores").setExecutor(new TopScoresCommand(this));
@@ -97,10 +101,8 @@ public class Parkour extends JavaPlugin {
         } catch (SQLException e) {
             this.getLogger().log(Level.WARNING, "Failed loading effect heads", e);
         }
-//        Plugin pln = Bukkit.getPluginManager().getPlugin("BarAPI");
-//        if (pln != null) {
-//            isBarApiEnabled = true;
-//        }
+        this.jumpBlockKey = new NamespacedKey(this, "jumpBlock");
+        jumpBlocks = new JumpBlocks(this);
     }
 
     private void setupExperience() {
@@ -112,6 +114,7 @@ public class Parkour extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        jumpBlocks.removeJumpBlockEntities();
         this.getServer().getServicesManager().unregisterAll(this);
         if (this.courseDatabase != null) {
             try {

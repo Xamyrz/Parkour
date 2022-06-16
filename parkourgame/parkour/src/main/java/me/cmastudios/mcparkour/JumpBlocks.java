@@ -29,8 +29,10 @@ public class JumpBlocks {
         this.plugin = plugin;
         if(Bukkit.getScoreboardManager().getMainScoreboard().getTeam("setJumps") == null){
             team = Bukkit.getScoreboardManager().getMainScoreboard().registerNewTeam("setJumps");
-            team.setColor(ChatColor.GOLD);
         }
+        this.team = Bukkit.getScoreboardManager().getMainScoreboard().getTeam("setJumps");
+        team.setColor(ChatColor.GOLD);
+
     }
     public void showJumpBlocks(Location location, int radius) {
         for (int x = location.getBlockX() - radius; x <= location.getBlockX() + radius; x++) {
@@ -40,11 +42,10 @@ public class JumpBlocks {
                     PersistentDataContainer jumpBlock = new CustomBlockData(block, plugin);
                     BoundingBox bbox = new BoundingBox(block.getX()+0.1, block.getY()+0.8, block.getZ()+0.1, block.getX()+0.2, block.getY()+0.8, block.getZ()+0.2);
                     List<Entity> magmas = (List<Entity>) location.getWorld().getNearbyEntities(bbox);
-                    if (magmas.size() > 0){
-                        return;
-                    }
-                    if(jumpBlock.has(plugin.jumpBlockKey, PersistentDataType.INTEGER)) {
-                        spawnJumpBlockEntity(jumpBlock, block.getLocation());
+                    if (magmas.size() == 0){
+                        if(jumpBlock.has(plugin.jumpBlockKey, PersistentDataType.INTEGER)) {
+                            spawnJumpBlockEntity(jumpBlock, block.getLocation());
+                        }
                     }
                 }
             }

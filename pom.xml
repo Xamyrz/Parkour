@@ -3,9 +3,9 @@
 
     <groupId>me.cmastudios</groupId>
     <artifactId>mcparkour</artifactId>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.3-SNAPSHOT</version>
     <name>McParkour (root)</name>
-    <url>https://bitbucket.org/cmastudios/mcparkour</url>
+    <url>https://github.com/Xamyrz/Parkour</url>
     <description>Parkour based games for minecraft</description>
     <packaging>pom</packaging>
 
@@ -51,6 +51,16 @@
             </roles>
             <timezone>+1</timezone>
         </developer>
+        <developer>
+            <id>Xamyr</id>
+            <name>Kamil Michalski</name>
+            <email>kamilko19@gmail.com</email>
+            <url>kmichalskicv.herokuapp.com/</url>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>0</timezone>
+        </developer>
     </developers>
 
     <licenses>
@@ -63,7 +73,7 @@
 
     <issueManagement>
         <system>GitHub issues</system>
-        <url>https://bitbucket.org/cmastudios/mcparkour/issues</url>
+        <url>https://github.com/Xamyrz/Parkour/issues</url>
     </issueManagement>
 
     <build>

@@ -4,13 +4,13 @@
     <parent>
         <artifactId>mcparkour</artifactId>
         <groupId>me.cmastudios</groupId>
-        <version>0.2-SNAPSHOT</version>
+        <version>0.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>parkourgame</artifactId>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.3-SNAPSHOT</version>
     <name>Parkour (root)</name>
-    <url>file:///C:/Users/Kamil/.m2/repository/me/cmastudios/parkour</url>
+    <url>https://github.com/Xamyrz/Parkour</url>
     <description>Parkour based games for minecraft</description>
     <packaging>pom</packaging>
 

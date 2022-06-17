@@ -34,7 +34,7 @@
         <dependency>
             <groupId>me.cmastudios</groupId>
             <artifactId>parkour</artifactId>
-            <version>0.2-SNAPSHOT</version>
+            <version>0.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>tk.maciekmm</groupId>

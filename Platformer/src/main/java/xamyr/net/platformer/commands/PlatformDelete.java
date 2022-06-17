@@ -36,7 +36,7 @@ public class PlatformDelete implements TabExecutor {
                         c.setForceLoaded(false);
                         c.unload();
                     }
-                    plugin.removeOldPlatform(Bukkit.getWorld(p.world), args[0]);
+                    plugin.removeOldPlatform(Objects.requireNonNull(Bukkit.getWorld(p.world)), args[0]);
                     plugin.platforms.remove(args[0]);
                     plugin.deletePlatform(args[0]);
                     sender.sendMessage("Deleted Platform ("+args[0]+") successfully");

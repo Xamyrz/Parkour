@@ -256,15 +256,15 @@ public class PlatformBlock {
         private void removeBarrier(Block b) {
             if (b.getType() == Material.BARRIER) {
                 block.barrier.setType(Material.AIR);
-                block.barrier = b;
             }
+            block.barrier = b;
         }
 
         private void setBarrier(Block b) {
             if (b.getType() == Material.AIR) {
                 b.setType(Material.BARRIER);
-                block.barrier = b;
             }
+            block.barrier = b;
         }
 
         private void onBarrierCollision(Block b) {

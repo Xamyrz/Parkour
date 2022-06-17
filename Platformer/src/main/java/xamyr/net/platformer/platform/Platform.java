@@ -76,9 +76,6 @@ public class Platform {
                 back = true;
             } else if (x2 && z1) {
                 back = true;
-            } else if (x1 && x2) {
-                back = false;
-                front = false;
             } else if (z2) {
                 front = true;
             } else if (z1) {
@@ -95,9 +92,6 @@ public class Platform {
                 front = true;
             } else if (x2 && z2) {
                 front = true;
-            } else if (z1 && z2) {
-                back = false;
-                front = false;
             } else if (x2) {
                 front = true;
             } else if (x1) {

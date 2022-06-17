@@ -25,7 +25,6 @@ public final class Platformer extends JavaPlugin {
         getCommand("platformreload").setExecutor(new PlatformReload(this));
         getCommand("platformdelete").setExecutor(new PlatformDelete(this));
         getCommand("platformedit").setExecutor(new PlatformEdit(this));
-        //getCommand("platformmove").setExecutor(new PlatformMoveCommand());
 
         try {
             this.loadPlatforms();

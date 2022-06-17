@@ -87,19 +87,22 @@ public class JumpBlocks {
         }
 
         if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
-            deleteJumpBlockEntity(jumpBlock, magmas);
-            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(Parkour.getString("course.jump.remove", block.getType())));
+            if(deleteJumpBlockEntity(jumpBlock, magmas)){
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(Parkour.getString("course.jump.remove", block.getType())));
+            }
         }
     }
 
-    private void deleteJumpBlockEntity(PersistentDataContainer jumpBlock, List<Entity> magmas) {
+    private boolean deleteJumpBlockEntity(PersistentDataContainer jumpBlock, List<Entity> magmas) {
         if(jumpBlock.has(plugin.jumpBlockKey, PersistentDataType.INTEGER)){
             jumpBlock.remove(plugin.jumpBlockKey);
+            for (Entity e : magmas) {
+                team.removeEntry(e.getUniqueId().toString());
+                e.remove();
+            }
+            return true;
         }
-        for (Entity e : magmas) {
-            team.removeEntry(e.getUniqueId().toString());
-            e.remove();
-        }
+        return false;
     }
 
     private void spawnJumpBlockEntity(PersistentDataContainer jumpBlock, Location location) {

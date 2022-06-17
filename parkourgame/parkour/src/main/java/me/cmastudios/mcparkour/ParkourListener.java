@@ -197,7 +197,7 @@ public class ParkourListener implements Listener {
         if (plugin.playerCourseTracker.containsKey(player)) {
             int detection = plugin.playerCourseTracker.get(player).course.getDetection();
             if (detection < 0) {
-                if (!isJumpBlock(event.getTo())) {
+                if (!isJumpBlock(event.getTo(), player.getVelocity().getY())) {
                     if (playerFailedCourse(event, player)) return;
                 }
             } else {
@@ -208,7 +208,7 @@ public class ParkourListener implements Listener {
         } else if (plugin.completedCourseTracker.containsKey(player)) {
             int detection = plugin.completedCourseTracker.get(player).course.getDetection();
             if (detection < 0) {
-                if (!isJumpBlock(event.getTo())) {
+                if (!isJumpBlock(event.getTo(), player.getVelocity().getY())) {
                     removePlayerTracker(event, player);
                 }
             } else {
@@ -258,11 +258,37 @@ public class ParkourListener implements Listener {
         event.setTo(plugin.completedCourseTracker.remove(player).course.getTeleport());
     }
 
-    private boolean isJumpBlock(Location loc) {
+    private boolean isJumpBlock(Location loc, Double playerVelocity) {
         Block block = loc.getWorld().getBlockAt(loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ());
-        PersistentDataContainer jumpBlock = new CustomBlockData(block, plugin);
+        PersistentDataContainer checkBlock = new CustomBlockData(block, plugin);
+        Material blockType = block.getType();
+        boolean notJumping = playerVelocity == -0.0784000015258789;
 
-        return jumpBlock.has(plugin.jumpBlockKey, PersistentDataType.INTEGER) || block.getType().isAir();
+        if (checkBlock.has(plugin.jumpBlockKey, PersistentDataType.INTEGER)) {
+            return true;
+        }
+
+        if (!notJumping) {
+            if (blockType == Material.WATER || blockType == Material.LAVA) {
+                return false;
+            }
+            if (blockType.isAir()) {
+                return true;
+            }
+        }
+
+        if (notJumping && (blockType == Material.AIR || blockType == Material.WATER || blockType == Material.LAVA)) {
+            for (int x = loc.getBlockX() - 1; x <= loc.getBlockX() + 1; x++) {
+                for (int z = loc.getBlockZ() - 1; z <= loc.getBlockZ() + 1; z++) {
+                    PersistentDataContainer checkBlock2 = new CustomBlockData(loc.getWorld().getBlockAt(x, loc.getBlockY() - 1, z), plugin);
+                    if (checkBlock2.has(plugin.jumpBlockKey, PersistentDataType.INTEGER)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        return false;
     }
 
     private boolean detectBlocks(Location loc, Material type, int min, int max) {

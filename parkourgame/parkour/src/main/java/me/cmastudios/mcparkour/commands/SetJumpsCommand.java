@@ -22,13 +22,15 @@ public class SetJumpsCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         Player player = (Player) sender;
 
-        if (player.hasMetadata("setJumps")) {
-            player.removeMetadata("setJumps", plugin);
-            plugin.jumpBlocks.removeJumpBlockEntities();
-            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(Parkour.getString("course.jump.off")));
-        } else {
-            player.setMetadata("setJumps", new FixedMetadataValue(plugin, true));
-            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(Parkour.getString("course.jump.on")));
+        if (args.length == 0) {
+            if (player.hasMetadata("setJumps")) {
+                player.removeMetadata("setJumps", plugin);
+                plugin.jumpBlocks.removeJumpBlockEntities();
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(Parkour.getString("course.jump.off")));
+            } else {
+                player.setMetadata("setJumps", new FixedMetadataValue(plugin, true));
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(Parkour.getString("course.jump.on")));
+            }
         }
         if (args.length == 1){
             if (Utils.isNumeric(args[0])) {

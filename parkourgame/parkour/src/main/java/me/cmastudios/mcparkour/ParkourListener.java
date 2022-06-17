@@ -195,29 +195,26 @@ public class ParkourListener implements Listener {
             }
         }
         if (plugin.playerCourseTracker.containsKey(player)) {
-//            int detection = plugin.playerCourseTracker.get(player).course.getDetection();
-//            if (detectBlocks(event.getTo(), Material.BEDROCK, DETECTION_MIN, detection)) {
-            if (!isJumpBlock(event.getTo())) {
-                PlayerCourseData data = plugin.playerCourseTracker.get(player);
-                player.setFallDistance(0.0F);
-                Checkpoint cp = plugin.playerCheckpoints.get(event.getPlayer());
-                if (cp != null && cp.getCourse().getId() == data.course.getId()) {
-                    ignoreTeleport = true;
-                    event.setTo(cp.getLocation());
-                    return;
+            int detection = plugin.playerCourseTracker.get(player).course.getDetection();
+            if (detection < 0) {
+                if (!isJumpBlock(event.getTo())) {
+                    if (playerFailedCourse(event, player)) return;
                 }
-                Bukkit.getPluginManager().callEvent(new PlayerCancelParkourEvent(PlayerCancelParkourEvent.CancelReason.BED_ROCK, data, event.getPlayer()));
-                plugin.playerCourseTracker.remove(player);
-                data.restoreState(event.getPlayer());
-                event.setTo(data.course.getTeleport());
-                player.setVelocity(new Vector());
+            } else {
+                if (detectBlocks(event.getTo(), Material.BEDROCK, DETECTION_MIN, detection)) {
+                    if (playerFailedCourse(event, player)) return;
+                }
             }
         } else if (plugin.completedCourseTracker.containsKey(player)) {
             int detection = plugin.completedCourseTracker.get(player).course.getDetection();
-//            if (detectBlocks(event.getTo(), Material.BEDROCK, DETECTION_MIN, detection)) {
-            if (!isJumpBlock(event.getTo())) {
-                player.setFallDistance(0.0F);
-                event.setTo(plugin.completedCourseTracker.remove(player).course.getTeleport());
+            if (detection < 0) {
+                if (!isJumpBlock(event.getTo())) {
+                    removePlayerTracker(event, player);
+                }
+            } else {
+                if (detectBlocks(event.getTo(), Material.BEDROCK, DETECTION_MIN, detection)) {
+                    removePlayerTracker(event, player);
+                }
             }
         }
         Duel duel = plugin.getDuel(player);
@@ -237,6 +234,28 @@ public class ParkourListener implements Listener {
                 event.getPlayer().getInventory().addItem(head.getPotion());
             }
         }
+    }
+
+    private boolean playerFailedCourse(PlayerMoveEvent event, Player player) {
+        PlayerCourseData data = plugin.playerCourseTracker.get(player);
+        player.setFallDistance(0.0F);
+        Checkpoint cp = plugin.playerCheckpoints.get(event.getPlayer());
+        if (cp != null && cp.getCourse().getId() == data.course.getId()) {
+            ignoreTeleport = true;
+            event.setTo(cp.getLocation());
+            return true;
+        }
+        Bukkit.getPluginManager().callEvent(new PlayerCancelParkourEvent(PlayerCancelParkourEvent.CancelReason.BED_ROCK, data, event.getPlayer()));
+        plugin.playerCourseTracker.remove(player);
+        data.restoreState(event.getPlayer());
+        event.setTo(data.course.getTeleport());
+        player.setVelocity(new Vector());
+        return false;
+    }
+
+    private void removePlayerTracker(PlayerMoveEvent event, Player player) {
+        player.setFallDistance(0.0F);
+        event.setTo(plugin.completedCourseTracker.remove(player).course.getTeleport());
     }
 
     private boolean isJumpBlock(Location loc) {

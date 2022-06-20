@@ -256,8 +256,10 @@ public class PlatformBlock {
         private void removeBarrier(Block b) {
             if (b.getType() == Material.BARRIER) {
                 block.barrier.setType(Material.AIR);
+                block.barrier = b;
+            } else {
+                block.barrier.setType(Material.AIR);
             }
-            block.barrier = b;
         }
 
         private void setBarrier(Block b) {

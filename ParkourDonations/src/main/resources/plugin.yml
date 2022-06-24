@@ -1,0 +1,7 @@
+name: ParkourDonations
+version: '${project.version}'
+main: xamyr.net.parkourdonations.ParkourDonations
+api-version: 1.19
+load: STARTUP
+authors: [ Xamyr ]
+description: ParkourLive donations handler

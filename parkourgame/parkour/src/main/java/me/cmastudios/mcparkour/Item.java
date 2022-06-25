@@ -32,18 +32,6 @@ public enum Item {
     CHAT(ItemType.SETTINGS,Material.PAPER, Parkour.getString("item.chat"), 1, (short) 0, Parkour.getMessageArrayFromPrefix("item.chat.description")),
     SPAWN(ItemType.SPAWN,Material.NETHER_STAR, Parkour.getString("item.spawn"), 1, (short) 0),
     POINT(ItemType.SPAWN,Material.STICK, Parkour.getString("item.point"), 1, (short) 0, Parkour.getMessageArrayFromPrefix("item.point.description")),
-    HELMET(ItemType.VIP,Material.GOLDEN_HELMET, 1, (short) 0, new HashMap<Enchantment, Integer>() {{
-        put(Enchantment.DURABILITY, 3);
-    }}),
-    CHESTPLATE(ItemType.VIP,Material.GOLDEN_CHESTPLATE, 1, (short) 0, new HashMap<Enchantment, Integer>() {{
-        put(Enchantment.DURABILITY, 3);
-    }}),
-    LEGGINGS(ItemType.VIP,Material.GOLDEN_LEGGINGS, 1, (short) 0, new HashMap<Enchantment, Integer>() {{
-        put(Enchantment.DURABILITY, 3);
-    }}),
-    BOOTS(ItemType.VIP,Material.GOLDEN_BOOTS, 1, (short) 0, new HashMap<Enchantment, Integer>() {{
-        put(Enchantment.DURABILITY, 3);
-    }}),
     FIREWORK_SPAWNER(ItemType.VIP,Material.FIREWORK_ROCKET, Parkour.getString("item.firework"), 1, (short) 0, Parkour.getMessageArrayFromPrefix("item.firework.description")),
     SCOREBOARD(ItemType.SETTINGS,Material.BOOK, Parkour.getString("item.scoreboard"), 1, (short) 0, Parkour.getMessageArrayFromPrefix("item.scoreboard.description")),
     SETTINGS(ItemType.SPAWN,Material.REDSTONE, Parkour.getString("item.settings"),1,(short) 0,Parkour.getMessageArrayFromPrefix("item.settings.description")),

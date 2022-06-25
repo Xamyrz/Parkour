@@ -566,21 +566,7 @@ public class ParkourListener implements Listener {
             for (Item item : Item.getItemsByType(Item.ItemType.VIP)) {
                 if (!event.getPlayer().getInventory().contains(item.getItem().getType()) || (event.getPlayer().getInventory().contains(item.getItem().getType()) && event.getPlayer().getInventory().all(item.getItem()).isEmpty())) {
                     switch (item) {
-                        case HELMET:
-                            event.getPlayer().getInventory().setHelmet(item.getItem());
-                            break;
-                        case CHESTPLATE:
-                            event.getPlayer().getInventory().setChestplate(item.getItem());
-                            break;
-                        case LEGGINGS:
-                            event.getPlayer().getInventory().setLeggings(item.getItem());
-                            break;
-                        case BOOTS:
-                            event.getPlayer().getInventory().setBoots(item.getItem());
-                            break;
-                        default:
-                            event.getPlayer().getInventory().addItem(item.getItem());
-                            break;
+                        default -> event.getPlayer().getInventory().addItem(item.getItem());
                     }
                 }
             }

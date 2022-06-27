@@ -4,7 +4,7 @@
     <parent>
         <artifactId>parkourgame</artifactId>
         <groupId>me.cmastudios</groupId>
-        <version>0.2-SNAPSHOT</version>
+        <version>0.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -34,7 +34,7 @@
         <dependency>
             <groupId>me.cmastudios</groupId>
             <artifactId>parkour</artifactId>
-            <version>0.2-SNAPSHOT</version>
+            <version>0.3-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

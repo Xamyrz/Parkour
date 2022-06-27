@@ -9,11 +9,13 @@ import xamyr.net.parkourdonations.Donations.MapDonation;
 import xamyr.net.parkourdonations.commands.ParkourDonation;
 
 import java.sql.*;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.Date;
 import java.util.logging.Level;
 
 public final class ParkourDonations extends JavaPlugin {
+    private static final ResourceBundle messages = ResourceBundle.getBundle("messages");
     private Connection donationsDatabase;
     public Map<Integer, MapDonation> mapDonations = new HashMap<>();
 
@@ -71,6 +73,10 @@ public final class ParkourDonations extends JavaPlugin {
         return donationsDatabase;
     }
 
+    public String getString(String key, Object... args) {
+        return MessageFormat.format(messages.getString(key), args).replace("\u00A0", " ");
+    }
+
     public static class checkMapExpiry implements Runnable {
         ParkourDonations plugin;
 
@@ -100,7 +106,8 @@ public final class ParkourDonations extends JavaPlugin {
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
-                    plugin.getServer().broadcastMessage("Parkour donation for " + i + " expired");
+                    String pkname = plugin.parkour.courses.get(i).getName();
+                    plugin.getServer().broadcastMessage(plugin.getString("map.expired", pkname, i));
                 }
             }
         }

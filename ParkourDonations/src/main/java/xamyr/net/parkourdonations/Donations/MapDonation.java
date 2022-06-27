@@ -22,8 +22,9 @@ public class MapDonation {
         this.playerName = playerName;
         Date date = new Date();
         this.startTime = new Timestamp(date.getTime());
-        this.endTime = startTime;
+        this.endTime = new Timestamp(startTime.getTime());
         this.endTime.setTime(endTime.getTime() + ((this.minutes * 60) * 1000));
+        Bukkit.getLogger().info(startTime.toString() + " " + endTime.toString());
     }
 
     public void donationUpdate() {

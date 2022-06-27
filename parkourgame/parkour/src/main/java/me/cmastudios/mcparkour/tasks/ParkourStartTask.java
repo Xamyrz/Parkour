@@ -92,10 +92,18 @@ public class ParkourStartTask implements Runnable {
                                 break;
 
                         }
-                    } else {
+                    } else if (course.getMode() == ParkourCourse.CourseMode.LOCKED) {
+                        if(!player.hasPermission("parkour.locked")) {
+                            player.sendMessage(Parkour.getString("mapdonations.notdonated"));
+                            player.teleport(plugin.getSpawn());
+                            player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+                            return;
+                        }
+                    }else {
                         if (result != Parkour.PlayResult.ALLOWED) {
                             player.sendMessage(Parkour.getString(result.key));
                             player.teleport(plugin.getSpawn());
+                            player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
                             return;
                         }
                         Parkour.PlayerCourseData data = new Parkour.PlayerCourseData(course, player, startTime);

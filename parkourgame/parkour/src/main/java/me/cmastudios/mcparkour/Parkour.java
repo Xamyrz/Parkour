@@ -176,7 +176,7 @@ public class Parkour extends JavaPlugin {
                     this.getConfig().getString("mysql.host"), this.getConfig().getInt("mysql.port"), this.getConfig().getString("mysql.database")),
                     this.getConfig().getString("mysql.username"), this.getConfig().getString("mysql.password"));
             try (Statement initStatement = this.courseDatabase.createStatement()) {
-                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT, `mode` ENUM('normal', 'guildwar', 'adventure', 'vip', 'hidden', 'event', 'custom', 'thematic') NOT NULL DEFAULT 'normal', difficulty ENUM('easy', 'medium', 'hard', 'veryhard') NOT NULL DEFAULT 'easy', name VARCHAR(25) NOT NULL DEFAULT '',PRIMARY KEY (id))");
+                initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS courses (id INTEGER, x REAL, y REAL, z REAL, pitch REAL, yaw REAL, world TEXT, detection INT, `mode` ENUM('normal', 'guildwar', 'adventure', 'vip', 'hidden', 'event', 'custom', 'thematic','donation','locked') NOT NULL DEFAULT 'normal', difficulty ENUM('easy', 'medium', 'hard', 'veryhard') NOT NULL DEFAULT 'easy', name VARCHAR(25) NOT NULL DEFAULT '',PRIMARY KEY (id))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS events (id INTEGER, type enum('TIME_RUSH', 'POSITION_RUSH', 'PLAYS_RUSH', 'DISTANCE_RUSH') NOT NULL DEFAULT 'TIME_RUSH',PRIMARY KEY (id))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS highscores (uuid varchar(255), course INTEGER, time BIGINT, plays INT, UNIQUE KEY (uuid,course))");
                 initStatement.executeUpdate("CREATE TABLE IF NOT EXISTS custom (id int(11) NOT NULL AUTO_INCREMENT, effects mediumtext NOT NULL, PRIMARY KEY (id))");
@@ -302,6 +302,11 @@ public class Parkour extends JavaPlugin {
             return PlayResult.NOT_IN_GUILD_WAR;
         } else if ((course.getMode() == CourseMode.VIP || course.getMode() == CourseMode.ADVENTURE) && !player.hasPermission("parkour.vip")) {
             return PlayResult.VIP_NOT_BOUGHT;
+        } else if (course.getMode() == CourseMode.LOCKED) {
+            if (player.hasPermission("parkour.locked")) {
+                return PlayResult.ALLOWED;
+            }
+            return PlayResult.MAP_NOT_DONATED;
         } else if (Parkour.experience.getLevel(exp) < getLevelRequiredToPlay(course.getDifficulty()) && !player.hasPermission("parkour.bypasslevel")) {
             return PlayResult.INSUFFICIENT_XP;
         } else if (course.getMode() == CourseMode.ADVENTURE) {
@@ -318,7 +323,7 @@ public class Parkour extends JavaPlugin {
     }
 
     public enum PlayResult {
-        ALLOWED(null), NO_PERMS("course.noperms"), NOT_IN_GUILD_WAR("guild.war.notin"), ADVENTURE_NOTPLAYED("adv.notplayed"), VIP_NOT_BOUGHT("vip.notbought"), INSUFFICIENT_XP("xp.insufficient"), NOT_FOUND("error.course404");
+        ALLOWED(null), NO_PERMS("course.noperms"), NOT_IN_GUILD_WAR("guild.war.notin"), ADVENTURE_NOTPLAYED("adv.notplayed"), VIP_NOT_BOUGHT("vip.notbought"), INSUFFICIENT_XP("xp.insufficient"), NOT_FOUND("error.course404"), MAP_NOT_DONATED("mapdonations.notdonated");
         public final String key;
 
         private PlayResult(String messageKey) {

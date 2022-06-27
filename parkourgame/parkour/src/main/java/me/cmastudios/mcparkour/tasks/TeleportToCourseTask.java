@@ -62,6 +62,7 @@ public class TeleportToCourseTask implements Runnable {
             Parkour.PlayResult result = plugin.canPlay(player, pcd.getExperience(), tpCourse);
             if (result != Parkour.PlayResult.ALLOWED) {
                 player.sendMessage(Parkour.getString(result.key));
+                player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
             } else {
                 Bukkit.getScheduler().runTask(plugin, new Runnable() {
                     @Override

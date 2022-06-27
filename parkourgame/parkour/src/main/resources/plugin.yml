@@ -16,7 +16,7 @@ commands:
     permission: parkour.play
   setcourse:
     description: Set the teleport for a parkour course
-    usage: /<command> <course-number> <detection-range> <normal/vip/adventure/guildwar/thematic/hidden/event/custom> <easy/medium/hard> <name>
+    usage: /<command> <course-number> <detection-range> <normal/vip/adventure/guildwar/thematic/hidden/event/custom/donation/locked> <easy/medium/hard> <name>
     aliases: [pkset]
     permission: parkour.set
   setjumps:
@@ -139,6 +139,7 @@ permissions:
         parkour.ignoreteleport: true
         parkour.fly.bypass: true
         parkour.vanish: true
+        parkour.locked: true
   parkour.player:
     description: Basic player permissions
     default: true
@@ -150,6 +151,7 @@ permissions:
         parkour.event: true
         parkour.cp: true
         parkour.see: true
+        parkour.donation: true
   parkour.vanish:
     default: false
     description: Vanish command
@@ -186,6 +188,10 @@ permissions:
     description: Does not stop parkour when teleporting
   parkour.vip:
     description: Permission to play on VIP maps and get VIP stuff
+  parkour.donation:
+    description: Permission to play on maps donated by other players
+  parkour.locked:
+    description: Permission to play on locked maps
   parkour.bypasslevel:
     description: Permission to bypass level restrictions
   parkour.vanish.seevanished:

@@ -403,7 +403,7 @@ public class ParkourListener implements Listener {
             if(event.getSlot()==-1) {
                 return;
             }
-            plugin.playersMenus.get(player).getChooseMenuData().handleClick(event.getInventory(),event.getCurrentItem(),plugin,player);
+            plugin.playersMenus.get(player).getChooseMenuData().handleClick(event.getInventory(),event.getCurrentItem(), event.getSlot(),plugin,player);
         }
     }
 
@@ -415,7 +415,6 @@ public class ParkourListener implements Listener {
             if(event.getPlayer().hasMetadata("setJumps")){
                 event.setCancelled(true);
                 plugin.jumpBlocks.editJumpBlocks(event);
-//                showJumpBlocks(event.getPlayer().getTargetBlock(null, 70).getLocation());
                 return;
             }
 
@@ -562,15 +561,16 @@ public class ParkourListener implements Listener {
             }
         }
 
-        if (event.getPlayer().hasPermission("parkour.vip")) {
-            for (Item item : Item.getItemsByType(Item.ItemType.VIP)) {
-                if (!event.getPlayer().getInventory().contains(item.getItem().getType()) || (event.getPlayer().getInventory().contains(item.getItem().getType()) && event.getPlayer().getInventory().all(item.getItem()).isEmpty())) {
-                    switch (item) {
-                        default -> event.getPlayer().getInventory().addItem(item.getItem());
-                    }
-                }
-            }
-        }
+        //VIP items not needed for time being
+//        if (event.getPlayer().hasPermission("parkour.vip")) {
+//            for (Item item : Item.getItemsByType(Item.ItemType.VIP)) {
+//                if (!event.getPlayer().getInventory().contains(item.getItem().getType()) || (event.getPlayer().getInventory().contains(item.getItem().getType()) && event.getPlayer().getInventory().all(item.getItem()).isEmpty())) {
+//                    switch (item) {
+//                        default -> event.getPlayer().getInventory().addItem(item.getItem());
+//                    }
+//                }
+//            }
+//        }
 
         if (!event.getPlayer().hasPermission("parkour.tpexempt")) {
             event.getPlayer().teleport(plugin.getSpawn());

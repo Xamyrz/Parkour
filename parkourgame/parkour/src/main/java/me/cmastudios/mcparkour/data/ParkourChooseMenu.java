@@ -35,6 +35,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.lang.Runnable;
+import java.util.Objects;
 
 public class ParkourChooseMenu {
     private int page = 0;
@@ -60,11 +61,11 @@ public class ParkourChooseMenu {
         Bukkit.getScheduler().runTaskAsynchronously(plugin,  new GetAndRender(plugin, player, criterium, page, inv));
     }
 
-    public void handleClick(Inventory inv, ItemStack is, Parkour plugin, Player player) {
+    public void handleClick(Inventory inv, ItemStack is, int slot, Parkour plugin, Player player) {
         if (is == null || is.getType() == Material.AIR) {
             return;
         }
-        boolean functional = inv.first(is) > 44;
+        boolean functional = slot > 44;
         if (functional) {
             Item item = Item.getSimiliarItem(is);
             if (item != null) {
@@ -95,9 +96,9 @@ public class ParkourChooseMenu {
             player.openInventory(inv);
             return;
         }
-        if(inv.first(is) + 1 + (page * 45) != 0)
-            Bukkit.getScheduler().runTaskAsynchronously(plugin, new GetParkourIdAndTeleport(plugin, inv.first(is) + 1 + (page * 45), player));
-        //new GetParkourIdAndTeleport(plugin, inv.first(is) + 1 + (page * 45), player).runTaskAsynchronously(plugin);
+        if(slot + 1 + (page * 45) != 0)
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, new GetParkourIdAndTeleport(plugin, slot + 1 + (page * 45), player));
+            //new GetParkourIdAndTeleport(plugin, inv.first(is) + 1 + (page * 45), player).runTaskAsynchronously(plugin);
     }
 
     public static interface ParkourChooseCriterium {
@@ -120,8 +121,11 @@ public class ParkourChooseMenu {
         @Override
         public void run() {
             StringBuilder builder = new StringBuilder("SELECT id FROM courses WHERE (courses.mode = ?");
-            if (player.hasPermission("parkour.vip") && criterium == ParkourCourse.CourseMode.THEMATIC) {
-                builder.append(" OR courses.mode = 'VIP'");
+//            if (player.hasPermission("parkour.vip") && criterium == ParkourCourse.CourseMode.THEMATIC) {
+//                builder.append(" OR courses.mode = 'VIP'");
+//            }
+            if (player.hasPermission("parkour.donation") && (criterium == ParkourCourse.CourseMode.DONATION || criterium == ParkourCourse.CourseMode.LOCKED)) {
+                builder.append(" OR courses.mode = 'DONATION' OR courses.mode = 'LOCKED'");
             }
             builder.append(")");
             if (criterium.getType().equalsIgnoreCase("difficulty")) {
@@ -139,14 +143,15 @@ public class ParkourChooseMenu {
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (rs.next()) {
                         if (new TeleportToCourseTask(plugin, player, PlayerTeleportEvent.TeleportCause.COMMAND, rs.getInt("id")).performWithResult() != Parkour.PlayResult.ALLOWED) {
-                            player.closeInventory();
-                            Inventory inv = Bukkit.createInventory(player, 54, Parkour.getString("choosemenu.title"));
-                            render(inv, player, plugin);
-                            player.openInventory(inv);
+                            Bukkit.getScheduler().runTask(plugin, player::closeInventory);
+//                            Inventory inv = Bukkit.createInventory(player, 54, Parkour.getString("choosemenu.title"));
+//                            render(inv, player, plugin);
+//                            player.openInventory(inv);
+
                         }
                     }
                 }
-            } catch (SQLException e) {
+            } catch (SQLException e ) {
                 e.printStackTrace();
             }
         }
@@ -171,8 +176,11 @@ public class ParkourChooseMenu {
         public void run() {
             try {
                 StringBuilder query = new StringBuilder("SELECT courses.id,courses.mode,courses.difficulty,courses.name,b.time,b.plays FROM courses LEFT JOIN (SELECT * FROM highscores WHERE `uuid` = ?) b ON b.course = courses.id WHERE (courses.mode = ?");
-                if (player.hasPermission("parkour.vip") && criterium == ParkourCourse.CourseMode.THEMATIC) {
-                    query.append(" OR courses.mode = 'VIP'");
+//                if (player.hasPermission("parkour.vip") && criterium == ParkourCourse.CourseMode.THEMATIC) {
+//                    query.append(" OR courses.mode = 'VIP'");
+//                }
+                if (player.hasPermission("parkour.donation") && (criterium == ParkourCourse.CourseMode.DONATION || criterium == ParkourCourse.CourseMode.LOCKED)) {
+                    query.append(" OR courses.mode = 'DONATION' OR courses.mode = 'LOCKED'");
                 }
                 query.append(")");
                 if (criterium.getType().equalsIgnoreCase("difficulty")) {
@@ -198,10 +206,23 @@ public class ParkourChooseMenu {
                         inventory.clear();
                         int control = 0;
                         while (rs.next()) {
-                            meta.setDisplayName(Parkour.getString("item.icons." + criterium.getName().toLowerCase(), rs.getString("name"), rs.getInt("id")));
-                            meta.setLore(Parkour.getMessageArrayFromPrefix("choosemenu.entry.lore", String.valueOf(rs.getInt("plays")), format.format((rs.getLong("time") == -1 ? 0 : rs.getLong("time")) / 1000.0)));
-                            is.setItemMeta(meta);
-                            inventory.addItem(is.clone());
+                            ItemStack isLocked = null;
+                            if (Objects.equals(rs.getString("mode"), "locked")){
+                                isLocked = Item.valueOf("LOCKED").getItem();
+                                meta.setDisplayName(Parkour.getString("item.icons.locked", rs.getString("name"), rs.getInt("id")));
+                                meta.setLore(Parkour.getMessageArrayFromPrefix("choosemenu.locked.lore", String.valueOf(rs.getInt("plays")), format.format((rs.getLong("time") == -1 ? 0 : rs.getLong("time")) / 1000.0)));
+                            } else {
+                                meta.setDisplayName(Parkour.getString("item.icons." + criterium.getName().toLowerCase(), rs.getString("name"), rs.getInt("id")));
+                                meta.setLore(Parkour.getMessageArrayFromPrefix("choosemenu.entry.lore", String.valueOf(rs.getInt("plays")), format.format((rs.getLong("time") == -1 ? 0 : rs.getLong("time")) / 1000.0)));
+                            }
+                            if(isLocked != null) {
+                                isLocked.setItemMeta(meta);
+                                inventory.addItem(isLocked);
+                            } else {
+                                is.setItemMeta(meta);
+                                inventory.addItem(is.clone());
+                            }
+
                             control++;
                         }
                         if (page > 0) {
@@ -213,7 +234,8 @@ public class ParkourChooseMenu {
                         inventory.setItem(47, Item.MEDIUM.getItem());
                         inventory.setItem(48, Item.HARD.getItem());
                         inventory.setItem(49, Item.VERYHARD.getItem());
-                        inventory.setItem(50, Item.THEMATIC.getItem());
+//                        inventory.setItem(50, Item.THEMATIC.getItem());
+                        inventory.setItem(50, Item.DONATION.getItem());
                         inventory.setItem(51, Item.CUSTOM.getItem());
                         inventory.setItem(52, Item.ADVENTURE.getItem());
                         if (control >= 45) {

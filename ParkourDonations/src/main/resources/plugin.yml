@@ -2,9 +2,9 @@ name: ParkourDonations
 version: '${project.version}'
 main: xamyr.net.parkourdonations.ParkourDonations
 api-version: 1.18
-load: STARTUP
 authors: [ Xamyr ]
 description: ParkourLive donations handler
+depend: [Parkour]
 commands:
   ParkourDonate:
     description: Parkour donation command

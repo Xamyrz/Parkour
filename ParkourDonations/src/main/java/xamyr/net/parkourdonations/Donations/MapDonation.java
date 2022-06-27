@@ -48,9 +48,17 @@ public class MapDonation {
             statement.setInt(1, parkourId);
             statement.setTimestamp(2, startTime);
             statement.setTimestamp(3, endTime);
+            Bukkit.getLogger().info(startTime + " " + endTime);
             statement.executeUpdate();
         } catch (SQLException ex) {
             Logger.getLogger("error inserting donationpk to DB....").log(Level.SEVERE, null, ex);
+        }
+
+        try (PreparedStatement statement = conn.prepareStatement("UPDATE `courses` SET `mode` = 'donation' WHERE `courses`.`id` = ?")) {
+            statement.setInt(1, parkourId);
+            statement.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger("error updating course to donation....").log(Level.SEVERE, null, ex);
         }
     }
 
@@ -67,10 +75,20 @@ public class MapDonation {
         }
     }
 
-    public void expire(Connection conn) throws SQLException {
+    public void expire() throws SQLException {
+        Connection conn = plugin.getDatabase();
         try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM `donationpk` WHERE pkid = ?")) {
             stmt.setInt(1, parkourId);
             stmt.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger("error deleting pk from donationpk....").log(Level.SEVERE, null, ex);
+        }
+
+        try (PreparedStatement statement = conn.prepareStatement("UPDATE `courses` SET `mode` = 'locked' WHERE `courses`.`id` = ?")) {
+            statement.setInt(1, parkourId);
+            statement.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger("error updating course to locked....").log(Level.SEVERE, null, ex);
         }
     }
 

@@ -68,6 +68,7 @@ public class TeleportToCourseTask implements Runnable {
                     @Override
                     public void run() {
                         player.teleport(tpCourse.getTeleport());
+                        player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
                         Utils.removeEffects(player);
                     }
                 });

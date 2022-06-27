@@ -1,22 +1,33 @@
 package xamyr.net.parkourdonations;
 
+import me.cmastudios.mcparkour.Parkour;
+import me.cmastudios.mcparkour.data.ParkourCourse;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import xamyr.net.parkourdonations.Donations.MapDonation;
 import xamyr.net.parkourdonations.commands.ParkourDonation;
 
 import java.sql.*;
+import java.util.*;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 
 public final class ParkourDonations extends JavaPlugin {
     private Connection donationsDatabase;
     public Map<Integer, MapDonation> mapDonations = new HashMap<>();
 
+    public Parkour parkour;
     @Override
     public void onEnable() {
+        Plugin plugin = this.getServer().getPluginManager().getPlugin("Parkour");
+        if(plugin!=null&&plugin.isEnabled()&&plugin instanceof Parkour) {
+            parkour = (Parkour) plugin;
+        } else {
+            Bukkit.getLogger().log(Level.SEVERE,"Cannot hook into parkour plugin, exiting.");
+            this.getServer().getPluginManager().disablePlugin(this);
+        }
+
         this.saveDefaultConfig();
         this.connectDatabase();
         getCommand("ParkourDonate").setExecutor(new ParkourDonation(this));
@@ -71,17 +82,27 @@ public final class ParkourDonations extends JavaPlugin {
         public void run() {
             Date date = new Date();
             Timestamp currentTime = new Timestamp(date.getTime());
-            plugin.mapDonations.forEach((key, value) -> {
-                if(currentTime.after(value.getEndTime())) {
+            List<Integer> toDelete = new ArrayList<>();
+            if(plugin.mapDonations.size() > 0) {
+                plugin.mapDonations.forEach((key, value) -> {
+                    if (currentTime.after(value.getEndTime())) {
+                        toDelete.add(key);
+                    }
+                });
+            }
+
+            for(Integer i: toDelete) {
+                if (plugin.parkour.courses.get(i) != null) {
+                    plugin.parkour.courses.get(i).setMode(ParkourCourse.CourseMode.LOCKED);
                     try {
-                        value.expire(plugin.getDatabase());
+                        plugin.mapDonations.get(i).expire();
+                        plugin.mapDonations.remove(i);
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
-                    plugin.getServer().broadcastMessage("Parkour donation for " + key + " expired");
-                    plugin.mapDonations.remove(key);
+                    plugin.getServer().broadcastMessage("Parkour donation for " + i + " expired");
                 }
-            });
+            }
         }
 
     }

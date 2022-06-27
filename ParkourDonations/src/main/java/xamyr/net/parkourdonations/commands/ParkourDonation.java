@@ -1,5 +1,6 @@
 package xamyr.net.parkourdonations.commands;
 
+import me.cmastudios.mcparkour.data.ParkourCourse;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -21,18 +22,23 @@ public class ParkourDonation implements TabExecutor {
                if (Utils.isNumeric(args[1])) {
                    if (Utils.isNumeric(args[2])) {
                        MapDonation map = plugin.mapDonations.get(Integer.parseInt(args[1]));
-                       if (map != null) {
-                           map.setMinutes(Long.parseLong(args[2]));
-                           map.donationUpdate();
-                           map.insertDonation();
-                           map.insertDonationHistory();
-                           sender.sendMessage("Map donation from " + args[3] + " extends " + args[1] + " parkour by another " + Integer.parseInt(args[2]) + "minutes");
+                       if (plugin.parkour.courses.get(Integer.parseInt(args[1])) != null) {
+                           plugin.parkour.courses.get(Integer.parseInt(args[1])).setMode(ParkourCourse.CourseMode.DONATION);
+                           if (map != null) {
+                               map.setMinutes(Long.parseLong(args[2]));
+                               map.donationUpdate();
+                               map.insertDonation();
+                               map.insertDonationHistory();
+                               sender.sendMessage("Map donation from " + args[3] + " extends " + args[1] + " parkour by another " + Integer.parseInt(args[2]) + "minutes");
+                           } else {
+                               MapDonation newMap = new MapDonation(args[3], Integer.parseInt(args[1]), Integer.parseInt(args[2]), plugin);
+                               newMap.insertDonation();
+                               newMap.insertDonationHistory();
+                               plugin.mapDonations.put(Integer.parseInt(args[1]), newMap);
+                               sender.sendMessage("Map donation from " + args[3] + " for parkour " + args[1] + " for " + Integer.parseInt(args[2]) + "minutes");
+                           }
                        } else {
-                           MapDonation newMap = new MapDonation(args[3], Integer.parseInt(args[1]), Integer.parseInt(args[2]), plugin);
-                           newMap.insertDonation();
-                           newMap.insertDonationHistory();
-                           plugin.mapDonations.put(Integer.parseInt(args[1]),newMap);
-                           sender.sendMessage("Map donation from " + args[3] + " for parkour " + args[1] + " for " + Integer.parseInt(args[2]) + "minutes");
+                           sender.sendMessage("Parkour not found");
                        }
                    } else { return false; }
                } else { return false; }

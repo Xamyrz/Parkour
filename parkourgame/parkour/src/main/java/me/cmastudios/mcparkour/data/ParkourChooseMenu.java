@@ -206,18 +206,22 @@ public class ParkourChooseMenu {
                         inventory.clear();
                         int control = 0;
                         while (rs.next()) {
-                            ItemStack isLocked = null;
+                            ItemStack isDonationPk = null;
                             if (Objects.equals(rs.getString("mode"), "locked")){
-                                isLocked = Item.valueOf("LOCKED").getItem();
-                                meta.setDisplayName(Parkour.getString("item.icons.locked", rs.getString("name"), rs.getInt("id")));
+                                isDonationPk = Item.valueOf("LOCKED").getItem();
+                                meta.setDisplayName(Parkour.getString("item.icons.locked", rs.getString("difficulty"), rs.getString("name"), rs.getInt("id")));
                                 meta.setLore(Parkour.getMessageArrayFromPrefix("choosemenu.locked.lore", String.valueOf(rs.getInt("plays")), format.format((rs.getLong("time") == -1 ? 0 : rs.getLong("time")) / 1000.0)));
+                            } else if(Objects.equals(rs.getString("mode"), "donation")){
+                                isDonationPk = Item.valueOf("DONATION").getItem();
+                                meta.setDisplayName(Parkour.getString("item.icons.donation", rs.getString("difficulty"), rs.getString("name"), rs.getInt("id")));
+                                meta.setLore(Parkour.getMessageArrayFromPrefix("choosemenu.entry.lore", String.valueOf(rs.getInt("plays")), format.format((rs.getLong("time") == -1 ? 0 : rs.getLong("time")) / 1000.0)));
                             } else {
                                 meta.setDisplayName(Parkour.getString("item.icons." + criterium.getName().toLowerCase(), rs.getString("name"), rs.getInt("id")));
                                 meta.setLore(Parkour.getMessageArrayFromPrefix("choosemenu.entry.lore", String.valueOf(rs.getInt("plays")), format.format((rs.getLong("time") == -1 ? 0 : rs.getLong("time")) / 1000.0)));
                             }
-                            if(isLocked != null) {
-                                isLocked.setItemMeta(meta);
-                                inventory.addItem(isLocked);
+                            if(isDonationPk != null) {
+                                isDonationPk.setItemMeta(meta);
+                                inventory.addItem(isDonationPk);
                             } else {
                                 is.setItemMeta(meta);
                                 inventory.addItem(is.clone());

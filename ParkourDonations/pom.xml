@@ -35,6 +35,7 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
+
     </build>
 
     <repositories>

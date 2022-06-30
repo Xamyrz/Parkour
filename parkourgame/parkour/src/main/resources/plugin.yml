@@ -200,3 +200,5 @@ permissions:
     description: Allows you to vanish
   parkour.vanish.alwaysvanished:
     description: Person is always hidden from others
+  parkour.belowzero:
+    description: Person is able to move below Y=0

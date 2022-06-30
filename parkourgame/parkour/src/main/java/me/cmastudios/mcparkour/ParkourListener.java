@@ -101,6 +101,11 @@ public class ParkourListener implements Listener {
         }
 
         Player player = event.getPlayer();
+
+        if (event.getTo().getBlockY() < 0 && !player.hasPermission("parkour.belowzero")) {
+            player.teleport(plugin.getSpawn());
+        }
+
         Block below = this.detectBlocks(event.getTo(), Material.OAK_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX)
                 ? this.getBlockInDepthRange(event.getTo(), Material.OAK_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX)
                 : this.getBlockInDepthRange(event.getTo(), Material.OAK_WALL_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX);

@@ -24,7 +24,6 @@ public class MapDonation {
         this.startTime = new Timestamp(date.getTime());
         this.endTime = new Timestamp(startTime.getTime());
         this.endTime.setTime(endTime.getTime() + ((this.minutes * 60) * 1000));
-        Bukkit.getLogger().info(startTime.toString() + " " + endTime.toString());
     }
 
     public void donationUpdate() {
@@ -49,7 +48,6 @@ public class MapDonation {
             statement.setInt(1, parkourId);
             statement.setTimestamp(2, startTime);
             statement.setTimestamp(3, endTime);
-            Bukkit.getLogger().info(startTime + " " + endTime);
             statement.executeUpdate();
         } catch (SQLException ex) {
             Logger.getLogger("error inserting donationpk to DB....").log(Level.SEVERE, null, ex);

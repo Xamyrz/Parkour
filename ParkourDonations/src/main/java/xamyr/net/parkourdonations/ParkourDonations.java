@@ -33,7 +33,7 @@ public final class ParkourDonations extends JavaPlugin {
         this.saveDefaultConfig();
         this.connectDatabase();
         getCommand("ParkourDonate").setExecutor(new ParkourDonation(this));
-        Bukkit.getScheduler().runTaskTimer(this, new checkMapExpiry(this), 20*60, 2L).getTaskId();
+        Bukkit.getScheduler().runTaskTimer(this, new checkMapExpiry(this), 1L, 20*60).getTaskId();
     }
 
     @Override
@@ -77,11 +77,25 @@ public final class ParkourDonations extends JavaPlugin {
         return MessageFormat.format(messages.getString(key), args).replace("\u00A0", " ");
     }
 
+    public int getMessageArrayLength(String prefix) {
+        Set<String> keys = messages.keySet();
+        TreeSet<String> res = new TreeSet<>();
+        for (String key : keys) {
+            if (key.startsWith(prefix)) {
+                res.add(key);
+            }
+        }
+        return res.size();
+    }
+
     public static class checkMapExpiry implements Runnable {
         ParkourDonations plugin;
+        int autoMessageCounter = 0;
+        int autoMessagesLength;
 
         public checkMapExpiry(ParkourDonations plugin){
             this.plugin = plugin;
+            autoMessagesLength = plugin.getMessageArrayLength("auto.message");
         }
 
         @Override
@@ -110,6 +124,9 @@ public final class ParkourDonations extends JavaPlugin {
                     plugin.getServer().broadcastMessage(plugin.getString("map.expired", pkname, i));
                 }
             }
+            plugin.getServer().broadcastMessage(plugin.getString("auto.message."+autoMessageCounter));
+            autoMessageCounter++;
+            if (autoMessageCounter == autoMessagesLength) autoMessageCounter = 0;
         }
 
     }

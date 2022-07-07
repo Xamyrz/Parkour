@@ -78,7 +78,7 @@ public class JumpBlocks {
             return;
         }
 
-        if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
+        if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
             if(jumpBlock.has(plugin.jumpBlockKey, PersistentDataType.INTEGER)){
                 return;
             }
@@ -86,7 +86,7 @@ public class JumpBlocks {
             player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(Parkour.getString("course.jump.set", block.getType())));
         }
 
-        if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
+        if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
             if(deleteJumpBlockEntity(jumpBlock, magmas)){
                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(Parkour.getString("course.jump.remove", block.getType())));
             }

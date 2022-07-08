@@ -2,16 +2,22 @@ package xamyr.net.parkourdonations;
 
 import me.cmastudios.mcparkour.Parkour;
 import me.cmastudios.mcparkour.data.ParkourCourse;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.checkerframework.checker.units.qual.C;
 import xamyr.net.parkourdonations.Donations.MapDonation;
 import xamyr.net.parkourdonations.commands.ParkourDonation;
+import net.md_5.bungee.api.chat.TextComponent;
 
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 
 public final class ParkourDonations extends JavaPlugin {
@@ -124,7 +130,19 @@ public final class ParkourDonations extends JavaPlugin {
                     plugin.getServer().broadcastMessage(plugin.getString("map.expired", pkname, i));
                 }
             }
-            plugin.getServer().broadcastMessage(plugin.getString("auto.message."+autoMessageCounter));
+            String autoMessageTemp = plugin.getString("auto.message."+autoMessageCounter);
+            ComponentBuilder autoMessage = new ComponentBuilder();
+            TextComponent link = null;
+            for(String word : autoMessageTemp.split(" ")) {
+                if (word.endsWith(".net")) {
+                    autoMessage.append(" "+word).event(new ClickEvent( ClickEvent.Action.OPEN_URL, "http://" + word.substring(4)));
+                    continue;
+                }
+                autoMessage.append(" "+word);
+            }
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                player.spigot().sendMessage(autoMessage.create());
+            }
             autoMessageCounter++;
             if (autoMessageCounter == autoMessagesLength) autoMessageCounter = 0;
         }

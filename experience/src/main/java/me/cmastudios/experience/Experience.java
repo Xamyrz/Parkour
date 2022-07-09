@@ -186,6 +186,9 @@ public class Experience extends JavaPlugin implements Listener {
                     e.printStackTrace();
                 }
             }
+            if (target == null) {
+                return false;
+            }
             try {
                 IPlayerExperience xp = manager.getPlayerExperience(target);
                 int experience = xp.getExperience();

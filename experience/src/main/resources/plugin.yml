@@ -17,7 +17,7 @@ commands:
   lvl:
     description: View player level and experience.
     usage: |
-      /<command> - wyswietla statystyki doswiadczenia
-      /<command> <nick-gracza> - Wyswietla statystyki innego gracza
+      /<command> - Shows your current level and experience
+      /<command> <player-name> - Displays other player's level and experience
     aliases: [level, poziom]
     permission: parkour.play

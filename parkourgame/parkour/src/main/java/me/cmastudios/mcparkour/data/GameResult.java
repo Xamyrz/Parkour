@@ -61,7 +61,7 @@ public class GameResult {
 	}
 
 	public void save(Connection conn) throws SQLException {
-		try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO gameresults (time, type, winner, loser, uuidwin, uuidloss) VALUES (?, ?, ?, ?, ?, ?)")) {
+		try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO gameresults (time, type, uuidwin, uuidloss) VALUES (?, ?, ?, ?)")) {
 			if(Objects.equals(type, "GUILDWAR")) {
 				stmt.setTimestamp(1, time);
 				stmt.setString(2, type);
@@ -72,10 +72,8 @@ public class GameResult {
 			}else if(Objects.equals(type, "DUEL")){
 				stmt.setTimestamp(1, time);
 				stmt.setString(2, type);
-				stmt.setString(3, winner);
-				stmt.setString(4, loser);
-				stmt.setString(5, uuidWin);
-				stmt.setString(6, uuidLoss);
+				stmt.setString(3, uuidWin);
+				stmt.setString(4, uuidLoss);
 			}
 			stmt.executeUpdate();
 		}

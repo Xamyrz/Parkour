@@ -55,6 +55,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
@@ -106,6 +107,9 @@ public class ParkourListener implements Listener {
             player.teleport(plugin.getSpawn());
             plugin.completedCourseTracker.remove(player);
             plugin.playerCheckpoints.remove(player);
+            for (PotionEffect effect : player.getActivePotionEffects())
+                player.removePotionEffect(effect.getType());
+            player.setScoreboard(sb);
         }
 
         Block below = this.detectBlocks(event.getTo(), Material.OAK_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX)

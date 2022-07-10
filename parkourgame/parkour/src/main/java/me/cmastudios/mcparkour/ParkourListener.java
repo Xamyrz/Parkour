@@ -104,6 +104,8 @@ public class ParkourListener implements Listener {
 
         if (event.getTo().getBlockY() < 0 && !player.hasPermission("parkour.belowzero")) {
             player.teleport(plugin.getSpawn());
+            plugin.completedCourseTracker.remove(player);
+            plugin.playerCheckpoints.remove(player);
         }
 
         Block below = this.detectBlocks(event.getTo(), Material.OAK_SIGN, DETECTION_MIN, SIGN_DETECTION_MAX)

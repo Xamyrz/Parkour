@@ -204,15 +204,15 @@ public class Experience extends JavaPlugin implements Listener {
 
 
     // TODO replace with connection pool
-    public Connection getExperienceDatabase() {
-        try {
-            if (!experienceDatabase.isValid(1)) {
+        public Connection getExperienceDatabase() {
+            try {
+                if (!experienceDatabase.isValid(1)) {
+                    this.connectDatabase();
+                }
+            } catch (SQLException ex) {
                 this.connectDatabase();
             }
-        } catch (SQLException ex) {
-            this.connectDatabase();
+            return experienceDatabase;
         }
-        return experienceDatabase;
-    }
 
 }

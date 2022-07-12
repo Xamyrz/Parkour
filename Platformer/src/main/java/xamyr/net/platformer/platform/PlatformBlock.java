@@ -6,13 +6,13 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.*;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 import xamyr.net.platformer.Platformer;
 
-import java.awt.*;
 import java.util.List;
 import java.util.Objects;
 
@@ -31,7 +31,7 @@ public class PlatformBlock {
     private boolean back;
     public int schedulerId = 0;
     public boolean newVersion;
-    public Material blockType;
+    public BlockData blockData;
     private String name;
 
     public PlatformBlock(Block block, String name, Boolean newerVersion, Boolean front, Boolean back){
@@ -41,7 +41,7 @@ public class PlatformBlock {
         yLocation = block.getY()+0.03745;
         zLocation = block.getZ()+0.5;
         newVersion = newerVersion;
-        blockType = block.getType();
+        blockData = block.getBlockData();
         this.front = front;
         this.back = back;
         Location location = new Location(world, xLocation, yLocation, zLocation);
@@ -80,7 +80,7 @@ public class PlatformBlock {
     }
 
     public void initFallingblock(Location location){
-        this.fallingblock = location.getWorld().spawnFallingBlock(location, blockType.createBlockData());
+        this.fallingblock = location.getWorld().spawnFallingBlock(location, blockData);
         fallingblock.setCustomName(name);
         fallingblock.setGravity(false);
         fallingblock.setVelocity(new Vector(0,0,0));

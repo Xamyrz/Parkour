@@ -2,6 +2,8 @@ package xamyr.net.platformer.platform;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.Stairs;
 import org.bukkit.entity.Entity;
 import xamyr.net.platformer.Platformer;
 
@@ -41,8 +43,6 @@ public class Platform {
         for (Block block : blocks) {
             PlatformBlock b;
             Chunk blockChunk = Bukkit.getWorld(world).getChunkAt(block);
-
-
 
             if(newVersion){
                 b = new PlatformBlock(block, name, true, false, false);
@@ -128,9 +128,9 @@ public class Platform {
         try (PreparedStatement statement = conn.prepareStatement("INSERT INTO `platforms` (`name`,`world`,`blocks`,`direction`,`movenoblocks`,`wait`,`speed`, `newversion`) VALUES (?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE `world` = VALUES(`world`), `blocks` = VALUES(`blocks`), `direction` = VALUES(`direction`), `movenoblocks` = VALUES(`movenoblocks`), `wait` = VALUES(`wait`), `speed` = VALUES(`speed`), `newversion` = VALUES(`newversion`)")) {
             StringBuilder blocks = new StringBuilder();
             for(PlatformBlock b: platformBlocks){
-                blocks.append(b.fallingblock.getBlockData().getMaterial().name()).append("/").append(b.getxLocation()-0.5).append("/").append(b.getyLocation()-0.03745).append("/").append(b.getzLocation()-0.5).append(",");
+                blocks.append(b.fallingblock.getBlockData().getAsString()).append("/").append(b.getxLocation()-0.5).append("/").append(b.getyLocation()-0.03745).append("/").append(b.getzLocation()-0.5).append("#");
             }
-            blocks.deleteCharAt(blocks.lastIndexOf(","));
+            blocks.deleteCharAt(blocks.lastIndexOf("#"));
             statement.setString(1, name);
             statement.setString(2, world);
             statement.setString(3, blocks.toString());

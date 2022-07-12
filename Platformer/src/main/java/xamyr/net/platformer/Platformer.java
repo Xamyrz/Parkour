@@ -2,6 +2,7 @@ package xamyr.net.platformer;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
 import org.bukkit.plugin.java.JavaPlugin;
 import xamyr.net.platformer.commands.*;
@@ -78,16 +79,17 @@ public final class Platformer extends JavaPlugin {
                     int wait = result.getInt("wait");
                     double speed = result.getDouble("speed");
                     List<Block> blocks = new ArrayList<>();
-                    for (String s : result.getString("blocks").split(",")) {
+                    for (String s : result.getString("blocks").split("#")) {
 
                         String[] block = s.split("/");
-                        Material material = Material.valueOf(block[0]);
+                        BlockData data = Bukkit.createBlockData(block[0]);
                         int x = (int) Double.parseDouble(block[1]);
                         int y = (int) Double.parseDouble(block[2]);
                         int z = (int) Double.parseDouble(block[3]);
                         Location location = world.getBlockAt(x, y, z).getLocation();
-                        world.setType(location, material);
+//                        world.setType(location, material);
                         Block b = world.getBlockAt(location);
+                        b.setBlockData(data);
                         blocks.add(b);
                     }
 
@@ -112,16 +114,17 @@ public final class Platformer extends JavaPlugin {
                 int wait = result.getInt("wait");
                 double speed = result.getDouble("speed");
                 List<Block> blocks = new ArrayList<>();
-                for (String s : result.getString("blocks").split(",")) {
+                for (String s : result.getString("blocks").split("#")) {
 
                     String[] block = s.split("/");
-                    Material material = Material.valueOf(block[0]);
+                    BlockData data = Bukkit.createBlockData(block[0]);
                     int x = (int) Double.parseDouble(block[1]);
                     int y = (int) Double.parseDouble(block[2]);
                     int z = (int) Double.parseDouble(block[3]);
                     Location location = world.getBlockAt(x, y, z).getLocation();
-                    world.setType(location, material);
+//                        world.setType(location, material);
                     Block b = world.getBlockAt(location);
+                    b.setBlockData(data);
                     blocks.add(b);
                 }
                 removeOldPlatform(world, name);

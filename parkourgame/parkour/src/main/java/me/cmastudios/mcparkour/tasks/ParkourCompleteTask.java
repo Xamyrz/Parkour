@@ -92,7 +92,7 @@ public class ParkourCompleteTask implements Runnable {
                         ParkourCourse course = plugin.courses.get(endData.course.getId());
                         course.setHighScores(plugin.getCourseDatabase());
                         course.updateScoreBoard();
-                    } else {
+                    } else if(completionTime < scores.get(scores.size()-1).getTime()) {
                         eventBuilder.setTopTen(true);
                         ParkourCourse course = plugin.courses.get(endData.course.getId());
                         course.setHighScores(plugin.getCourseDatabase());

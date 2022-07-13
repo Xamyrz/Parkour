@@ -66,6 +66,8 @@ public class HighscoresCommand implements CommandExecutor {
 
                         PlayerHighScore.resetHighScores(plugin.getCourseDatabase(), parkId, false, args.length > 3 ? Utils.getPlayerUUID(args[3], plugin.getCourseDatabase()) : null);
                         sender.sendMessage(Parkour.getString("highscores.reset.success", parkId));
+                        pc.setHighScores(plugin.getCourseDatabase());
+                        pc.updateScoreBoard();
                         return true;
                     } catch (SQLException ex) {
                         Logger.getLogger(HighscoresCommand.class.getName()).log(Level.SEVERE, null, ex);

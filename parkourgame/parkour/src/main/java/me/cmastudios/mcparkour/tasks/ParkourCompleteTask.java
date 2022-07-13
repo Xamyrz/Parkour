@@ -20,6 +20,7 @@ package me.cmastudios.mcparkour.tasks;
 import me.cmastudios.experience.IPlayerExperience;
 import me.cmastudios.mcparkour.Checkpoint;
 import me.cmastudios.mcparkour.Parkour;
+import me.cmastudios.mcparkour.data.ParkourCourse;
 import me.cmastudios.mcparkour.data.PlayerHighScore;
 import me.cmastudios.mcparkour.events.PlayerCompleteParkourEventBuilder;
 import net.md_5.bungee.api.ChatMessageType;
@@ -80,17 +81,31 @@ public class ParkourCompleteTask implements Runnable {
             highScore.save(plugin.getCourseDatabase());
             final DecimalFormat df = new DecimalFormat("#.###");
             final double completionTimeSeconds = ((double) completionTime) / 1000;
-            final List<PlayerHighScore> scores = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), endData.course.getId(), 10);
+            List<PlayerHighScore> scores = plugin.courses.get(endData.course.getId()).getHighScores();
 
             if (player.hasPermission("parkour.highscore")) {
-                PlayerHighScore bestScore = scores.get(0);
-                for (PlayerHighScore hs : scores) {
-                    if (Objects.equals(Bukkit.getOfflinePlayer(hs.getPlayerUUID()).getName(), player.getDisplayName())) {
+                PlayerHighScore bestScore;
+                if(scores.size() != 0) {
+                    bestScore = scores.get(0);
+                    if (scores.size() == 10 && completionTime < scores.get(scores.size()-1).getTime()) {
                         eventBuilder.setTopTen(true);
-                        break;
+                        ParkourCourse course = plugin.courses.get(endData.course.getId());
+                        course.setHighScores(plugin.getCourseDatabase());
+                        course.updateScoreBoard();
+                    } else {
+                        eventBuilder.setTopTen(true);
+                        ParkourCourse course = plugin.courses.get(endData.course.getId());
+                        course.setHighScores(plugin.getCourseDatabase());
+                        course.updateScoreBoard();
                     }
+                } else {
+                    eventBuilder.setTopTen(true);
+                    ParkourCourse course = plugin.courses.get(endData.course.getId());
+                    course.setHighScores(plugin.getCourseDatabase());
+                    course.updateScoreBoard();
+                    bestScore = course.getHighScores().get(0);
                 }
-                if (highScore.equals(bestScore) && highScore.getTime() == completionTime) {
+                if (bestScore.getTime() > completionTime) {
                     eventBuilder.setBest(true);
                     highscores.put("best", true);
                     Bukkit.getScheduler().runTask(plugin, new Runnable() {
@@ -128,7 +143,7 @@ public class ParkourCompleteTask implements Runnable {
                 public void run() {
                     Bukkit.getPluginManager().callEvent(eventBuilder.getEvent());
                     if (!player.hasMetadata("disableScoreboard")) {
-                        player.setScoreboard(endData.course.getScoreboard(scores));
+                        player.setScoreboard(endData.course.getScoreboard());
                     }
                 }
             });

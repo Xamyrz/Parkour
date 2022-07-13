@@ -41,25 +41,21 @@ public class DisplayHighscoresTask implements Runnable {
 
     @Override
     public void run() {
-        try {
-            final List<PlayerHighScore> startScores = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), course.getId(), 10);
-            Bukkit.getScheduler().runTask(plugin, new Runnable() {
+        Bukkit.getScheduler().runTask(plugin, new Runnable() {
 
-                @Override
-                public void run() {
-                    if (!player.hasMetadata("disableScoreboard")) {
-                        if (player.getScoreboard().getTeam("parkour") != null) {
-                            player.getScoreboard().getTeam("parkour").removeEntry(player.getName());
-                        }
-                        player.setScoreboard(course.getScoreboard(startScores));
-                        player.getScoreboard().getTeam("parkour").addEntry(player.getName());
-                    } else {
+            @Override
+            public void run() {
+                if (!player.hasMetadata("disableScoreboard")) {
+                    if (player.getScoreboard().getTeam("parkour") != null) {
                         player.getScoreboard().getTeam("parkour").removeEntry(player.getName());
-                        player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
                     }
+                    player.setScoreboard(course.getScoreboard());
+                    player.getScoreboard().getTeam("parkour").addEntry(player.getName());
+                } else {
+                    player.getScoreboard().getTeam("parkour").removeEntry(player.getName());
+                    player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
                 }
-            });
-        } catch (SQLException e) {
-        }
+            }
+        });
     }
 }

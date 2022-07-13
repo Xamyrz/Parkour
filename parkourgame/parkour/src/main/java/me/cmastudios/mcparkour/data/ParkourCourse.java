@@ -20,7 +20,6 @@ import me.cmastudios.mcparkour.Parkour;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
@@ -31,9 +30,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.List;
-import java.util.Objects;
 
-import org.bukkit.OfflinePlayer;
 import org.bukkit.scoreboard.Team;
 
 public class ParkourCourse {
@@ -45,6 +42,7 @@ public class ParkourCourse {
     private String name;
     private CourseDifficulty diff;
     private Scoreboard sb;
+    private List<PlayerHighScore> highScores;
 
     public static ParkourCourse loadCourse(Connection conn, int id) throws SQLException {
         ParkourCourse ret = null;
@@ -158,7 +156,15 @@ public class ParkourCourse {
 
     public void setName(String name) { this.name = name;}
 
-    public Scoreboard getScoreboard(List<PlayerHighScore> highScores) {
+    public void setHighScores(Connection connection) throws SQLException {this.highScores = loadHighscores(connection);}
+
+    public List<PlayerHighScore> getHighScores() {return highScores;}
+
+    public List<PlayerHighScore> loadHighscores(Connection connection) throws SQLException {
+        return PlayerHighScore.loadHighScores(connection, getId(), 10);
+    }
+
+    public void updateScoreBoard() {
         Objective obj = sb.getObjective("scores");
         obj.unregister();
         obj = sb.registerNewObjective("scores", "dummy", Parkour.getString("scoreboard.title",name.substring(0,Math.min(name.length(),32-(String.valueOf(id).length()+6))),id));
@@ -185,6 +191,9 @@ public class ParkourCourse {
             team.setOption(Team.Option.COLLISION_RULE, Team.OptionStatus.NEVER);
         }
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
+    }
+
+    public Scoreboard getScoreboard() {
         return sb;
     }
 

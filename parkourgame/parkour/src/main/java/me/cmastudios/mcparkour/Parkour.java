@@ -209,14 +209,17 @@ public class Parkour extends JavaPlugin {
             try (ResultSet result = stmt.executeQuery()) {
                 while(result.next()) {
                     courses.put(result.getInt("id"), new ParkourCourse(result.getInt("id"),
-                            result.getString("name"),new Location(
-                            Bukkit.getWorld(result.getString("world")),
-                            result.getDouble("x"), result.getDouble("y"),
-                            result.getDouble("z"), result.getFloat("yaw"),
-                            result.getFloat("pitch")),
-                            result.getInt("detection"),
-                            CourseMode.valueOf(result.getString("mode").toUpperCase()),
-                            CourseDifficulty.valueOf(result.getString("difficulty").toUpperCase())));
+                                        result.getString("name"),new Location(
+                                        Bukkit.getWorld(result.getString("world")),
+                                        result.getDouble("x"), result.getDouble("y"),
+                                        result.getDouble("z"), result.getFloat("yaw"),
+                                        result.getFloat("pitch")),
+                                        result.getInt("detection"),
+                                        CourseMode.valueOf(result.getString("mode").toUpperCase()),
+                                        CourseDifficulty.valueOf(result.getString("difficulty").toUpperCase())));
+                    ParkourCourse c = courses.get(result.getInt("id"));
+                    c.setHighScores(conn);
+                    c.updateScoreBoard();
                 }
             } catch (SQLException throwables) {
                 throwables.printStackTrace();

@@ -217,14 +217,23 @@ public class Parkour extends JavaPlugin {
                                         result.getInt("detection"),
                                         CourseMode.valueOf(result.getString("mode").toUpperCase()),
                                         CourseDifficulty.valueOf(result.getString("difficulty").toUpperCase())));
-                    ParkourCourse c = courses.get(result.getInt("id"));
-                    c.setHighScores(conn);
-                    c.updateScoreBoard();
                 }
+                setUpdateHighscores(conn);
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
             }
         }
+    }
+
+    public void setUpdateHighscores(Connection conn) throws SQLException {
+        courses.forEach((key, value) -> {
+            try {
+                value.setHighScores(conn);
+                value.updateScoreBoard();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public void refreshVision(Player player) {

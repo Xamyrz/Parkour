@@ -66,16 +66,18 @@ public class ParkourCompleteTask implements Runnable {
             highscores.put("best", false);
 
             final PlayerCompleteParkourEventBuilder eventBuilder = new PlayerCompleteParkourEventBuilder(endData, playerXp, highScore, completionTime);
-            if (player.hasPermission("parkour.highscore")&&(!player.isFlying()||(player.isFlying()&&player.hasPermission("parkour.fly.bypass")))) {
-                if (highScore.getTime() > completionTime && highScore.getPlays() > 0) {
-                    eventBuilder.setPersonalBest(true);
-                    highscores.put("personal", true);
+            if(!endData.lagged) {
+                if (player.hasPermission("parkour.highscore") && (!player.isFlying() || (player.isFlying() && player.hasPermission("parkour.fly.bypass")))) {
+                    if (highScore.getTime() > completionTime && highScore.getPlays() > 0) {
+                        eventBuilder.setPersonalBest(true);
+                        highscores.put("personal", true);
+                    }
+                    if (highScore.getTime() > completionTime || highScore.getTime() == -1) {
+                        highScore.setTime(completionTime);
+                    }
+                } else if (highScore.getTime() == Long.MAX_VALUE) {
+                    highScore.setTime(-1);
                 }
-                if (highScore.getTime() > completionTime || highScore.getTime() == -1) {
-                    highScore.setTime(completionTime);
-                }
-            } else if (highScore.getTime()==Long.MAX_VALUE) {
-                highScore.setTime(-1);
             }
             highScore.setPlays(highScore.getPlays() + 1);
             highScore.save(plugin.getCourseDatabase());
@@ -83,7 +85,7 @@ public class ParkourCompleteTask implements Runnable {
             final double completionTimeSeconds = ((double) completionTime) / 1000;
             List<PlayerHighScore> scores = plugin.courses.get(endData.course.getId()).getHighScores();
 
-            if (player.hasPermission("parkour.highscore")) {
+            if (player.hasPermission("parkour.highscore") && !endData.lagged) {
                 PlayerHighScore bestScore;
                 if(scores.size() != 0) {
                     bestScore = scores.get(0);
@@ -92,7 +94,8 @@ public class ParkourCompleteTask implements Runnable {
                         ParkourCourse course = plugin.courses.get(endData.course.getId());
                         course.setHighScores(plugin.getCourseDatabase());
                         course.updateScoreBoard();
-                    } else if(completionTime < scores.get(scores.size()-1).getTime()) {
+                    }
+                    if(scores.size() != 10) {
                         eventBuilder.setTopTen(true);
                         ParkourCourse course = plugin.courses.get(endData.course.getId());
                         course.setHighScores(plugin.getCourseDatabase());

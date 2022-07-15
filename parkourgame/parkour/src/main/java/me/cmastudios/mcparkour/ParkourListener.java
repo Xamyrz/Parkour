@@ -19,6 +19,7 @@ package me.cmastudios.mcparkour;
 import com.jeff_media.customblockdata.CustomBlockData;
 import me.cmastudios.experience.IPlayerExperience;
 import me.cmastudios.mcparkour.Parkour.PlayerCourseData;
+import me.cmastudios.mcparkour.Parkour.PlayerTrackerData;
 import me.cmastudios.mcparkour.data.EffectHead;
 import me.cmastudios.mcparkour.data.Guild.GuildPlayer;
 import me.cmastudios.mcparkour.data.Guild.GuildWar;
@@ -102,6 +103,12 @@ public class ParkourListener implements Listener {
         }
 
         Player player = event.getPlayer();
+
+        if(plugin.playerTracker.get(player) == null) {
+            plugin.playerTracker.put(player, new PlayerTrackerData());
+        } else {
+            plugin.playerTracker.get(player).packets++;
+        }
 
         if (event.getTo().getBlockY() < 0 && !player.hasPermission("parkour.belowzero")) {
             player.teleport(plugin.getSpawn());
@@ -748,16 +755,38 @@ public class ParkourListener implements Listener {
     private class XpCounterTask implements Runnable {
         @Override
         public void run() {
-            for (Player player : plugin.playerCourseTracker.keySet()) {
-                if (plugin.playerCourseTracker.get(player).course.getMode() == CourseMode.GUILDWAR || (plugin.playerCourseTracker.get(player).course.getMode() == CourseMode.EVENT && plugin.getEvent() != null && plugin.getEvent() instanceof TimerableEvent)) {
-                    continue;
+            for (Player player : plugin.playerTracker.keySet()) {
+                PlayerTrackerData playerTracker = plugin.playerTracker.get(player);
+                PlayerCourseData playerCourseTracker = plugin.playerCourseTracker.get(player);
+
+                if (playerTracker.lagged && playerCourseTracker != null) {
+                    if (!playerCourseTracker.lagged) {
+                        player.sendMessage(Parkour.getString("anti.lag.notify"));
+                        playerCourseTracker.lagged = true;
+                    }
                 }
-                int secondsPassed = (int) ((System.currentTimeMillis() - plugin.playerCourseTracker.get(player).startTime) / 1000);
-                float remainder = (int) ((System.currentTimeMillis() - plugin.playerCourseTracker.get(player).startTime) % 1000);
-                float tenthsPassed = remainder / 1000F;
-                player.setLevel(secondsPassed);
-                player.setExp(tenthsPassed);
+
+                playerTracker.lagged = false;
+
+                if (playerTracker.packets > 6) {
+                    playerTracker.lagged = true;
+                }
+
+                if (playerCourseTracker != null) {
+
+                    if (playerCourseTracker.course.getMode() == CourseMode.GUILDWAR || (playerCourseTracker.course.getMode() == CourseMode.EVENT && plugin.getEvent() != null && plugin.getEvent() instanceof TimerableEvent)) {
+                        continue;
+                    }
+
+                    int secondsPassed = (int) ((System.currentTimeMillis() - playerCourseTracker.startTime) / 1000);
+                    float remainder = (int) ((System.currentTimeMillis() - playerCourseTracker.startTime) % 1000);
+                    float tenthsPassed = remainder / 1000F;
+                    player.setLevel(secondsPassed);
+                    player.setExp(tenthsPassed);
+                }
+                playerTracker.packets = 0;
             }
+
         }
     }
 }

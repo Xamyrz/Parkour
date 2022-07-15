@@ -58,6 +58,7 @@ public class Parkour extends JavaPlugin {
     public final List<Player> deafPlayers = new ArrayList<>();
     public ConcurrentHashMap<Player, Checkpoint> playerCheckpoints = new ConcurrentHashMap<>();
     public ConcurrentHashMap<Player, PlayerCourseData> playerCourseTracker = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Player, PlayerTrackerData> playerTracker = new ConcurrentHashMap<>();
     public Map<Player, PlayerCourseData> completedCourseTracker = new HashMap<>();
     public Map<Player, GuildPlayer> guildChat = new HashMap<>();
     public Map<Player, List<Player>> blindPlayerExempts = new HashMap<>();
@@ -380,6 +381,7 @@ public class Parkour extends JavaPlugin {
         public final ParkourCourse course;
         public final long startTime;
         public final int previousLevel;
+        public boolean lagged = false;
 
         public void restoreState(Player player) {
             player.setExp(0.0F);
@@ -403,5 +405,10 @@ public class Parkour extends JavaPlugin {
             player.setLevel(0);
             Utils.removeEffects(player);
         }
+    }
+
+    public static class PlayerTrackerData {
+        public boolean lagged = false;
+        public int packets = 0;
     }
 }

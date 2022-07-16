@@ -304,6 +304,10 @@ public class ParkourListener implements Listener {
                     }
                 }
             }
+            Block headBlock = loc.getWorld().getBlockAt(loc.getBlockX(), loc.getBlockY() + 2, loc.getBlockZ());
+            if (!headBlock.getType().isAir()) {
+                return true;
+            }
             return false;
         }
         return false;

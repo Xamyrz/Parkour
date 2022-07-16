@@ -299,6 +299,11 @@ public class ParkourListener implements Listener {
             Block headBlock = loc.getWorld().getBlockAt(loc.getBlockX(), loc.getBlockY() + 2, loc.getBlockZ());
             if (!headBlock.getType().isAir()) {
                 return true;
+            } else {
+                PersistentDataContainer checkBlock1 = new CustomBlockData(headBlock, plugin);
+                if (checkBlock1.has(plugin.jumpBlockKey, PersistentDataType.INTEGER)) {
+                    return true;
+                }
             }
             for (int x = loc.getBlockX() - 1; x <= loc.getBlockX() + 1; x++) {
                 for (int z = loc.getBlockZ() - 1; z <= loc.getBlockZ() + 1; z++) {

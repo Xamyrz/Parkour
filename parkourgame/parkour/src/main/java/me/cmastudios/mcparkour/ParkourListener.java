@@ -296,6 +296,10 @@ public class ParkourListener implements Listener {
         }
 
         if (notJumping && (blockType == Material.AIR || blockType == Material.WATER || blockType == Material.LAVA)) {
+            Block headBlock = loc.getWorld().getBlockAt(loc.getBlockX(), loc.getBlockY() + 2, loc.getBlockZ());
+            if (!headBlock.getType().isAir()) {
+                return true;
+            }
             for (int x = loc.getBlockX() - 1; x <= loc.getBlockX() + 1; x++) {
                 for (int z = loc.getBlockZ() - 1; z <= loc.getBlockZ() + 1; z++) {
                     PersistentDataContainer checkBlock2 = new CustomBlockData(loc.getWorld().getBlockAt(x, loc.getBlockY() - 1, z), plugin);
@@ -303,10 +307,6 @@ public class ParkourListener implements Listener {
                         return true;
                     }
                 }
-            }
-            Block headBlock = loc.getWorld().getBlockAt(loc.getBlockX(), loc.getBlockY() + 2, loc.getBlockZ());
-            if (!headBlock.getType().isAir()) {
-                return true;
             }
             return false;
         }

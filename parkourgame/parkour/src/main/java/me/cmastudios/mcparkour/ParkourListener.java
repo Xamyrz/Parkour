@@ -37,6 +37,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.Skull;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -135,6 +136,8 @@ public class ParkourListener implements Listener {
             }
             switch (controlLine) {
                 case "[start]":
+                    for (PotionEffect effect : player.getActivePotionEffects())
+                        player.removePotionEffect(effect.getType());
                     plugin.completedCourseTracker.remove(player);
                     plugin.playerCheckpoints.remove(player);
                     Bukkit.getScheduler().runTaskAsynchronously(plugin, new ParkourStartTask(sign, player, plugin, now));
@@ -453,6 +456,9 @@ public class ParkourListener implements Listener {
             if (Item.SPAWN.isSimilar(event.getItem())) {
                 event.setCancelled(true);
                 player.teleport(plugin.getSpawn(), TeleportCause.COMMAND);
+            } else if (Item.BUYCRAFT.isSimilar(event.getItem())) {
+                event.setCancelled(true);
+                player.chat("/buy");
             } else if (Item.SETTINGS.isSimilar(event.getItem())) {
                 event.setCancelled(true);
                 ArrayList<Item> items = Item.getItemsByType(Item.ItemType.SETTINGS);

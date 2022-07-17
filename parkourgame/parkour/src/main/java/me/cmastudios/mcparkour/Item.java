@@ -36,6 +36,7 @@ public enum Item {
     SCOREBOARD(ItemType.SETTINGS,Material.BOOK, Parkour.getString("item.scoreboard"), 1, (short) 0, Parkour.getMessageArrayFromPrefix("item.scoreboard.description")),
     SETTINGS(ItemType.SPAWN,Material.REDSTONE, Parkour.getString("item.settings"),1,(short) 0,Parkour.getMessageArrayFromPrefix("item.settings.description")),
     NEXT_PAGE(ItemType.MISC,Material.ACTIVATOR_RAIL, Parkour.getString("item.icons.nextpage"), 1, (short) 0),
+    BUYCRAFT(ItemType.SPAWN,Material.SUNFLOWER, Parkour.getString("item.buycraft"), 1, (short) 0),
     PREV_PAGE(ItemType.MISC,Material.RAIL, Parkour.getString("item.icons.prevpage"), 1, (short) 0),
     EASY(ItemType.MISC,Material.MINECART, Parkour.getString("item.icons.easy", "", "filter"), 1, (short) 0),
     MEDIUM(ItemType.MISC,Material.CHEST_MINECART, Parkour.getString("item.icons.medium", "", "filter"), 1, (short) 0),

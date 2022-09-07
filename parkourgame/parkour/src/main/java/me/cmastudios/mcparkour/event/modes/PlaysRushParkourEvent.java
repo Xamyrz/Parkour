@@ -63,7 +63,7 @@ public class PlaysRushParkourEvent extends ScoreableParkourEvent implements OwnE
     }
 
     @Override
-    public void handleEnding(Player player, long time, Parkour.PlayerCourseData endData) {
+    public void handleEnding(Player player, double time, Parkour.PlayerCourseData endData) {
         player.teleport(this.getCourse().getCourse().getTeleport());
         this.setStatistic(player, (this.getPlayerBestScore(player) != null ? this.getPlayerBestScore(player).intValue() : 0) + 1);
     }

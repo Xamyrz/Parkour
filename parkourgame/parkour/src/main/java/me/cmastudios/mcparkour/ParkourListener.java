@@ -159,8 +159,9 @@ public class ParkourListener implements Listener {
                         }
 
                         PlayerCourseData endData = plugin.playerCourseTracker.remove(player); // They have ended their course anyhow
+//                        long completionTime = now - endData.startTime;
+                        double completionTime = player.getLevel()+player.getExp();
                         endData.restoreState(player);
-                        long completionTime = now - endData.startTime;
                         plugin.playerCheckpoints.remove(player);
                         plugin.completedCourseTracker.put(player, endData);
                         if (endData.course.getMode() == CourseMode.EVENT && plugin.getEvent() != null && plugin.getEvent() instanceof OwnEndingEvent) {
@@ -774,30 +775,29 @@ public class ParkourListener implements Listener {
                 PlayerTrackerData playerTracker = plugin.playerTracker.get(player);
                 PlayerCourseData playerCourseTracker = plugin.playerCourseTracker.get(player);
 
-                if (playerTracker.lagged && playerCourseTracker != null) {
-                    if (!playerCourseTracker.lagged) {
-                        player.sendMessage(Parkour.getString("anti.lag.notify"));
-                        playerCourseTracker.lagged = true;
-                    }
-                }
-
-                playerTracker.lagged = false;
-
-                if (playerTracker.packets > 6) {
-                    playerTracker.lagged = true;
-                }
-
                 if (playerCourseTracker != null) {
 
                     if (playerCourseTracker.course.getMode() == CourseMode.GUILDWAR || (playerCourseTracker.course.getMode() == CourseMode.EVENT && plugin.getEvent() != null && plugin.getEvent() instanceof TimerableEvent)) {
                         continue;
                     }
 
-                    int secondsPassed = (int) ((System.currentTimeMillis() - playerCourseTracker.startTime) / 1000);
-                    float remainder = (int) ((System.currentTimeMillis() - playerCourseTracker.startTime) % 1000);
-                    float tenthsPassed = remainder / 1000F;
-                    player.setLevel(secondsPassed);
-                    player.setExp(tenthsPassed);
+
+                    int timeSec = player.getLevel();
+                    float timeMilis = player.getExp();
+                    float timeExp = timeMilis + (playerTracker.packets * 0.05F);
+
+                    if (playerTracker.packets == 0) {
+                        timeExp = timeMilis + 0.05F;
+                    }
+
+                    while(timeExp > 1) {
+                        timeExp = timeExp - 1;
+                        timeSec++;
+                    }
+
+                    player.setLevel(timeSec);
+                    player.setExp(timeExp);
+
                 }
                 playerTracker.packets = 0;
             }

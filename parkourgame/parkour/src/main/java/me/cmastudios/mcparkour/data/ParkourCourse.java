@@ -183,8 +183,7 @@ public class ParkourCourse {
             } else if (count == 2) {
                 color = ChatColor.GOLD;
             }
-            DecimalFormat df = new DecimalFormat("#.###");
-            obj.getScore(Parkour.getString("scoreboard.prefix", Bukkit.getOfflinePlayer(highScore.getPlayerUUID()).getName(), color+""+((double) highScore.getTime()) / 1000.0D)).setScore(-(count + 1));
+            obj.getScore(Parkour.getString("scoreboard.prefix", Bukkit.getOfflinePlayer(highScore.getPlayerUUID()).getName(), color+""+(double) highScore.getTime())).setScore(-(count + 1));
         }
         if(sb.getTeam("parkour") == null){
             Team team = sb.registerNewTeam("parkour");

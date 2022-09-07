@@ -25,14 +25,14 @@ public class PlayerCompleteParkourEventBuilder {
     private Parkour.PlayerCourseData endData;
     private PlayerHighScore highScore;
     private IPlayerExperience experience;
-    private long completionTime;
+    private double completionTime;
     private boolean isPersonalBest;
     private boolean isBest;
     private double xp;
     private boolean isTopTen;
 
 
-    public PlayerCompleteParkourEventBuilder(Parkour.PlayerCourseData endData,IPlayerExperience experience, PlayerHighScore highScore,long completionTime) {
+    public PlayerCompleteParkourEventBuilder(Parkour.PlayerCourseData endData,IPlayerExperience experience, PlayerHighScore highScore,double completionTime) {
         this.endData = endData;
         this.experience = experience;
         this.highScore = highScore;

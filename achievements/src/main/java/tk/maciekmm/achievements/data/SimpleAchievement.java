@@ -31,7 +31,7 @@ public class SimpleAchievement {
      * @param criteria - criteria for this achievement
      * @param options  - options for achievement
      */
-    public SimpleAchievement(AchievementCriterium criteria, Long... options) {
+    public SimpleAchievement(AchievementCriterium criteria, Double... options) {
         this.criterium = criteria;
         this.options = new ArrayList(Arrays.asList(options));
     }

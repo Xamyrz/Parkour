@@ -102,7 +102,7 @@ public class DistanceRushParkourEvent extends ScoreableParkourEvent implements O
     }
 
     @Override
-    public void handleEnding(Player player, long time, Parkour.PlayerCourseData endData) {
+    public void handleEnding(Player player, double time, Parkour.PlayerCourseData endData) {
         player.teleport(this.getCourse().getCourse().getTeleport());
         this.showScoreboard(player);
     }

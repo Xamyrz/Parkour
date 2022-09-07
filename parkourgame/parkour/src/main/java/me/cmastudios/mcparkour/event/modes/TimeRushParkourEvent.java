@@ -61,7 +61,7 @@ public class TimeRushParkourEvent extends ScoreableParkourEvent implements OwnEn
 
 
     @Override
-    public void handleEnding(Player player, long time, Parkour.PlayerCourseData endData) {
+    public void handleEnding(Player player, double time, Parkour.PlayerCourseData endData) {
         long oldTime = this.getPlayerBestScore(player) != null ? this.getPlayerBestScore(player).longValue() : 0;
         if (oldTime > time || oldTime == 0) {
             this.setStatistic(player, time);

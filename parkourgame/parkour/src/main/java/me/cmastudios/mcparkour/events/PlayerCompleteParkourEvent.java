@@ -28,13 +28,13 @@ public class PlayerCompleteParkourEvent extends Event {
     private Parkour.PlayerCourseData endData;
     private PlayerHighScore highScore;
     private IPlayerExperience experience;
-    private long completionTime;
+    private double completionTime;
     private boolean isPersonalBest;
     private boolean isBest;
     private double xp;
     private boolean isTopTen;
 
-    public PlayerCompleteParkourEvent(Parkour.PlayerCourseData endData, IPlayerExperience experience, PlayerHighScore highScore, long completionTime, boolean isPersonalBest, boolean isBest, double xp, boolean isTopTen) {
+    public PlayerCompleteParkourEvent(Parkour.PlayerCourseData endData, IPlayerExperience experience, PlayerHighScore highScore, double completionTime, boolean isPersonalBest, boolean isBest, double xp, boolean isTopTen) {
         this.completionTime = completionTime;
         this.endData = endData;
         this.highScore = highScore;
@@ -53,7 +53,7 @@ public class PlayerCompleteParkourEvent extends Event {
         return handlers;
     }
 
-    public long getCompletionTime() {
+    public double getCompletionTime() {
         return completionTime;
     }
 

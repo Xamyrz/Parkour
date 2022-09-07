@@ -35,24 +35,24 @@ public class AchievementsListener implements Listener {
             return;
         }
         Player player = event.getHighScore().getPlayer().getPlayer();
-        AchievementsWrapper.achievements.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("PLAYS_ON_CERTAIN_PARKOUR"), (long) event.getHighScore().getCourse(), (long) event.getHighScore().getPlays()));
-        AchievementsWrapper.achievements.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("PARKOUR_COMPLETE"), (long) event.getHighScore().getCourse()));
-        AchievementsWrapper.achievements.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("PARKOURS_COMPLETED"), (long) event.getHighScore().getCourse()));
-        AchievementsWrapper.achievements.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("PARKOUR_COMPLETED_IN_TIME"), (long) event.getHighScore().getCourse(), event.getHighScore().getTime()));
+        AchievementsWrapper.achievements.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("PLAYS_ON_CERTAIN_PARKOUR"), (double) event.getHighScore().getCourse(), (double) event.getHighScore().getPlays()));
+        AchievementsWrapper.achievements.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("PARKOUR_COMPLETE"), (double) event.getHighScore().getCourse()));
+        AchievementsWrapper.achievements.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("PARKOURS_COMPLETED"), (double) event.getHighScore().getCourse()));
+        AchievementsWrapper.achievements.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("PARKOUR_COMPLETED_IN_TIME"), (double) event.getHighScore().getCourse(), event.getHighScore().getTime()));
 
         if (event.isPersonalBest()) {
             AchievementsWrapper.achievements.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("BEAT_PREVIOUS_SCORE")));
-            AchievementsWrapper.achievements.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("BEAT_PREVIOUS_SCORE_ON_CERTAIN_PARKOUR"), (long) event.getHighScore().getCourse()));
+            AchievementsWrapper.achievements.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("BEAT_PREVIOUS_SCORE_ON_CERTAIN_PARKOUR"), (double) event.getHighScore().getCourse()));
         }
 
         if (event.isBest()) {
             AchievementsWrapper.achievements.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("BEST_HIGHSCORE")));
-            AchievementsWrapper.achievements.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("BEST_HIGHSCORE_ON_CERTAIN_PARKOUR"), (long) event.getHighScore().getCourse()));
+            AchievementsWrapper.achievements.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("BEST_HIGHSCORE_ON_CERTAIN_PARKOUR"), (double) event.getHighScore().getCourse()));
         }
 
         if (event.isTopTen()) {
             AchievementsWrapper.achievements.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("TOP_10")));
-            AchievementsWrapper.achievements.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("TOP_10_ON_CERTAIN_PARKOUR"), (long) event.getHighScore().getCourse()));
+            AchievementsWrapper.achievements.getPlayerAchievements(player).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("TOP_10_ON_CERTAIN_PARKOUR"), (double) event.getHighScore().getCourse()));
         }
     }
 
@@ -61,14 +61,14 @@ public class AchievementsListener implements Listener {
         if (event.getDifference() > 0) {
             event.setXp(event.getXpBefore()+(int)(event.getDifference() * (1 + AchievementsWrapper.achievements.getOfflinePlayerAchievements(event.getPlayerExperience().getPlayer()).getModifier())));
             if (event.getPlayerExperience().getPlayer().isOnline()) {
-                AchievementsWrapper.achievements.getPlayerAchievements(event.getPlayerExperience().getPlayer().getPlayer()).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("LEVEL_ACQUIRE"), (long) AchievementsWrapper.experience.getLevel(event.getXp())));
+                AchievementsWrapper.achievements.getPlayerAchievements(event.getPlayerExperience().getPlayer().getPlayer()).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("LEVEL_ACQUIRE"), (double) AchievementsWrapper.experience.getLevel(event.getXp())));
             }
         }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onFavoritesAddItem(FavoritesAddParkourEvent event) {
-        AchievementsWrapper.achievements.getPlayerAchievements(event.getPlayer()).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("FAVORITES_NUMBER"),(long) event.getFavorites().size()));
+        AchievementsWrapper.achievements.getPlayerAchievements(event.getPlayer()).awardAchievement(new SimpleAchievement(PlayerAchievements.getCriteriumByName("FAVORITES_NUMBER"),(double) event.getFavorites().size()));
     }
 
 }

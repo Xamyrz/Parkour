@@ -43,11 +43,11 @@ public class ParkourCompleteTask implements Runnable {
     private final Player player;
     private final Parkour plugin;
     private final Parkour.PlayerCourseData endData;
-    private final long completionTime;
+    private final double completionTime;
     private final boolean isDuel;
     private final String signExp;
 
-    public ParkourCompleteTask(Player player, Parkour plugin, Parkour.PlayerCourseData data, long time, boolean isDuel, String signExp) {
+    public ParkourCompleteTask(Player player, Parkour plugin, Parkour.PlayerCourseData data, double time, boolean isDuel, String signExp) {
         this.player = player;
         this.completionTime = time;
         this.signExp = signExp;
@@ -72,7 +72,7 @@ public class ParkourCompleteTask implements Runnable {
                         eventBuilder.setPersonalBest(true);
                         highscores.put("personal", true);
                     }
-                    if (highScore.getTime() > completionTime || highScore.getTime() == -1) {
+                    if (highScore.getTime() > completionTime || highScore.getTime() == 0) {
                         highScore.setTime(completionTime);
                     }
                 } else if (highScore.getTime() == Long.MAX_VALUE) {
@@ -81,8 +81,7 @@ public class ParkourCompleteTask implements Runnable {
             }
             highScore.setPlays(highScore.getPlays() + 1);
             highScore.save(plugin.getCourseDatabase());
-            final DecimalFormat df = new DecimalFormat("#.###");
-            final double completionTimeSeconds = ((double) completionTime) / 1000;
+
             List<PlayerHighScore> scores = plugin.courses.get(endData.course.getId()).getHighScores();
 
             if (player.hasPermission("parkour.highscore") && !endData.lagged) {
@@ -114,18 +113,18 @@ public class ParkourCompleteTask implements Runnable {
                     Bukkit.getScheduler().runTask(plugin, new Runnable() {
                         @Override
                         public void run() {
-                            plugin.getServer().broadcastMessage(Parkour.getString("course.end.best", player.getDisplayName() + ChatColor.RESET, endData.course.getName(), endData.course.getId(), df.format(completionTimeSeconds)));
+                            plugin.getServer().broadcastMessage(Parkour.getString("course.end.best", player.getDisplayName() + ChatColor.RESET, endData.course.getName(), endData.course.getId(), completionTime));
                         }
                     });
                 }
                 if(highscores.get("best") || highscores.get("personal")){
                     if(highscores.get("best")){
-                        player.sendTitle(Parkour.getString("course.end.bestsimple"),Parkour.getString("course.end.time",df.format(completionTimeSeconds)), 10, 70, 20);
+                        player.sendTitle(Parkour.getString("course.end.bestsimple"),Parkour.getString("course.end.time",completionTime), 10, 70, 20);
                     }else if(highscores.get("personal")){
-                        player.sendTitle(Parkour.getString("course.end.personalbest"),Parkour.getString("course.end.time",df.format(completionTimeSeconds)), 10, 70, 20);
+                        player.sendTitle(Parkour.getString("course.end.personalbest"),Parkour.getString("course.end.time",completionTime), 10, 70, 20);
                     }
                 }else{
-                    player.sendTitle(Parkour.getString("course.end") ,Parkour.getString("course.end.time",df.format(completionTimeSeconds)) + " " + Parkour.getString("course.end.seconds"), 10, 70, 20);
+                    player.sendTitle(Parkour.getString("course.end") ,Parkour.getString("course.end.time",completionTime) + " " + Parkour.getString("course.end.seconds"), 10, 70, 20);
                 }
             }
             int courseXp = Integer.parseInt(signExp);

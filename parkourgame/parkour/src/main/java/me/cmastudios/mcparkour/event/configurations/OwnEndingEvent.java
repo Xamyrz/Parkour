@@ -21,5 +21,5 @@ import me.cmastudios.mcparkour.Parkour;
 import org.bukkit.entity.Player;
 
 public interface OwnEndingEvent {
-    public void handleEnding(Player player, long time, Parkour.PlayerCourseData endData);
+    public void handleEnding(Player player, double time, Parkour.PlayerCourseData endData);
 }

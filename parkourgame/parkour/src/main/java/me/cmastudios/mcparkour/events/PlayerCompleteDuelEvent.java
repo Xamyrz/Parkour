@@ -26,10 +26,10 @@ public class PlayerCompleteDuelEvent extends Event {
     private static final HandlerList handlers = new HandlerList();
     private Duel duel;
     private Player winner;
-    private long time;
+    private double time;
 
 
-    public PlayerCompleteDuelEvent(Duel duel,Player winner,long time) {
+    public PlayerCompleteDuelEvent(Duel duel,Player winner,double time) {
         this.duel = duel;
         this.winner = winner;
         this.time = time;
@@ -55,7 +55,7 @@ public class PlayerCompleteDuelEvent extends Event {
         return duel.getInitiator()==winner ? winner : duel.getCompetitor();
     }
 
-    public long getTime() {
+    public double getTime() {
         return time;
     }
 

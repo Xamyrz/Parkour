@@ -39,7 +39,7 @@ public class ParkourAchievement extends SimpleAchievement {
      * @param type - AchievementType for this achievement
      * @param options - Options that must be fullfilled to complete this achievement
      */
-    public ParkourAchievement(int id, String name, ArrayList<String> description, AchievementCriterium criteria, AchievementType type, Long... options) {
+    public ParkourAchievement(int id, String name, ArrayList<String> description, AchievementCriterium criteria, AchievementType type, Double... options) {
         super(criteria, options);
         this.id = id;
         this.name = name;

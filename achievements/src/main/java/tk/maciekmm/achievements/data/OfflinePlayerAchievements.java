@@ -146,7 +146,7 @@ public class OfflinePlayerAchievements {
                         }
                     }
                 }
-                achievements.add(new ParkourAchievement(Integer.valueOf(sctn), section.getString("name"), desc, criteria, ParkourAchievement.AchievementType.valueOf(section.getString("type")), opts.toArray(new Long[opts.size()])));
+                achievements.add(new ParkourAchievement(Integer.valueOf(sctn), section.getString("name"), desc, criteria, ParkourAchievement.AchievementType.valueOf(section.getString("type")), opts.toArray(new Double[opts.size()])));
             } catch (Exception e) { //CONFUSED AchievementCriteria.valueOf can throw IllegalArgumentException i believe but netbeans doesn't let me put it here
                 Bukkit.getLogger().log(Level.WARNING, Achievements.getString("achievement.error.loading.syntax", section.getCurrentPath()));
             }

@@ -37,7 +37,6 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.Skull;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -102,13 +101,19 @@ public class ParkourListener implements Listener {
         if (event.getFrom().getBlock() == event.getTo().getBlock()) {
             return;
         }
+        //Bukkit.getLogger().info(event.getPlayer().getVelocity().toString());
+        //Bukkit.getLogger().info(event.getFrom().distance(event.getTo()) + "");
+        //Bukkit.getLogger().info(Math.abs(event.getFrom().getY() - event.getTo().getY()) + " " + Math.abs((Math.abs(event.getFrom().getZ()) - Math.abs(event.getTo().getZ())) + Math.abs(Math.abs(event.getFrom().getX()) - Math.abs(event.getTo().getX()))));
 
         Player player = event.getPlayer();
 
         if(plugin.playerTracker.get(player) == null) {
             plugin.playerTracker.put(player, new PlayerTrackerData());
         } else {
-            plugin.playerTracker.get(player).packets++;
+            PlayerTrackerData p = plugin.playerTracker.get(player);
+            p.packets++;
+            p.speed = Math.abs(event.getFrom().getX() - event.getTo().getX()) + (event.getFrom().getZ() - event.getTo().getZ());
+            //p.speed = event.getFrom().distance(event.getTo());
         }
 
         if (event.getTo().getBlockY() < 0 && !player.hasPermission("parkour.belowzero")) {
@@ -776,6 +781,7 @@ public class ParkourListener implements Listener {
                 PlayerCourseData playerCourseTracker = plugin.playerCourseTracker.get(player);
 
                 if (playerCourseTracker != null) {
+                    playerTracker.ticks++;
 
                     if (playerCourseTracker.course.getMode() == CourseMode.GUILDWAR || (playerCourseTracker.course.getMode() == CourseMode.EVENT && plugin.getEvent() != null && plugin.getEvent() instanceof TimerableEvent)) {
                         continue;
@@ -786,9 +792,11 @@ public class ParkourListener implements Listener {
                     float timeMilis = player.getExp();
                     float timeExp = timeMilis + (playerTracker.packets * 0.05F);
 
-                    if (playerTracker.packets == 0) {
+
+                    if (playerTracker.packets == 0 && playerTracker.speed < 0.1) {
                         timeExp = timeMilis + 0.05F;
                     }
+
 
                     while(timeExp > 1) {
                         timeExp = timeExp - 1;

@@ -101,9 +101,6 @@ public class ParkourListener implements Listener {
         if (event.getFrom().getBlock() == event.getTo().getBlock()) {
             return;
         }
-        //Bukkit.getLogger().info(event.getPlayer().getVelocity().toString());
-        //Bukkit.getLogger().info(event.getFrom().distance(event.getTo()) + "");
-        //Bukkit.getLogger().info(Math.abs(event.getFrom().getY() - event.getTo().getY()) + " " + Math.abs((Math.abs(event.getFrom().getZ()) - Math.abs(event.getTo().getZ())) + Math.abs(Math.abs(event.getFrom().getX()) - Math.abs(event.getTo().getX()))));
 
         Player player = event.getPlayer();
 
@@ -112,8 +109,9 @@ public class ParkourListener implements Listener {
         } else {
             PlayerTrackerData p = plugin.playerTracker.get(player);
             p.packets++;
-            p.speed = Math.abs(event.getFrom().getX() - event.getTo().getX()) + (event.getFrom().getZ() - event.getTo().getZ());
-            //p.speed = event.getFrom().distance(event.getTo());
+            //p.speed = Math.abs(event.getFrom().getX() - event.getTo().getX()) + (event.getFrom().getZ() - event.getTo().getZ());
+
+            p.speed = (Math.max(event.getFrom().getX(), event.getTo().getX()) - Math.min(event.getFrom().getX(), event.getTo().getX())) + (Math.max(event.getFrom().getZ(), event.getTo().getZ()) - Math.min(event.getFrom().getZ(), event.getTo().getZ()));
         }
 
         if (event.getTo().getBlockY() < 0 && !player.hasPermission("parkour.belowzero")) {
@@ -313,15 +311,19 @@ public class ParkourListener implements Listener {
                 if (checkBlock1.has(plugin.jumpBlockKey, PersistentDataType.INTEGER)) {
                     return true;
                 }
-            }
-            for (int x = loc.getBlockX() - 1; x <= loc.getBlockX() + 1; x++) {
-                for (int z = loc.getBlockZ() - 1; z <= loc.getBlockZ() + 1; z++) {
-                    PersistentDataContainer checkBlock2 = new CustomBlockData(loc.getWorld().getBlockAt(x, loc.getBlockY() - 1, z), plugin);
-                    if (checkBlock2.has(plugin.jumpBlockKey, PersistentDataType.INTEGER)) {
-                        return true;
+
+                for (int x = loc.getBlockX() - 1; x <= loc.getBlockX() + 1; x++) {
+                    for (int z = loc.getBlockZ() - 1; z <= loc.getBlockZ() + 1; z++) {
+                        PersistentDataContainer checkBlock2 = new CustomBlockData(loc.getWorld().getBlockAt(x, loc.getBlockY() - 1, z), plugin);
+                        if (checkBlock2.has(plugin.jumpBlockKey, PersistentDataType.INTEGER)) {
+                            return true;
+                        }
                     }
                 }
+
             }
+            if(headBlock.getType().isAir()) return true;
+
             return false;
         }
         return false;
@@ -793,6 +795,7 @@ public class ParkourListener implements Listener {
                     float timeExp = timeMilis + (playerTracker.packets * 0.05F);
 
 
+//                    Bukkit.getLogger().info(playerTracker.packets + " " + playerTracker.speed);
                     if (playerTracker.packets == 0 && playerTracker.speed < 0.1) {
                         timeExp = timeMilis + 0.05F;
                     }

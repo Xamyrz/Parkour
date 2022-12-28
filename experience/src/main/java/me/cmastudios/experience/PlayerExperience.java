@@ -69,7 +69,7 @@ public class PlayerExperience implements IPlayerExperience {
             }
         }else{
             this.experience = experience;
-            save(true);  // To be 100% sure that if we change experience while offline the player will get that if log in on other server
+            save(true);
         }
     }
 

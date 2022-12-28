@@ -408,7 +408,7 @@ public class Parkour extends JavaPlugin {
     }
 
     public static class PlayerTrackerData {
-        public boolean jumped = false;
+        public boolean lastChecked = false;
         public int packets = 0;
         public double speed = 0;
         public int ticks = 0;

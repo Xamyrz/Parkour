@@ -37,7 +37,6 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.Skull;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -63,10 +62,7 @@ import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Responds to Bukkit events for the Parkour plugin.
@@ -108,7 +104,11 @@ public class ParkourListener implements Listener {
         if(plugin.playerTracker.get(player) == null) {
             plugin.playerTracker.put(player, new PlayerTrackerData());
         } else {
-            plugin.playerTracker.get(player).packets++;
+            PlayerTrackerData p = plugin.playerTracker.get(player);
+            p.packets++;
+            //p.speed = Math.abs(event.getFrom().getX() - event.getTo().getX()) + (event.getFrom().getZ() - event.getTo().getZ());
+
+            p.speed = (Math.max(event.getFrom().getX(), event.getTo().getX()) - Math.min(event.getFrom().getX(), event.getTo().getX())) + (Math.max(event.getFrom().getZ(), event.getTo().getZ()) - Math.min(event.getFrom().getZ(), event.getTo().getZ()));
         }
 
         if (event.getTo().getBlockY() < 0 && !player.hasPermission("parkour.belowzero")) {
@@ -157,9 +157,9 @@ public class ParkourListener implements Listener {
                             }
                         } catch (NumberFormatException | IndexOutOfBoundsException e) { // No course constraint
                         }
-
+                        PlayerTrackerData p = plugin.playerTracker.get(player);
+                        PacketTimer(player, p);
                         PlayerCourseData endData = plugin.playerCourseTracker.remove(player); // They have ended their course anyhow
-//                        long completionTime = now - endData.startTime;
                         double completionTime = player.getLevel()+player.getExp();
                         endData.restoreState(player);
                         plugin.playerCheckpoints.remove(player);
@@ -219,7 +219,7 @@ public class ParkourListener implements Listener {
         if (plugin.playerCourseTracker.containsKey(player)) {
             int detection = plugin.playerCourseTracker.get(player).course.getDetection();
             if (detection < 0) {
-                if (!isJumpBlock(event.getTo(), player.getVelocity().getY())) {
+                if (!isJumpBlock(event.getTo(), player.getVelocity().getY(), plugin.playerTracker.get(player))) {
                     if (playerFailedCourse(event, player)) return;
                 }
             } else {
@@ -230,7 +230,7 @@ public class ParkourListener implements Listener {
         } else if (plugin.completedCourseTracker.containsKey(player)) {
             int detection = plugin.completedCourseTracker.get(player).course.getDetection();
             if (detection < 0) {
-                if (!isJumpBlock(event.getTo(), player.getVelocity().getY())) {
+                if (!isJumpBlock(event.getTo(), player.getVelocity().getY(), plugin.playerTracker.get(player))) {
                     removePlayerTracker(event, player);
                 }
             } else {
@@ -280,13 +280,14 @@ public class ParkourListener implements Listener {
         event.setTo(plugin.completedCourseTracker.remove(player).course.getTeleport());
     }
 
-    private boolean isJumpBlock(Location loc, Double playerVelocity) {
+    private boolean isJumpBlock(Location loc, Double playerVelocity, PlayerTrackerData player) {
         Block block = loc.getWorld().getBlockAt(loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ());
         PersistentDataContainer checkBlock = new CustomBlockData(block, plugin);
         Material blockType = block.getType();
         boolean notJumping = playerVelocity == -0.0784000015258789;
 
         if (checkBlock.has(plugin.jumpBlockKey, PersistentDataType.INTEGER)) {
+            player.lastChecked = false;
             return true;
         }
 
@@ -295,31 +296,30 @@ public class ParkourListener implements Listener {
                 return false;
             }
             if (blockType.isAir()) {
+                player.lastChecked = false;
                 return true;
             }
         }
 
-        if (notJumping && (blockType == Material.AIR || blockType == Material.WATER || blockType == Material.LAVA)) {
-            Block headBlock = loc.getWorld().getBlockAt(loc.getBlockX(), loc.getBlockY() + 2, loc.getBlockZ());
-            if (!headBlock.getType().isAir()) {
-                return true;
-            } else {
-                PersistentDataContainer checkBlock1 = new CustomBlockData(headBlock, plugin);
-                if (checkBlock1.has(plugin.jumpBlockKey, PersistentDataType.INTEGER)) {
-                    return true;
-                }
-            }
+        if (notJumping) {
             for (int x = loc.getBlockX() - 1; x <= loc.getBlockX() + 1; x++) {
                 for (int z = loc.getBlockZ() - 1; z <= loc.getBlockZ() + 1; z++) {
                     PersistentDataContainer checkBlock2 = new CustomBlockData(loc.getWorld().getBlockAt(x, loc.getBlockY() - 1, z), plugin);
                     if (checkBlock2.has(plugin.jumpBlockKey, PersistentDataType.INTEGER)) {
+                        player.lastChecked = false;
                         return true;
                     }
                 }
             }
+        }
+
+        if(player.lastChecked) {
+            player.lastChecked = false;
             return false;
         }
-        return false;
+
+        player.lastChecked = true;
+        return true;
     }
 
     private boolean detectBlocks(Location loc, Material type, int min, int max) {
@@ -776,32 +776,38 @@ public class ParkourListener implements Listener {
                 PlayerCourseData playerCourseTracker = plugin.playerCourseTracker.get(player);
 
                 if (playerCourseTracker != null) {
+                    playerTracker.ticks++;
 
                     if (playerCourseTracker.course.getMode() == CourseMode.GUILDWAR || (playerCourseTracker.course.getMode() == CourseMode.EVENT && plugin.getEvent() != null && plugin.getEvent() instanceof TimerableEvent)) {
                         continue;
                     }
 
-
-                    int timeSec = player.getLevel();
-                    float timeMilis = player.getExp();
-                    float timeExp = timeMilis + (playerTracker.packets * 0.05F);
-
-                    if (playerTracker.packets == 0) {
-                        timeExp = timeMilis + 0.05F;
-                    }
-
-                    while(timeExp > 1) {
-                        timeExp = timeExp - 1;
-                        timeSec++;
-                    }
-
-                    player.setLevel(timeSec);
-                    player.setExp(timeExp);
+                    PacketTimer(player, playerTracker);
 
                 }
                 playerTracker.packets = 0;
             }
 
         }
+    }
+
+    private void PacketTimer(Player player, PlayerTrackerData playerTracker) {
+        int timeSec = player.getLevel();
+        float timeMilis = player.getExp();
+        float timeExp = timeMilis + (playerTracker.packets * 0.05F);
+
+        if (playerTracker.packets == 0 && playerTracker.speed < 0.1) {
+            timeExp = timeMilis + 0.05F;
+        }
+
+
+        while(timeExp > 1) {
+            timeExp = timeExp - 1;
+            timeSec++;
+        }
+
+        player.setLevel(timeSec);
+        player.setExp(timeExp);
+        playerTracker.packets = 0;
     }
 }

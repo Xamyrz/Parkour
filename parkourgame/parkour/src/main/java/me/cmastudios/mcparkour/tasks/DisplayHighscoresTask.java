@@ -53,7 +53,9 @@ public class DisplayHighscoresTask implements Runnable {
                     player.setScoreboard(course.getScoreboard());
                     Objects.requireNonNull(player.getScoreboard().getTeam("parkour")).addEntry(player.getName());
                 } else {
-                    Objects.requireNonNull(player.getScoreboard().getTeam("parkour")).removeEntry(player.getName());
+                    if (player.getScoreboard().getTeam("parkour") != null) {
+                        Objects.requireNonNull(player.getScoreboard().getTeam("parkour")).removeEntry(player.getName());
+                    }
                     player.setScoreboard(Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard());
                 }
             }

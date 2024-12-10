@@ -34,6 +34,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
 
@@ -41,7 +42,7 @@ public class Utils {
     public final static Random RANDOM = new Random();
 
     public static void spawnRandomFirework(Location loc) {
-        Firework fw = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
+        Firework fw = (Firework) Objects.requireNonNull(loc.getWorld()).spawnEntity(loc, EntityType.FIREWORK_ROCKET);
         FireworkMeta fwm = fw.getFireworkMeta();
         int rt = RANDOM.nextInt(5) + 1;
         FireworkEffect.Type type = FireworkEffect.Type.BALL;

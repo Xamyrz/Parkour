@@ -27,6 +27,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.sql.SQLException;
 import java.util.List;
 import java.lang.Runnable;
+import java.util.Objects;
 
 public class DisplayHighscoresTask implements Runnable {
     private final Parkour plugin;
@@ -47,13 +48,13 @@ public class DisplayHighscoresTask implements Runnable {
             public void run() {
                 if (!player.hasMetadata("disableScoreboard")) {
                     if (player.getScoreboard().getTeam("parkour") != null) {
-                        player.getScoreboard().getTeam("parkour").removeEntry(player.getName());
+                        Objects.requireNonNull(player.getScoreboard().getTeam("parkour")).removeEntry(player.getName());
                     }
                     player.setScoreboard(course.getScoreboard());
-                    player.getScoreboard().getTeam("parkour").addEntry(player.getName());
+                    Objects.requireNonNull(player.getScoreboard().getTeam("parkour")).addEntry(player.getName());
                 } else {
-                    player.getScoreboard().getTeam("parkour").removeEntry(player.getName());
-                    player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+                    Objects.requireNonNull(player.getScoreboard().getTeam("parkour")).removeEntry(player.getName());
+                    player.setScoreboard(Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard());
                 }
             }
         });

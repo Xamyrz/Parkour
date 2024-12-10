@@ -32,7 +32,7 @@ import me.cmastudios.mcparkour.events.PlayerCancelParkourEvent;
 import me.cmastudios.mcparkour.events.PlayerCompleteDuelEvent;
 import me.cmastudios.mcparkour.menu.Menu;
 import me.cmastudios.mcparkour.tasks.*;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -249,6 +249,7 @@ public class ParkourListener implements Listener {
             if (potentialHead != null && potentialHead.hasMetadata("mcparkour-head")) {
                 List<MetadataValue> metadata = potentialHead.getMetadata("mcparkour-head");
                 Validate.notEmpty(metadata); // assert
+
                 Validate.notNull(metadata.get(0)); // assert
                 Validate.isTrue(metadata.get(0).value() instanceof EffectHead); // assert
                 EffectHead head = (EffectHead) metadata.get(0).value();

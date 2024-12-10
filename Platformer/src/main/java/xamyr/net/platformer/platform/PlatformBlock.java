@@ -38,7 +38,7 @@ public class PlatformBlock {
         World world = block.getWorld();
         this.name = name;
         xLocation = block.getX()+0.5;
-        yLocation = block.getY()+0.03745;
+        yLocation = block.getY()+0.02;
         zLocation = block.getZ()+0.5;
         newVersion = newerVersion;
         blockData = block.getBlockData();
@@ -58,7 +58,7 @@ public class PlatformBlock {
     }
 
     private void initArmorstand(Location location){
-        location.setY(yLocation - 1.5187);
+        location.setY(yLocation - 2);
 //        this.armorstand = (ArmorStand) world.spawnEntity(new Location(world, xLocation, yLocation -1.5187, zLocation), EntityType.ARMOR_STAND);
         this.armorstand = (ArmorStand) location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
         armorstand.setCustomName(name);
@@ -156,13 +156,13 @@ public class PlatformBlock {
             }
             if(Objects.equals(direction, "up")){
                 barrierMoveY(armorLocation);
-                if(block.getyLocation() + moveNoBlocks -1.5 < armorLocation.getY() || block.getyLocation() - 1.51870 > armorLocation.getY()) {
+                if(block.getyLocation() + moveNoBlocks < armorLocation.getY()+2 || block.getyLocation() > armorLocation.getY()+2) {
                     block.yMove *= -1;
                 }
             }
             if(Objects.equals(direction, "down")){
                 barrierMoveY(armorLocation);
-                if(block.getyLocation() - moveNoBlocks -1.5 > armorLocation.getY() || block.getyLocation()-1.5 < armorLocation.getY()) {
+                if(block.getyLocation() - moveNoBlocks > armorLocation.getY()+2 || block.getyLocation() < armorLocation.getY()+2) {
                     block.yMove *= -1;
                 }
             }
@@ -219,13 +219,13 @@ public class PlatformBlock {
 
         private void barrierMoveY(Location armorLocation) {
             if(!block.newVersion){
-                Block b = w.getBlockAt(block.barrier.getX(), armorLocation.getBlockY()+2, block.barrier.getZ());
-                if(armorLocation.getBlockY()+2 != block.barrier.getY()){
-                    onBarrierCollision(b);
-                }else{
-                    block.barrier = b;
-                    block.barrier.setType(Material.BARRIER);
-                }
+//                Block b = w.getBlockAt(block.barrier.getX(), armorLocation.getBlockY()+2, block.barrier.getZ());
+//                if(armorLocation.getBlockY()+2 != block.barrier.getY()){
+//                    onBarrierCollision(b);
+//                }else{
+//                    block.barrier = b;
+//                    block.barrier.setType(Material.BARRIER);
+//                }
             }
         }
 

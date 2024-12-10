@@ -17,7 +17,6 @@
 
 package me.cmastudios.mcparkour.event;
 
-import com.google.gson.internal.LinkedHashTreeMap;
 import me.cmastudios.mcparkour.data.ParkourCourse;
 import org.bukkit.plugin.Plugin;
 

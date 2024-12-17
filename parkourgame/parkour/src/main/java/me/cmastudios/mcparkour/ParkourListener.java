@@ -808,9 +808,6 @@ public class ParkourListener implements Listener {
             timeSec++;
         }
 
-        System.out.println(timeSec +":"+ timeMilis);
-        System.out.println(player.getScoreboard().getTeam("parkour").getName());
-
         player.setLevel(timeSec);
         player.setExp(timeExp);
         playerTracker.packets = 0;

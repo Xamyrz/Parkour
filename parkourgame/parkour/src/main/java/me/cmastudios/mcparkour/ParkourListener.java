@@ -636,6 +636,7 @@ public class ParkourListener implements Listener {
             courseData.leave(event.getPlayer());
             Bukkit.getPluginManager().callEvent(new PlayerCancelParkourEvent(PlayerCancelParkourEvent.CancelReason.LEAVE, courseData, event.getPlayer()));
         }
+        plugin.playerTracker.remove(event.getPlayer());
         Duel duel = plugin.getDuel(event.getPlayer());
         if (duel != null) {
             duel.cancel(plugin, event.getPlayer());
@@ -806,6 +807,9 @@ public class ParkourListener implements Listener {
             timeExp = timeExp - 1;
             timeSec++;
         }
+
+        System.out.println(timeSec +":"+ timeMilis);
+        System.out.println(player.getScoreboard().getTeam("parkour").getName());
 
         player.setLevel(timeSec);
         player.setExp(timeExp);

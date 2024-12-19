@@ -72,7 +72,7 @@ public class TopScoresCommand implements CommandExecutor {
             List<PlayerHighScore> highScores = PlayerHighScore.loadHighScores(plugin.getCourseDatabase(), id);
             StringBuilder scores = new StringBuilder();
             for (PlayerHighScore highScore : highScores) {
-                double completionTimeSeconds = ((double) highScore.getTime()) / 1000;
+                double completionTimeSeconds = ((double) highScore.getTime());
                 int index = highScores.indexOf(highScore) + 1;
                 scores.append(Parkour.getString("topscores.format", new Object[]{index, completionTimeSeconds, highScore.getPlayer().getName()})).append('\n');
             }

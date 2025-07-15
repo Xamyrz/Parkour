@@ -17,7 +17,6 @@
 
 package me.cmastudios.experience;
 
-import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -33,7 +32,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Map;
-import java.util.Objects;
+
 import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;

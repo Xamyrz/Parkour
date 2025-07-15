@@ -38,7 +38,7 @@ public class PlatformBlock {
         World world = block.getWorld();
         this.name = name;
         xLocation = block.getX()+0.5;
-        yLocation = block.getY()+0.02;
+        yLocation = block.getY()+0.025;
         zLocation = block.getZ()+0.5;
         newVersion = newerVersion;
         blockData = block.getBlockData();

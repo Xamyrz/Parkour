@@ -128,7 +128,7 @@ public class Platform {
         try (PreparedStatement statement = conn.prepareStatement("INSERT INTO `platforms` (`name`,`world`,`blocks`,`direction`,`movenoblocks`,`wait`,`speed`, `newversion`) VALUES (?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE `world` = VALUES(`world`), `blocks` = VALUES(`blocks`), `direction` = VALUES(`direction`), `movenoblocks` = VALUES(`movenoblocks`), `wait` = VALUES(`wait`), `speed` = VALUES(`speed`), `newversion` = VALUES(`newversion`)")) {
             StringBuilder blocks = new StringBuilder();
             for(PlatformBlock b: platformBlocks){
-                blocks.append(b.fallingblock.getBlockData().getAsString()).append("/").append(b.getxLocation()-0.5).append("/").append(b.getyLocation()-0.03745).append("/").append(b.getzLocation()-0.5).append("#");
+                blocks.append(b.fallingblock.getBlockData().getAsString()).append("/").append(b.getxLocation()-0.5).append("/").append(b.getyLocation()-0.025).append("/").append(b.getzLocation()-0.5).append("#");
             }
             blocks.deleteCharAt(blocks.lastIndexOf("#"));
             statement.setString(1, name);
